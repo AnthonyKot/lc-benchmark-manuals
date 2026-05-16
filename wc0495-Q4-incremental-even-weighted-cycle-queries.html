@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual: Incremental Even-Weighted Cycle Queries</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18212f;
+      --muted: #526070;
+      --line: #d8dee8;
+      --panel: #f6f8fb;
+      --accent: #0f766e;
+      --warn: #9a3412;
+      --code: #101827;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: #ffffff;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 22px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      line-height: 1.15;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 1.25rem;
+    }
+    p, li {
+      color: var(--ink);
+    }
+    .meta, .note {
+      color: var(--muted);
+    }
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    code {
+      font-family: Consolas, Monaco, monospace;
+      background: #eef2f7;
+      border-radius: 4px;
+      padding: 1px 4px;
+    }
+    pre {
+      margin: 12px 0;
+      padding: 14px 16px;
+      overflow-x: auto;
+      color: #f7fafc;
+      background: var(--code);
+      border-radius: 8px;
+      line-height: 1.45;
+    }
+    pre code {
+      padding: 0;
+      background: transparent;
+      color: inherit;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 0.94rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #eef2f7;
+    }
+    .ok {
+      color: var(--accent);
+      font-weight: 700;
+    }
+    .bad {
+      color: var(--warn);
+      font-weight: 700;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Incremental Even-Weighted Cycle Queries</h1>
+  <p class="meta">Problem id: <code>wc0495-Q4-incremental-even-weighted-cycle-queries</code>. Difficulty: Hard. Function: <code>numberOfEdgesAdded(n, edges)</code>.</p>
+
+  <h2>Provenance</h2>
+  <div class="box">
+    <p>This manual was generated from the local workspace files <code>problem.md</code>, <code>stats.json</code>, and the <code>accepted__*</code> accepted-solution files. The statistics source reports generator <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-16T20:37:01.177974+00:00</code>.</p>
+    <p>Accepted solution corpus: 23 submissions across C++, Go, Java, JavaScript, Python 3, Rust, and TypeScript.</p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given <code>n</code> nodes labeled <code>0</code> to <code>n - 1</code> and an initially empty undirected graph. Each input edge is <code>[u, v, w]</code>, where <code>w</code> is either <code>0</code> or <code>1</code>. Process edges in order. Add an edge only if, after adding it, every cycle in the graph has an even total edge weight. Return the number of edges successfully added.</p>
+  <p>Constraints include <code>3 &lt;= n &lt;= 5 * 10^4</code>, <code>1 &lt;= edges.length &lt;= 5 * 10^4</code>, distinct edges, <code>0 &lt;= u &lt; v &lt; n</code>, and binary weights.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The graph can contain cycles, but only cycles whose XOR/sum parity is even. Assign each node a hidden bit. An edge of weight <code>0</code> says its endpoints must have the same bit; an edge of weight <code>1</code> says its endpoints must have different bits. An edge is addable exactly when this parity constraint is consistent with all previously accepted constraints.</p>
+  <p>That turns the problem into online bipartite-style parity constraints, solved with disjoint set union that stores each node's XOR parity to its component root.</p>
+
+  <h2>Worked Example</h2>
+  <div class="box">
+    <p><strong>Input:</strong> <code>n = 3</code>, <code>edges = [[0,1,1],[1,2,1],[0,2,1]]</code></p>
+    <ol>
+      <li>Add <code>[0,1,1]</code>: nodes 0 and 1 become connected with different bits. Count is 1.</li>
+      <li>Add <code>[1,2,1]</code>: node 2 joins; 1 and 2 must differ. Now the implied parity between 0 and 2 is <code>1 XOR 1 = 0</code>. Count is 2.</li>
+      <li>Check <code>[0,2,1]</code>: the existing parity between 0 and 2 is 0, but the edge requires 1. Adding it would make cycle <code>0-1-2-0</code> have odd weight <code>1 + 1 + 1 = 3</code>. Reject it.</li>
+    </ol>
+    <p><strong>Output:</strong> <code>2</code></p>
+  </div>
+
+  <h2>Other Official Examples</h2>
+  <div class="box">
+    <p><strong>Example 2:</strong> <code>n = 3</code>, <code>edges = [[0,1,1],[1,2,1],[0,2,0]]</code>, expected output <code>3</code>.</p>
+    <p>After accepting the first two edges, the path parity between 0 and 2 is <code>0</code>. The third edge has weight <code>0</code>, so it agrees with the existing path and creates an even-weighted cycle with total <code>2</code>.</p>
+  </div>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <p>Maintain arrays <code>parent</code>, <code>rank</code> or <code>size</code>, and <code>parity</code>. Here <code>parity[x]</code> is the XOR of edge weights from <code>x</code> to <code>parent[x]</code>; after path compression it becomes the XOR from <code>x</code> to the root.</p>
+  <ol>
+    <li>For edge <code>(u, v, w)</code>, run <code>find(u)</code> and <code>find(v)</code>, updating compressed parities.</li>
+    <li>If roots are equal, the edge is accepted only when <code>parity[u] XOR parity[v] == w</code>.</li>
+    <li>If roots differ, merge the two components and set the attached root's parity so the new relation holds: <code>parity[attachedRoot] = parity[u] XOR parity[v] XOR w</code>, with endpoint values interpreted after <code>find</code>.</li>
+    <li>Increment the answer for every accepted edge, including redundant edges that are consistent within an existing component.</li>
+  </ol>
+  <p>Time complexity is <code>O((n + m) alpha(n))</code>, effectively linear for <code>m = edges.length</code>. Space complexity is <code>O(n)</code>.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>def numberOfEdgesAdded(n, edges):
+    parent = [0, 1, 2, ..., n - 1]
+    rank = [0] * n
+    parity = [0] * n
+
+    def find(x):
+        if parent[x] != x:
+            old_parent = parent[x]
+            root = find(old_parent)
+            parity[x] ^= parity[old_parent]
+            parent[x] = root
+        return parent[x]
+
+    ans = 0
+    for u, v, w in edges:
+        ru = find(u)
+        rv = find(v)
+
+        if ru == rv:
+            if (parity[u] ^ parity[v]) == w:
+                ans += 1
+        else:
+            if rank[ru] &lt; rank[rv]:
+                # attach ru under rv
+                parent[ru] = rv
+                parity[ru] = parity[u] ^ parity[v] ^ w
+            else:
+                # attach rv under ru
+                parent[rv] = ru
+                parity[rv] = parity[u] ^ parity[v] ^ w
+                if rank[ru] == rank[rv]:
+                    rank[ru] += 1
+            ans += 1
+
+    return ans</code></pre>
+  <p class="note">If you swap roots before attaching, also keep the endpoint parity values consistent. Several accepted C++/Java variants store <code>xu = parity[u]</code> and <code>xv = parity[v]</code> immediately after <code>find</code> before union.</p>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Initialize every node as its own parent and every parity as <code>0</code>.</li>
+    <li>In <code>find</code>, save the old parent before recursion; use that saved index to update parity during path compression.</li>
+    <li>Call <code>find(u)</code> and <code>find(v)</code> before reading final <code>parity[u]</code> and <code>parity[v]</code>.</li>
+    <li>Accept consistent redundant edges inside the same component; do not merge or reject them automatically.</li>
+    <li>Reject only contradictions where existing endpoint parity differs from the new weight.</li>
+    <li>Use iterative find in languages where recursion depth is a concern, or rely on union by rank plus compression.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li><span class="bad">Plain DSU without parity:</span> it only knows connectivity, not whether the existing path has odd or even weight.</li>
+    <li><span class="bad">Reject every cycle edge:</span> the task allows cycles as long as their total weight is even.</li>
+    <li><span class="bad">Track total component weight:</span> cycle validity depends on parity between the two endpoints, not a component aggregate.</li>
+    <li><span class="bad">Use BFS/DFS for every edge:</span> it can find path parity but costs up to <code>O(m(n+m))</code>, too slow for <code>5 * 10^4</code>.</li>
+    <li><span class="bad">Forget parity update on path compression:</span> this silently corrupts later comparisons.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <div class="grid">
+    <div class="box">
+      <p><strong>Recursive parity DSU.</strong> Most Python, Java, JavaScript, C++, Rust, and TypeScript submissions use recursive <code>find</code> with path compression and a <code>parity</code>/<code>diff</code>/<code>xorToParent</code> array.</p>
+    </div>
+    <div class="box">
+      <p><strong>Iterative parity DSU.</strong> Some Go implementations avoid recursion by collecting the path and then compressing it while updating XOR distances.</p>
+    </div>
+    <div class="box">
+      <p><strong>Rank/size variants.</strong> Accepted code uses rank, size, or direct root attachment. All are valid when the attached root parity is set from <code>parity[u] XOR parity[v] XOR w</code>.</p>
+    </div>
+  </div>
+
+  <h2>Language and Performance Notes</h2>
+  <p>These notes use <code>stats.json.performance_by_language</code>, not estimates.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted count</th><th>Runtime range</th><th>Memory range</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>C++</td><td>1</td><td>58 ms</td><td>301.3 MB</td><td>Single accepted C++ entry; vector-based parity DSU is straightforward.</td></tr>
+      <tr><td>Go</td><td>2</td><td>23-26 ms</td><td>14.5-17.8 MB</td><td>Best memory among mainstream entries except Rust; iterative find avoids recursion concerns.</td></tr>
+      <tr><td>Java</td><td>6</td><td>18-22 ms</td><td>262.4-263 MB</td><td>Fastest reported runtime overall is Java at 18 ms, with high but stable memory.</td></tr>
+      <tr><td>JavaScript</td><td>4</td><td>62-160 ms</td><td>93.7-96.1 MB</td><td>Use arrays carefully; the accepted set still fits easily within limits.</td></tr>
+      <tr><td>Python 3</td><td>8</td><td>303-483 ms</td><td>44.8-49.6 MB</td><td>Python is slower but accepted; keep DSU operations tight and avoid per-edge graph traversal.</td></tr>
+      <tr><td>Rust</td><td>1</td><td>31 ms</td><td>6.1 MB</td><td>Lowest reported memory and strong runtime with array-backed DSU.</td></tr>
+      <tr><td>TypeScript</td><td>1</td><td>75 ms</td><td>94.3 MB</td><td>Comparable to JavaScript; numeric arrays are enough for this constraint size.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p>The stats file records one failed submission status: <code>Wrong Answer</code>. Given the accepted corpus, the likely failure mode is logical rather than performance-related: either accepting/rejecting cycle edges based only on connectivity, or computing the root parity incorrectly during union/path compression.</p>
+  <p>A compact diagnostic test is <code>[[0,1,1],[1,2,1],[0,2,0]]</code>, which must return <code>3</code>. A plain cycle-rejecting DSU returns <code>2</code>, exposing the mistake.</p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Lines</th><th>Bytes</th><th>Submission ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>codex-agent-gpt-5.5-java</td><td>java</td><td><code>accepted__codex-agent-gpt-5.5-java__java.java</code></td><td>21 ms</td><td>262.9 MB</td><td>90</td><td>2379</td><td>2003969827</td></tr>
+      <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>462 ms</td><td>48.6 MB</td><td>30</td><td>882</td><td>2004498711</td></tr>
+      <tr><td>3</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>20 ms</td><td>262.6 MB</td><td>51</td><td>1427</td><td>2004370793</td></tr>
+      <tr><td>4</td><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td>101 ms</td><td>94.1 MB</td><td>50</td><td>1392</td><td>2004354580</td></tr>
+      <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>303 ms</td><td>48.8 MB</td><td>34</td><td>1075</td><td>2004088591</td></tr>
+      <tr><td>6</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>18 ms</td><td>262.4 MB</td><td>48</td><td>1442</td><td>2004122250</td></tr>
+      <tr><td>7</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>97 ms</td><td>93.7 MB</td><td>50</td><td>1357</td><td>2004127749</td></tr>
+      <tr><td>8</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>430 ms</td><td>49.6 MB</td><td>29</td><td>853</td><td>2004094079</td></tr>
+      <tr><td>9</td><td>glm-5-cloud</td><td>python3</td><td><code>accepted__glm-5-cloud__python3.py</code></td><td>439 ms</td><td>49.4 MB</td><td>32</td><td>1003</td><td>2003277397</td></tr>
+      <tr><td>10</td><td>glm-5-cloud-t0.0</td><td>python3</td><td><code>accepted__glm-5-cloud-t0.0__python3.py</code></td><td>331 ms</td><td>48.9 MB</td><td>34</td><td>968</td><td>2003674869</td></tr>
+      <tr><td>11</td><td>glm-5-cloud-t0.8-java</td><td>java</td><td><code>accepted__glm-5-cloud-t0.8-java__java.java</code></td><td>19 ms</td><td>262.8 MB</td><td>53</td><td>1478</td><td>2004528400</td></tr>
+      <tr><td>12</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>160 ms</td><td>96.1 MB</td><td>50</td><td>1116</td><td>2004533903</td></tr>
+      <tr><td>13</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>346 ms</td><td>45.8 MB</td><td>46</td><td>1351</td><td>2003726852</td></tr>
+      <tr><td>14</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>58 ms</td><td>301.3 MB</td><td>53</td><td>1415</td><td>2003798138</td></tr>
+      <tr><td>15</td><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>26 ms</td><td>14.5 MB</td><td>60</td><td>1228</td><td>2003819620</td></tr>
+      <tr><td>16</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>22 ms</td><td>262.7 MB</td><td>65</td><td>1544</td><td>2003739585</td></tr>
+      <tr><td>17</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>62 ms</td><td>94.9 MB</td><td>48</td><td>1184</td><td>2003591245</td></tr>
+      <tr><td>18</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>31 ms</td><td>6.1 MB</td><td>66</td><td>1644</td><td>2003803611</td></tr>
+      <tr><td>19</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>75 ms</td><td>94.3 MB</td><td>43</td><td>1126</td><td>2003665774</td></tr>
+      <tr><td>20</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>338 ms</td><td>45.8 MB</td><td>60</td><td>2038</td><td>2003272367</td></tr>
+      <tr><td>21</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>483 ms</td><td>44.8 MB</td><td>43</td><td>1322</td><td>2003603085</td></tr>
+      <tr><td>22</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>23 ms</td><td>17.8 MB</td><td>53</td><td>840</td><td>2003979134</td></tr>
+      <tr><td>23</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>20 ms</td><td>263 MB</td><td>54</td><td>1491</td><td>2004010931</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

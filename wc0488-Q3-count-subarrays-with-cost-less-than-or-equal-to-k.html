@@ -1,0 +1,273 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0488-Q3 Manual - Count Subarrays With Cost Less Than or Equal to K</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #5f6b7a;
+      --line: #d9e0ea;
+      --panel: #f7f9fc;
+      --accent: #0f766e;
+      --code: #10243f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 22px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--line);
+      color: var(--accent);
+      font-size: 1.28rem;
+    }
+    h3 { margin: 20px 0 8px; font-size: 1.05rem; }
+    p { margin: 8px 0; }
+    ul, ol { margin: 8px 0 8px 24px; padding: 0; }
+    li { margin: 4px 0; }
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      color: var(--code);
+      background: #eef3f8;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      background: #101827;
+      color: #e8eef8;
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+    pre code {
+      color: inherit;
+      background: transparent;
+      padding: 0;
+      border-radius: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 0.93rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 7px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #eef4f8;
+      font-weight: 700;
+    }
+    .meta, .note {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .small { color: var(--muted); font-size: 0.92rem; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Count Subarrays With Cost Less Than or Equal to K</h1>
+  <p class="small">Problem id: <code>wc0488-Q3-count-subarrays-with-cost-less-than-or-equal-to-k</code></p>
+
+  <h2>Provenance</h2>
+  <div class="meta">
+    <p><strong>Source files used:</strong> <code>problem.md</code>, <code>stats.json</code>, and 24 <code>accepted__*</code> submissions in this directory.</p>
+    <p><strong>Generated stats timestamp:</strong> <code>2026-05-16T19:57:30.802578+00:00</code>. Generator: <code>codex</code> / <code>gpt-5.5</code>.</p>
+    <p><strong>Difficulty:</strong> Medium. Tags: array, queue, monotonic-queue. Function: <code>countSubarrays(nums, k)</code>.</p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer array <code>nums</code> and an integer <code>k</code>.</p>
+  <p>For any non-empty subarray <code>nums[l..r]</code>, define its cost as:</p>
+  <pre><code>cost = (max(nums[l..r]) - min(nums[l..r])) * (r - l + 1)</code></pre>
+  <p>Return the number of subarrays whose cost is less than or equal to <code>k</code>.</p>
+  <p><strong>Constraints:</strong> <code>1 &lt;= nums.length &lt;= 100000</code>, <code>1 &lt;= nums[i] &lt;= 1000000000</code>, <code>0 &lt;= k &lt;= 1000000000000000</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The key observation is monotonicity by window inclusion: if a fixed window is invalid, extending it cannot make its length smaller, and its max-min range cannot decrease below the range of the original window. So for each right endpoint, there is a smallest valid left boundary after shrinking.</p>
+  <p>Maintain the current window max and min in O(1) amortized time using two monotonic deques of indices. Once the current window is valid, every suffix of it ending at the current right index is also valid, so add <code>right - left + 1</code>.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [1,3,2]</code>, <code>k = 4</code>:</p>
+  <table>
+    <thead><tr><th>Subarray</th><th>Max</th><th>Min</th><th>Length</th><th>Cost</th><th>Counted?</th></tr></thead>
+    <tbody>
+      <tr><td><code>[1]</code></td><td>1</td><td>1</td><td>1</td><td>0</td><td>yes</td></tr>
+      <tr><td><code>[1,3]</code></td><td>3</td><td>1</td><td>2</td><td>4</td><td>yes</td></tr>
+      <tr><td><code>[1,3,2]</code></td><td>3</td><td>1</td><td>3</td><td>6</td><td>no</td></tr>
+      <tr><td><code>[3]</code></td><td>3</td><td>3</td><td>1</td><td>0</td><td>yes</td></tr>
+      <tr><td><code>[3,2]</code></td><td>3</td><td>2</td><td>2</td><td>2</td><td>yes</td></tr>
+      <tr><td><code>[2]</code></td><td>2</td><td>2</td><td>1</td><td>0</td><td>yes</td></tr>
+    </tbody>
+  </table>
+  <p>The answer is <code>5</code>. In the sliding-window view, when right reaches index 2, the window <code>[1,3,2]</code> is invalid, so left advances to index 1 and the valid endings at index 2 are <code>[3,2]</code> and <code>[2]</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead><tr><th>Input</th><th>Output</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td><code>nums = [5,5,5,5], k = 0</code></td><td><code>10</code></td><td>Every subarray has max equal to min, so every cost is 0.</td></tr>
+      <tr><td><code>nums = [1,2,3], k = 0</code></td><td><code>3</code></td><td>Only single-element subarrays have range 0.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Scan <code>right</code> from 0 to <code>n - 1</code>.</li>
+    <li>Push <code>right</code> into a decreasing deque for maximums, popping smaller or equal trailing values.</li>
+    <li>Push <code>right</code> into an increasing deque for minimums, popping larger or equal trailing values.</li>
+    <li>While <code>(nums[maxDeque.front] - nums[minDeque.front]) * (right - left + 1) &gt; k</code>, move <code>left</code> rightward and discard expired deque fronts.</li>
+    <li>Add <code>right - left + 1</code> to the answer.</li>
+  </ol>
+  <p>Each index is inserted and removed at most once from each deque, so the time complexity is O(n) and the auxiliary space is O(n) in the worst case.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>def countSubarrays(nums, k):
+    left = 0
+    answer = 0
+    maxdq = deque()  # indices, nums values decreasing
+    mindq = deque()  # indices, nums values increasing
+
+    for right, value in enumerate(nums):
+        while maxdq and nums[maxdq[-1]] &lt;= value:
+            maxdq.pop()
+        maxdq.append(right)
+
+        while mindq and nums[mindq[-1]] &gt;= value:
+            mindq.pop()
+        mindq.append(right)
+
+        while (nums[maxdq[0]] - nums[mindq[0]]) * (right - left + 1) &gt; k:
+            left += 1
+            while maxdq and maxdq[0] &lt; left:
+                maxdq.popleft()
+            while mindq and mindq[0] &lt; left:
+                mindq.popleft()
+
+        answer += right - left + 1
+
+    return answer</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use indices in both deques, not raw values, so expired elements can be removed.</li>
+    <li>Use 64-bit arithmetic for the cost and result. The answer can be about <code>n * (n + 1) / 2</code>, and <code>k</code> reaches <code>10^15</code>.</li>
+    <li>After moving <code>left</code>, remove all deque fronts with index less than <code>left</code>.</li>
+    <li>Count subarrays after the while loop has restored validity.</li>
+    <li>Equal-value popping is fine and common: <code>&lt;=</code> for the max deque and <code>&gt;=</code> for the min deque keeps the newest duplicate.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Checking every subarray and recomputing max/min is O(n^3), or O(n^2) with incremental extrema, and will not survive <code>n = 100000</code>.</li>
+    <li>Using a single deque cannot track both max and min; the cost needs their difference.</li>
+    <li>Shrinking only once when the cost is too high is insufficient. A single large range can require many left moves.</li>
+    <li>Counting <code>right - left</code> instead of <code>right - left + 1</code> drops the one-element suffix.</li>
+    <li>Using 32-bit <code>int</code> for <code>(max - min) * length</code> can overflow even when the final comparison is with a long value.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <div class="grid">
+    <div class="note">
+      <h3>Right-expanding sliding window</h3>
+      <p>Most accepted files use the standard loop over <code>right</code>, maintain min/max deques, shrink <code>left</code> while invalid, and add valid suffix count. This appears in Python, Java, C++, Go, JavaScript, and TypeScript submissions.</p>
+    </div>
+    <div class="note">
+      <h3>Left-anchored two pointer</h3>
+      <p>The Rust accepted solution advances <code>right</code> as far as possible for each <code>left</code>, counts <code>right - left</code>, and then expires the outgoing left index. It is the same monotonic-deque invariant expressed from the other side.</p>
+    </div>
+    <div class="note">
+      <h3>Deque implementation variants</h3>
+      <p>Java accepted files often use fixed integer arrays plus head/tail pointers for lower overhead. Python uses <code>collections.deque</code>; C++ and Rust use standard deque structures.</p>
+    </div>
+  </div>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The following figures come directly from <code>stats.json.performance_by_language</code>.</p>
+  <table>
+    <thead><tr><th>Language</th><th>Accepted Count</th><th>Runtime Range</th><th>Memory Range</th><th>Practical Note</th></tr></thead>
+    <tbody>
+      <tr><td>cpp</td><td>1</td><td>35 ms</td><td>185.6 MB</td><td>Fast, but the recorded memory for this one C++ run is high relative to the other compiled submissions.</td></tr>
+      <tr><td>golang</td><td>2</td><td>26-31 ms</td><td>15.4-21.6 MB</td><td>Very competitive runtime with low memory; slices as index queues are a good fit.</td></tr>
+      <tr><td>java</td><td>6</td><td>17-59 ms</td><td>133.9-136.7 MB</td><td>Fastest observed submission is Java at 17 ms; array-backed deques avoid object overhead.</td></tr>
+      <tr><td>javascript</td><td>3</td><td>37-41 ms</td><td>86.5-87.5 MB</td><td>Numeric precision is safe here because the largest exact integer involved is below JavaScript's safe integer limit.</td></tr>
+      <tr><td>python3</td><td>10</td><td>612-739 ms</td><td>34.2-37 MB</td><td>Accepted but much slower than compiled/JIT languages; keep operations strictly O(n) and use <code>deque</code>.</td></tr>
+      <tr><td>rust</td><td>1</td><td>30 ms</td><td>3.9 MB</td><td>Best recorded memory and excellent runtime with <code>VecDeque</code>.</td></tr>
+      <tr><td>typescript</td><td>1</td><td>44 ms</td><td>86.9 MB</td><td>Similar to JavaScript; use arrays with head pointers rather than repeated <code>shift()</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> records one failed submission status: <strong>Time Limit Exceeded</strong>. That aligns with the main risk for this problem: any O(n log n) with heavy constants might pass depending on implementation, but O(n^2) enumeration is structurally wrong for <code>n = 100000</code>.</p>
+  <ul>
+    <li>Avoid nested loops over all starts and ends.</li>
+    <li>Avoid recomputing max and min from scratch after each left movement.</li>
+    <li>Avoid JavaScript/TypeScript <code>Array.shift()</code> in the hot path; it can make queue operations linear.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Lines</th><th>Bytes</th><th>Submission</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>claude-sonnet-4-6</td><td>python3</td><td><code>accepted__claude-sonnet-4-6__python3.py</code></td><td>619 ms</td><td>34.2 MB</td><td>31</td><td>934</td><td>2003534191</td></tr>
+      <tr><td>2</td><td>codex-agent-gpt-5.5-high-java</td><td>java</td><td><code>accepted__codex-agent-gpt-5.5-high-java__java.java</code></td><td>17 ms</td><td>136.7 MB</td><td>37</td><td>1096</td><td>2003967308</td></tr>
+      <tr><td>3</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>682 ms</td><td>36.8 MB</td><td>41</td><td>1377</td><td>2004496287</td></tr>
+      <tr><td>4</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>54 ms</td><td>134 MB</td><td>36</td><td>1364</td><td>2004368618</td></tr>
+      <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>647 ms</td><td>35.2 MB</td><td>39</td><td>1238</td><td>2004087122</td></tr>
+      <tr><td>6</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>54 ms</td><td>133.9 MB</td><td>41</td><td>1390</td><td>2004121281</td></tr>
+      <tr><td>7</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>37 ms</td><td>87.5 MB</td><td>43</td><td>1211</td><td>2004126871</td></tr>
+      <tr><td>8</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>612 ms</td><td>36.5 MB</td><td>33</td><td>1124</td><td>2004092532</td></tr>
+      <tr><td>9</td><td>glm-5-cloud</td><td>python3</td><td><code>accepted__glm-5-cloud__python3.py</code></td><td>663 ms</td><td>35.6 MB</td><td>40</td><td>1485</td><td>2003275730</td></tr>
+      <tr><td>10</td><td>glm-5-cloud-t0.0</td><td>python3</td><td><code>accepted__glm-5-cloud-t0.0__python3.py</code></td><td>685 ms</td><td>37 MB</td><td>36</td><td>1118</td><td>2003672609</td></tr>
+      <tr><td>11</td><td>glm-5-cloud-t0.8-java</td><td>java</td><td><code>accepted__glm-5-cloud-t0.8-java__java.java</code></td><td>59 ms</td><td>134.4 MB</td><td>42</td><td>1374</td><td>2004526263</td></tr>
+      <tr><td>12</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>41 ms</td><td>87.3 MB</td><td>47</td><td>1180</td><td>2004531786</td></tr>
+      <tr><td>13</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>616 ms</td><td>36.3 MB</td><td>30</td><td>1078</td><td>2003724676</td></tr>
+      <tr><td>14</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>35 ms</td><td>185.6 MB</td><td>35</td><td>1158</td><td>2003795717</td></tr>
+      <tr><td>15</td><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>26 ms</td><td>15.4 MB</td><td>35</td><td>1076</td><td>2003817640</td></tr>
+      <tr><td>16</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>52 ms</td><td>134.3 MB</td><td>44</td><td>1396</td><td>2003737432</td></tr>
+      <tr><td>17</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>37 ms</td><td>86.5 MB</td><td>45</td><td>1231</td><td>2003589418</td></tr>
+      <tr><td>18</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>30 ms</td><td>3.9 MB</td><td>66</td><td>2060</td><td>2003801734</td></tr>
+      <tr><td>19</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>44 ms</td><td>86.9 MB</td><td>46</td><td>1336</td><td>2003663735</td></tr>
+      <tr><td>20</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>739 ms</td><td>36.9 MB</td><td>41</td><td>1496</td><td>2003270598</td></tr>
+      <tr><td>21</td><td>qwen3.5-cloud</td><td>python3</td><td><code>accepted__qwen3.5-cloud__python3.py</code></td><td>681 ms</td><td>35.3 MB</td><td>42</td><td>1467</td><td>2003505796</td></tr>
+      <tr><td>22</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>629 ms</td><td>36.4 MB</td><td>41</td><td>1330</td><td>2003516712</td></tr>
+      <tr><td>23</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>31 ms</td><td>21.6 MB</td><td>43</td><td>1015</td><td>2003976960</td></tr>
+      <tr><td>24</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>53 ms</td><td>134.1 MB</td><td>44</td><td>1440</td><td>2004008834</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

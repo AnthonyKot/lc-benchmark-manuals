@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual: Longest Arithmetic Sequence After Changing At Most One Element</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #5d6875;
+      --line: #d8dee6;
+      --panel: #f6f8fb;
+      --accent: #245b8f;
+      --code: #eef3f8;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 30px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      color: var(--accent);
+      font-size: 22px;
+    }
+    p, li {
+      font-size: 15px;
+    }
+    .meta, .note {
+      color: var(--muted);
+    }
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    code {
+      background: var(--code);
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      overflow-x: auto;
+      background: #101820;
+      color: #edf4fb;
+      border-radius: 6px;
+      padding: 16px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #eef3f8;
+      font-weight: 700;
+    }
+    .wide {
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Longest Arithmetic Sequence After Changing At Most One Element</h1>
+  <p class="meta">Problem id: <code>wc0493-Q3-longest-arithmetic-sequence-after-changing-at-most-one-element</code></p>
+
+  <h2>Provenance</h2>
+  <div class="box">
+    <p>This manual was built from the local files <code>problem.md</code>, <code>stats.json</code>, and the 15 <code>accepted__*</code> solution files in this directory.</p>
+    <p>Source metadata: generator <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-16T20:24:14.936982+00:00</code>. Difficulty is Medium. Function name is <code>longestArithmetic</code> with arity 1.</p>
+    <p>Topic tags from stats: array, enumeration.</p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer array <code>nums</code>. A subarray is arithmetic if the difference between consecutive elements in the subarray is constant.</p>
+  <p>You may replace at most one element in <code>nums</code> with any integer. After that, choose an arithmetic subarray. Return the maximum possible length of such a subarray.</p>
+  <ul>
+    <li><code>4 &lt;= nums.length &lt;= 10^5</code></li>
+    <li><code>1 &lt;= nums[i] &lt;= 10^5</code></li>
+  </ul>
+
+  <h2>Problem Essence</h2>
+  <p>The chosen subarray must be contiguous. Changing one element can do three useful things: extend an existing arithmetic run by one at either end, replace an interior element to bridge equal-difference runs on both sides, or leave the best already-arithmetic run unchanged.</p>
+  <p>The key observation is local: if index <code>i</code> is replaced and both neighbors are included, the only possible common difference is <code>d = (nums[i+1] - nums[i-1]) / 2</code>. That bridge is valid only when the numerator is even, because the replacement must be an integer.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [9,7,5,10,1]</code>, the answer is <code>5</code>.</p>
+  <ol>
+    <li>The intended full-array arithmetic difference is <code>-2</code>.</li>
+    <li>The values around index <code>3</code> are <code>5</code> and <code>1</code>, so the needed middle value is <code>3</code>.</li>
+    <li>Replace <code>10</code> with <code>3</code>, giving <code>[9,7,5,3,1]</code>.</li>
+    <li>The whole array is now arithmetic, so the maximum selected subarray length is <code>5</code>.</li>
+  </ol>
+
+  <h2>Other Official Examples</h2>
+  <div class="box">
+    <p><strong>Example 2</strong></p>
+    <p>Input: <code>nums = [1,2,6,7]</code></p>
+    <p>Output: <code>3</code></p>
+    <p>One valid move is replacing <code>1</code> with <code>-2</code>, producing the arithmetic subarray <code>[-2,2,6]</code> with common difference <code>4</code>.</p>
+  </div>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <p>Use a linear scan with precomputed run lengths. There are two equivalent representations in the accepted files: store runs over the value array, or store runs over the difference array. The difference-array version is compact.</p>
+  <ol>
+    <li>Build <code>diff[i] = nums[i+1] - nums[i]</code> for <code>0 &lt;= i &lt; n-1</code>.</li>
+    <li>Compute <code>leftRun[i]</code>: number of consecutive equal differences ending at <code>i</code>.</li>
+    <li>Compute <code>rightRun[i]</code>: number of consecutive equal differences starting at <code>i</code>.</li>
+    <li>Initialize the answer from the best existing arithmetic subarray, plus one possible changed boundary element, capped by <code>n</code>.</li>
+    <li>For every interior changed index <code>k</code>, inspect the two adjacent gaps <code>diff[k-1]</code> and <code>diff[k]</code>. If their sum is even, the bridge difference is <code>d = (diff[k-1] + diff[k]) / 2</code>.</li>
+    <li>Extend left through a run of <code>d</code> ending at <code>k-2</code>, extend right through a run of <code>d</code> starting at <code>k+1</code>, and count <code>left + 3 + right</code> for the two neighbors plus the replaced element.</li>
+    <li>Also consider one-sided extension cases: changing an element just before or just after an existing run can add one element, but never more than <code>n</code>.</li>
+  </ol>
+  <p>Time complexity is <code>O(n)</code>. Space complexity is <code>O(n)</code>, matching all accepted families here. With careful rolling state some one-sided checks can be compressed, but the two arrays are simpler and safer.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>function longestArithmetic(nums):
+    n = len(nums)
+    if n &lt;= 2:
+        return n
+
+    diff = [nums[i + 1] - nums[i] for i in 0..n-2]
+    m = n - 1
+
+    leftRun = array(m, 1)
+    for i in 1..m-1:
+        if diff[i] == diff[i - 1]:
+            leftRun[i] = leftRun[i - 1] + 1
+
+    rightRun = array(m, 1)
+    for i in m-2 down to 0:
+        if diff[i] == diff[i + 1]:
+            rightRun[i] = rightRun[i + 1] + 1
+
+    bestDiffRun = max(leftRun)
+    ans = min(n, bestDiffRun + 2)  // run has bestDiffRun + 1 elements; change can add one
+
+    for k in 1..n-2:
+        gap = nums[k + 1] - nums[k - 1]
+        if gap is even:
+            d = gap / 2
+            left = 0
+            if k &gt;= 2 and diff[k - 2] == d:
+                left = leftRun[k - 2]
+            right = 0
+            if k + 1 &lt;= n - 2 and diff[k + 1] == d:
+                right = rightRun[k + 1]
+            ans = max(ans, left + 3 + right)
+
+        ans = max(ans, min(n, 2 + (k &gt;= 1 ? leftRun[k - 1] : 0)))
+        ans = max(ans, min(n, 2 + (k + 1 &lt;= n - 2 ? rightRun[k + 1] : 0)))
+
+    return min(ans, n)</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use contiguous subarrays, not subsequences.</li>
+    <li>Track arithmetic lengths as element counts when returning, and as difference counts only inside <code>diff</code>-run helpers.</li>
+    <li>Cap every boundary-extension answer at <code>n</code>.</li>
+    <li>Require <code>(nums[k+1] - nums[k-1])</code> to be even before bridging through changed index <code>k</code>.</li>
+    <li>For a bridge, inspect <code>diff[k-2]</code> on the left and <code>diff[k+1]</code> on the right, not the broken gaps adjacent to <code>k</code>.</li>
+    <li>Return at least <code>2</code>; constraints have <code>n &gt;= 4</code>, but defensive implementations often keep the small-<code>n</code> branch.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Solving longest arithmetic subsequence with hash maps. This problem is about subarrays, so that is too broad and too slow for the intended structure.</li>
+    <li>Trying every possible replacement value. Values are arbitrary integers, and the valid value is forced by adjacent elements whenever both sides are used.</li>
+    <li>Joining left and right runs whenever their differences match, without checking that the middle replacement can have the same integer difference.</li>
+    <li>Forgetting one-sided changes. Example 2 needs an endpoint-style extension to reach length <code>3</code>.</li>
+    <li>Using floating-point halves for the bridge. Parity should be checked with integer arithmetic.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <ul>
+    <li><strong>Difference-run bridge family:</strong> Python, Rust, C++, TypeScript, and several Java files compute equal runs on the adjacent difference array, then evaluate bridges with <code>left + 3 + right</code>. This is the clearest formulation.</li>
+    <li><strong>Element-run prefix/suffix family:</strong> JavaScript and Java variants compute arithmetic subarray lengths ending at each index and starting at each index, plus their associated differences, then combine around the changed index.</li>
+    <li><strong>Expanded case-check family:</strong> Some Java/Python solutions separately check full bridge, left-only extension, and right-only extension. The logic is equivalent to the compact difference-run method but more verbose.</li>
+  </ul>
+
+  <h2>Language and Performance Notes</h2>
+  <p>Concrete figures below come from <code>stats.json.performance_by_language</code>.</p>
+  <ul>
+    <li><strong>Rust:</strong> 1 accepted submission; fastest and slowest both <code>8 ms</code>, memory <code>4.9 MB</code>. This was the best recorded runtime and memory in the local data.</li>
+    <li><strong>Java:</strong> 5 accepted submissions; fastest <code>18 ms</code>, slowest <code>29 ms</code>. Memory ranged from <code>157.4 MB</code> to <code>165.8 MB</code>. Java is consistently fast here with simple integer arrays.</li>
+    <li><strong>C++:</strong> 1 accepted submission at <code>34 ms</code>, memory <code>235.7 MB</code>. Runtime is strong, but the recorded memory is high relative to the other local submissions.</li>
+    <li><strong>TypeScript:</strong> 1 accepted submission at <code>75 ms</code>, memory <code>90.5 MB</code>.</li>
+    <li><strong>JavaScript:</strong> 2 accepted submissions; fastest <code>93 ms</code>, slowest <code>772 ms</code>, memory from <code>94.5 MB</code> to <code>133.8 MB</code>. Avoid expensive spread operations like <code>Math.max(...largeArray)</code> in general, even though one accepted file used it.</li>
+    <li><strong>Python 3:</strong> 5 accepted submissions; fastest <code>645 ms</code>, slowest <code>1784 ms</code>, memory from <code>38.7 MB</code> to <code>42 MB</code>. Python passes comfortably with linear arrays and simple loops.</li>
+  </ul>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p>The stats file records <code>7</code> failed submissions, all with status <code>Wrong Answer</code>. There are no recorded time-limit or memory-limit failures, which points to correctness details rather than asymptotic performance as the main risk.</p>
+  <ul>
+    <li>Most likely wrong-answer source: joining across the changed element without the even-parity check for an integer replacement.</li>
+    <li>Second likely source: off-by-one errors from mixing difference-run lengths and element-run lengths.</li>
+    <li>Boundary changes are easy to miss: replacing the first or last value near a run can improve the answer by one.</li>
+    <li>The answer must never exceed <code>n</code>, especially when using formulas like <code>bestRun + 2</code> over difference runs.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <div class="wide">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Model</th>
+          <th>Language</th>
+          <th>File</th>
+          <th>Runtime</th>
+          <th>Memory</th>
+          <th>Submission ID</th>
+          <th>Lines</th>
+          <th>Bytes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>codex-agent-gpt-5.5-java</td><td>java</td><td><code>accepted__codex-agent-gpt-5.5-java__java.java</code></td><td>23 ms</td><td>160 MB</td><td>2003968984</td><td>51</td><td>1343</td></tr>
+        <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>1469 ms</td><td>39.2 MB</td><td>2004497771</td><td>76</td><td>3059</td></tr>
+        <tr><td>3</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>29 ms</td><td>158.7 MB</td><td>2004369997</td><td>67</td><td>2260</td></tr>
+        <tr><td>4</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>1335 ms</td><td>39 MB</td><td>2004088025</td><td>72</td><td>2277</td></tr>
+        <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>23 ms</td><td>165.8 MB</td><td>2004121934</td><td>81</td><td>2528</td></tr>
+        <tr><td>6</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>772 ms</td><td>133.8 MB</td><td>2004127467</td><td>72</td><td>1797</td></tr>
+        <tr><td>7</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>93 ms</td><td>94.5 MB</td><td>2004533250</td><td>45</td><td>1449</td></tr>
+        <tr><td>8</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>645 ms</td><td>38.7 MB</td><td>2003726127</td><td>49</td><td>1591</td></tr>
+        <tr><td>9</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>34 ms</td><td>235.7 MB</td><td>2003797308</td><td>68</td><td>1970</td></tr>
+        <tr><td>10</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>26 ms</td><td>157.4 MB</td><td>2003738827</td><td>78</td><td>2179</td></tr>
+        <tr><td>11</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>8 ms</td><td>4.9 MB</td><td>2003803035</td><td>76</td><td>1982</td></tr>
+        <tr><td>12</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>75 ms</td><td>90.5 MB</td><td>2003665051</td><td>64</td><td>1804</td></tr>
+        <tr><td>13</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>1784 ms</td><td>42 MB</td><td>2003304129</td><td>66</td><td>2507</td></tr>
+        <tr><td>14</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>831 ms</td><td>39 MB</td><td>2003602304</td><td>71</td><td>2538</td></tr>
+        <tr><td>15</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>18 ms</td><td>162.6 MB</td><td>2004053678</td><td>58</td><td>1675</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

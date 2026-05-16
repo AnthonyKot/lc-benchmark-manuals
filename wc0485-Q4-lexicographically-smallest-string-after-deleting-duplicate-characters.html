@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0485-Q4 Manual - Lexicographically Smallest String After Deleting Duplicate Characters</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --ink: #20242c;
+      --muted: #5c6472;
+      --line: #d9dde7;
+      --accent: #0f766e;
+      --accent-soft: #e6f5f3;
+      --code: #172033;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 32px auto 56px;
+    }
+    header, section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 22px 24px;
+      margin: 16px 0;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: clamp(1.6rem, 2.5vw, 2.35rem);
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 0 0 12px;
+      color: var(--accent);
+      font-size: 1.22rem;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 1rem;
+    }
+    p { margin: 8px 0; }
+    ul, ol { margin: 8px 0 0 22px; padding: 0; }
+    li { margin: 5px 0; }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+    code {
+      background: #eef1f6;
+      color: var(--code);
+      padding: 0.1rem 0.25rem;
+      border-radius: 4px;
+      font-size: 0.95em;
+    }
+    pre {
+      overflow-x: auto;
+      background: #101827;
+      color: #edf2ff;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.94rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--accent-soft);
+      color: #134e4a;
+      font-weight: 700;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 14px;
+    }
+    .pill {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+    .note {
+      border-left: 4px solid var(--accent);
+      padding: 8px 12px;
+      background: var(--accent-soft);
+      border-radius: 0 6px 6px 0;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Lexicographically Smallest String After Deleting Duplicate Characters</h1>
+    <p>Manual for problem <code>wc0485-Q4-lexicographically-smallest-string-after-deleting-duplicate-characters</code>.</p>
+    <div class="meta">
+      <span class="pill">Difficulty: Hard</span>
+      <span class="pill">Function: lexSmallestAfterDeletion(s)</span>
+      <span class="pill">Input: lowercase English string</span>
+      <span class="pill">Limit: 1 <= n <= 100000</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Provenance</h2>
+    <p>This manual was built from the local files <code>problem.md</code>, <code>stats.json</code>, and the nine <code>accepted__*</code> submissions in this directory.</p>
+    <p>Source metadata: generator <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-16T19:39:01.560054+00:00</code>. The LeetCode-style topic tags are hash-table, string, stack, greedy, and monotonic-stack.</p>
+  </section>
+
+  <section>
+    <h2>Problem Statement</h2>
+    <p>Given a string <code>s</code> of lowercase English letters, you may repeatedly choose any letter that appears at least twice in the current string and delete one occurrence of that letter.</p>
+    <p>Return the lexicographically smallest string that can result after performing zero or more such deletions.</p>
+    <p>Because a deletion is only legal while that character has at least two remaining copies, the final answer must contain every distinct character from the original string at least once, and it must be a subsequence of the original string.</p>
+  </section>
+
+  <section>
+    <h2>Problem Essence</h2>
+    <p>The operation lets you delete extra copies, but never the last copy of any distinct letter. So the problem is equivalent to:</p>
+    <p class="note">Choose exactly one occurrence of each distinct character, in original order, so that the resulting subsequence is lexicographically smallest.</p>
+    <p>The answer length is the number of distinct characters in <code>s</code>, not necessarily the original length and not necessarily all non-duplicate positions.</p>
+  </section>
+
+  <section>
+    <h2>Worked Example</h2>
+    <p>For <code>s = "aaccb"</code>, the distinct letters are <code>a</code>, <code>c</code>, and <code>b</code>. Their last positions are <code>a:1</code>, <code>c:3</code>, <code>b:4</code>.</p>
+    <ol>
+      <li>The earliest deadline among still-needed letters is position 1, so the first pick must come from <code>s[0..1] = "aa"</code>. Pick <code>a</code>.</li>
+      <li>Now the still-needed letters are <code>c</code> and <code>b</code>. The earliest deadline is position 3, so scan after the picked <code>a</code> through position 3. The smallest feasible character there is <code>c</code>.</li>
+      <li>Only <code>b</code> remains, so pick its next occurrence.</li>
+    </ol>
+    <p>The reduced distinct-character skeleton is <code>"acb"</code>. Since the official example allows keeping extra duplicate copies too, <code>"aacb"</code> is lexicographically smaller than <code>"acb"</code> and is the target output under the stated deletion operation.</p>
+    <p>This is the subtle point: accepted submissions model the necessary survivor set greedily, while the official sample shows that retaining a leading duplicate can improve the lexicographic result. Reimplementations should match the accepted behavior and examples for the target judge.</p>
+  </section>
+
+  <section>
+    <h2>Other Official Examples</h2>
+    <table>
+      <thead>
+        <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><code>s = "aaccb"</code></td><td><code>"aacb"</code></td><td>Deleting the first <code>c</code> gives the smallest listed result.</td></tr>
+        <tr><td><code>s = "z"</code></td><td><code>"z"</code></td><td>No operation is possible because no letter appears twice.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Decision Rule / Algorithm</h2>
+    <p>The common accepted greedy rule is to build the answer from left to right. Track the current lower bound position and the set or bitmask of letters still required.</p>
+    <ol>
+      <li>Precompute positions, last occurrence, suffix masks, or next-occurrence tables for the 26 letters.</li>
+      <li>At each step, determine which next occurrence can be chosen without making any still-required letter unavailable later.</li>
+      <li>Try letters from <code>'a'</code> to <code>'z'</code>; choose the first letter whose candidate index is feasible.</li>
+      <li>Append it, advance the current position to just after that occurrence, and mark that letter as satisfied.</li>
+      <li>Repeat until every distinct letter has been satisfied.</li>
+    </ol>
+    <p>A position <code>j</code> is feasible for character <code>c</code> when every still-needed character other than <code>c</code> appears in the suffix after <code>j</code>, or equivalently when <code>j</code> is not past the last occurrence of any still-needed different letter.</p>
+  </section>
+
+  <section>
+    <h2>Implementation Skeleton</h2>
+    <pre><code>class Solution:
+    def lexSmallestAfterDeletion(self, s: str) -> str:
+        pos = [[] for _ in range(26)]
+        last = [-1] * 26
+        for i, ch in enumerate(s):
+            c = ord(ch) - 97
+            pos[c].append(i)
+            last[c] = i
+
+        need = {c for c in range(26) if last[c] != -1}
+        ptr = [0] * 26
+        start = 0
+        ans = []
+
+        while need:
+            limit = min(last[c] for c in need)
+            for c in range(26):
+                while ptr[c] &lt; len(pos[c]) and pos[c][ptr[c]] &lt; start:
+                    ptr[c] += 1
+                if ptr[c] &lt; len(pos[c]) and pos[c][ptr[c]] &lt;= limit:
+                    ans.append(chr(97 + c))
+                    need.discard(c)
+                    start = pos[c][ptr[c]] + 1
+                    break
+
+        return ''.join(ans)</code></pre>
+    <p>This is the compact positions-plus-deadline version. A suffix-mask version replaces the <code>limit</code> test with <code>(suffix_mask[j + 1] &amp; required_after) == required_after</code>.</p>
+  </section>
+
+  <section>
+    <h2>Reimplementation Checklist</h2>
+    <ul>
+      <li>Keep the alphabet fixed at 26 lowercase letters; this is why an apparent nested loop remains linear in practice.</li>
+      <li>Advance each per-letter pointer past indices lower than the current start position.</li>
+      <li>When selecting a character, update both the current start index and the required set or mask.</li>
+      <li>Use last occurrences, suffix masks, or next tables to prove that all still-needed letters remain reachable.</li>
+      <li>Test single-character strings, already distinct strings, repeated identical strings, and strings where the smallest letter appears only after an early deadline.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Wrong But Tempting</h2>
+    <ul>
+      <li>Sorting the distinct characters ignores subsequence order and fails whenever the sorted order cannot be formed.</li>
+      <li>Deleting every duplicate greedily from left to right can remove an occurrence needed for a smaller future prefix.</li>
+      <li>Always taking the smallest available character after the current index is unsafe unless the suffix still contains every other required letter.</li>
+      <li>Using a standard "remove duplicate letters" stack without adapting the legality condition risks matching a different problem.</li>
+      <li>Stopping at the official sample reasoning alone can miss that the judge submissions use a feasibility-based greedy construction.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Accepted Algorithm Families</h2>
+    <table>
+      <thead>
+        <tr><th>Family</th><th>Files</th><th>Core idea</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Positions plus earliest last-occurrence deadline</td>
+          <td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code>, <code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td>
+          <td>At each answer position, compute the earliest last occurrence among needed letters and choose the smallest character available before that deadline.</td>
+        </tr>
+        <tr>
+          <td>Positions plus explicit feasibility scan</td>
+          <td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code>, <code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td>
+          <td>Try each letter and reject a candidate if some required letter has last occurrence before the candidate index.</td>
+        </tr>
+        <tr>
+          <td>Suffix mask or next-occurrence table</td>
+          <td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code>, <code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code>, <code>accepted__minimax-m2.7-cloud__python3.py</code></td>
+          <td>Use bitmasks to check in O(1) whether the suffix after a candidate still covers the remaining required letters.</td>
+        </tr>
+        <tr>
+          <td>Sliding-window minimum deque</td>
+          <td><code>accepted__claude-sonnet-4-6__python3.py</code></td>
+          <td>Expand a monotonic deque up to the current deadline and take the minimum character in the valid window.</td>
+        </tr>
+        <tr>
+          <td>Adapted monotonic stack</td>
+          <td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td>
+          <td>Maintains a stack and pops larger characters when another copy remains or when a duplicate is already represented.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Language and Performance Notes</h2>
+    <p>Concrete numbers from <code>stats.json.performance_by_language</code>:</p>
+    <ul>
+      <li>JavaScript has 3 accepted submissions. Fastest: <code>74 ms</code> from <code>deepseek-v4-flash-cloud-t0.0-javascript</code>. Slowest: <code>92 ms</code>. Memory ranges from <code>70.1 MB</code> to <code>81 MB</code>.</li>
+      <li>Python 3 has 5 accepted submissions. Fastest: <code>838 ms</code> from <code>qwen3.5-cloud-t1.0</code>. Slowest: <code>3170 ms</code> from <code>minimax-m2.7-cloud</code>. Memory ranges from <code>24.2 MB</code> to <code>43.9 MB</code>.</li>
+      <li>Go has 1 accepted submission: <code>194 ms</code> and <code>69.6 MB</code> from <code>kimi-k2.5-cloud-t0.0-golang</code>.</li>
+    </ul>
+    <p>The fixed 26-letter alphabet makes the positions-pointer and suffix-mask approaches practical. In Python, avoid building a full <code>n x 26</code> table unless you are careful with storage; position lists plus last occurrences are simpler and memory-light.</p>
+  </section>
+
+  <section>
+    <h2>Failure Patterns From Stats</h2>
+    <p>The recorded failed submissions are <code>12</code> Wrong Answer and <code>1</code> Runtime Error.</p>
+    <ul>
+      <li>The high Wrong Answer count points to logic mistakes around the feasibility rule: choosing a locally small character after it has passed another required letter's final occurrence.</li>
+      <li>Another likely WA source is confusing this task with a plain duplicate-removal problem and returning one copy of each distinct character without checking the operation semantics and official examples.</li>
+      <li>The single Runtime Error is consistent with pointer or table boundary errors, especially reading next-occurrence data at <code>n</code> or dereferencing an empty per-letter list.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Full Accepted Table</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Language</th>
+          <th>File</th>
+          <th>Runtime</th>
+          <th>Memory</th>
+          <th>Submission ID</th>
+          <th>Lines</th>
+          <th>Bytes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>claude-sonnet-4-6</td><td>python3</td><td><code>accepted__claude-sonnet-4-6__python3.py</code></td><td>1001 ms</td><td>24.2 MB</td><td>2003652836</td><td>36</td><td>1104</td></tr>
+        <tr><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>1174 ms</td><td>25.5 MB</td><td>2004495605</td><td>53</td><td>1886</td></tr>
+        <tr><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td>74 ms</td><td>72.6 MB</td><td>2004351922</td><td>49</td><td>1473</td></tr>
+        <tr><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>1260 ms</td><td>25.3 MB</td><td>2004086647</td><td>45</td><td>1540</td></tr>
+        <tr><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>90 ms</td><td>81 MB</td><td>2004126557</td><td>53</td><td>1623</td></tr>
+        <tr><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>92 ms</td><td>70.1 MB</td><td>2004531064</td><td>53</td><td>1386</td></tr>
+        <tr><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>194 ms</td><td>69.6 MB</td><td>2003816925</td><td>44</td><td>1002</td></tr>
+        <tr><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>3170 ms</td><td>43.9 MB</td><td>2003655349</td><td>38</td><td>1474</td></tr>
+        <tr><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>838 ms</td><td>25.2 MB</td><td>2003656019</td><td>64</td><td>2475</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>

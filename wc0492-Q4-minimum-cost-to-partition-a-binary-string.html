@@ -1,0 +1,336 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual: Minimum Cost to Partition a Binary String</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --text: #172033;
+      --muted: #5b6475;
+      --line: #dfe4ee;
+      --accent: #0f766e;
+      --code: #f1f5f9;
+      --warn: #8a4b10;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 20px 56px;
+    }
+    header {
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 22px;
+      padding-bottom: 18px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 28px 0 10px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 6px;
+      font-size: 21px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 17px;
+    }
+    p { margin: 8px 0; }
+    ul, ol { padding-left: 24px; }
+    li { margin: 5px 0; }
+    code {
+      background: var(--code);
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      overflow-x: auto;
+      background: #111827;
+      color: #f9fafb;
+      padding: 14px;
+      border-radius: 8px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      background: var(--panel);
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #e8f3f1;
+      color: #123f3b;
+      font-weight: 700;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .callout {
+      background: var(--panel);
+      border-left: 4px solid var(--accent);
+      padding: 10px 14px;
+      margin: 12px 0;
+    }
+    .warning {
+      background: #fff7ed;
+      border-left-color: var(--warn);
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Minimum Cost to Partition a Binary String</h1>
+    <p class="meta">Problem id: <code>wc0492-Q4-minimum-cost-to-partition-a-binary-string</code>. Difficulty: Hard. Function: <code>minCost(s, encCost, flatCost)</code>.</p>
+  </header>
+
+  <h2>Provenance</h2>
+  <p>This manual was built from the local workspace files <code>problem.md</code>, <code>stats.json</code>, and the 18 <code>accepted__*</code> solution files.</p>
+  <ul>
+    <li>Generator metadata in <code>stats.json</code>: tool <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-16T20:21:39.293334+00:00</code>.</li>
+    <li>Topic tags: string, divide-and-conquer, prefix-sum.</li>
+    <li>Accepted source languages present: C++, Go, Java, JavaScript, Python 3, Rust, TypeScript.</li>
+    <li>Observed failed submission status count: <code>Memory Limit Exceeded: 3</code>.</li>
+  </ul>
+
+  <h2>Problem Statement</h2>
+  <p>You are given a binary string <code>s</code> and two positive integers <code>encCost</code> and <code>flatCost</code>. Character <code>'1'</code> marks a sensitive element and <code>'0'</code> marks a non-sensitive element.</p>
+  <p>The whole string starts as one segment. For any segment of length <code>L</code> containing <code>X</code> ones, its unsplit cost is:</p>
+  <ul>
+    <li><code>flatCost</code> if <code>X == 0</code>.</li>
+    <li><code>L * X * encCost</code> if <code>X &gt; 0</code>.</li>
+  </ul>
+  <p>If a segment has even length, it may be split into exactly two contiguous equal-length halves. The cost after splitting is the sum of the optimal costs of the two halves. Return the minimum total cost over all valid partitions.</p>
+  <p>Constraints: <code>1 &lt;= s.length &lt;= 100000</code>, <code>s</code> is binary, and <code>1 &lt;= encCost, flatCost &lt;= 100000</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The only legal split is a bisection of an even-length segment. That means the partition choices form a binary recursion tree rooted at the whole string. For every reachable segment, choose the cheaper of keeping it whole or splitting it into its two equal halves.</p>
+  <div class="callout">
+    <p>The key observation from the accepted files is that every reachable segment length is <code>oddPart(n) * 2^k</code>, aligned on that length. There are only <code>O(n)</code> such segment nodes in the full split tree, not <code>O(n^2)</code> arbitrary substrings.</p>
+  </div>
+
+  <h2>Worked Example</h2>
+  <p>For <code>s = "1010"</code>, <code>encCost = 2</code>, <code>flatCost = 1</code>:</p>
+  <ol>
+    <li>Keep whole: length <code>4</code>, ones <code>2</code>, cost <code>4 * 2 * 2 = 16</code>.</li>
+    <li>Split into <code>"10"</code> and <code>"10"</code>: each has cost <code>2 * 1 * 2 = 4</code>, total <code>8</code>.</li>
+    <li>Split both halves into single characters: <code>"1"</code> costs <code>1 * 1 * 2 = 2</code>, <code>"0"</code> costs <code>flatCost = 1</code>, total <code>2 + 1 + 2 + 1 = 6</code>.</li>
+  </ol>
+  <p>The minimum is <code>6</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Expected</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>s = "1010", encCost = 3, flatCost = 10</code></td>
+        <td><code>12</code></td>
+        <td>The two length-2 halves cost <code>6 + 6</code>; splitting to singles would cost <code>3 + 10 + 3 + 10 = 26</code>.</td>
+      </tr>
+      <tr>
+        <td><code>s = "00", encCost = 1, flatCost = 2</code></td>
+        <td><code>2</code></td>
+        <td>The whole segment contains no ones, so the flat cost <code>2</code> beats splitting into two zero segments costing <code>4</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <p>Precompute prefix sums of ones so that <code>ones(l, r)</code> is available in <code>O(1)</code>. Then evaluate the split tree.</p>
+  <pre><code>cost(l, len):
+    x = number of '1' in s[l : l + len]
+    keep = flatCost if x == 0 else len * x * encCost
+    if len is odd:
+        return keep
+    half = len / 2
+    split = cost(l, half) + cost(l + half, half)
+    return min(keep, split)</code></pre>
+  <p>The recursive version is direct and has recursion depth at most <code>log2(n)</code>. The bottom-up version used by several accepted solutions starts from the odd-length base blocks and merges upward.</p>
+  <p>Let <code>base = n</code> with all powers of two removed, and let <code>blocks = n / base</code>. Initialize optimal costs for all aligned segments of length <code>base</code>, then combine adjacent pairs until the full string is reached. This avoids recursion and uses only the previous DP level.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>def minCost(s, encCost, flatCost):
+    n = len(s)
+    pref = [0] * (n + 1)
+    for i, ch in enumerate(s):
+        pref[i + 1] = pref[i] + (ch == '1')
+
+    base = n
+    levels = 0
+    while base % 2 == 0:
+        base //= 2
+        levels += 1
+
+    def segment_cost(start, length):
+        ones = pref[start + length] - pref[start]
+        return flatCost if ones == 0 else length * ones * encCost
+
+    dp = [segment_cost(i, base) for i in range(0, n, base)]
+
+    for level in range(1, levels + 1):
+        length = base &lt;&lt; level
+        next_dp = []
+        for j in range(len(dp) // 2):
+            start = j * length
+            keep = segment_cost(start, length)
+            split = dp[2 * j] + dp[2 * j + 1]
+            next_dp.append(min(keep, split))
+        dp = next_dp
+
+    return dp[0]</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use 64-bit integer arithmetic for costs; the maximum direct term can be <code>100000 * 100000 * 100000 = 10^15</code>.</li>
+    <li>Build <code>prefix[i + 1]</code> from <code>s[i]</code>; use half-open ranges in new code to avoid off-by-one errors.</li>
+    <li>Only split even-length segments and only into equal halves.</li>
+    <li>For zero-one segments, compare the flat cost for the whole segment against the split cost; do not assume smaller zero-only pieces are better.</li>
+    <li>Memoize recursive DFS if using a generic function form. A pure tree traversal over this split structure is already linear in the number of reachable nodes, but memoization makes the intended state model explicit.</li>
+    <li>Return the integer result in the platform's expected type: <code>long long</code>, <code>long</code>, <code>int64</code>, <code>i64</code>, or JavaScript <code>number</code>.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <div class="callout warning">
+    <ul>
+      <li>Trying all partition points is wrong. The problem does not allow arbitrary cuts, only equal bisection of even-length segments.</li>
+      <li>Using a usual interval DP over all substrings is unnecessary and likely too large for <code>n = 100000</code>.</li>
+      <li>Greedily splitting whenever the current segment is expensive can fail because both children may have zero-only flat costs or different one densities.</li>
+      <li>Charging zero-only segments by length is wrong; any segment with <code>X == 0</code> costs exactly <code>flatCost</code>.</li>
+      <li>Using 32-bit integers overflows on high constraints.</li>
+      <li>For bottom-up DP, allocating a full dense table by level and index can waste memory. Only the previous level is needed.</li>
+    </ul>
+  </div>
+
+  <h2>Accepted Algorithm Families</h2>
+  <div class="grid">
+    <section class="box">
+      <h3>Recursive DFS over equal halves</h3>
+      <p>Examples include accepted Go and Rust submissions. The function computes the keep cost, recursively computes two halves if the length is even, and returns the minimum. Prefix sums provide constant-time ones counts.</p>
+      <p>Representative files: <code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code>, <code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code>.</p>
+    </section>
+    <section class="box">
+      <h3>Bottom-up dyadic DP</h3>
+      <p>Examples include Java, Python, and JavaScript submissions. They remove powers of two from <code>n</code> to find the smallest unsplittable aligned block, initialize those blocks, then merge pairs upward.</p>
+      <p>Representative files: <code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code>, <code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code>, <code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code>.</p>
+    </section>
+  </div>
+  <p>Both families run in <code>O(n)</code> time over the reachable segment tree. Space is <code>O(n)</code> for prefix sums plus either recursion stack or one DP level.</p>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The following notes are taken directly from <code>stats.json.performance_by_language</code>. They describe the accepted submissions in this workspace, not universal benchmark rankings.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted Count</th><th>Runtime Range</th><th>Memory Range</th><th>Practical Note</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>C++</td><td>1</td><td>2926 ms</td><td>513.2 MB</td><td>The single C++ accepted entry is unusually heavy here; avoid full memo tables keyed by large objects.</td>
+      </tr>
+      <tr>
+        <td>Go</td><td>2</td><td>50 ms to 85 ms</td><td>9.7 MB to 24.4 MB</td><td>Recursive DFS with prefix sums is concise and fast enough; use <code>int64</code> for costs.</td>
+      </tr>
+      <tr>
+        <td>Java</td><td>5</td><td>35 ms to 55 ms</td><td>47.4 MB to 58 MB</td><td>Bottom-up arrays perform well. Use <code>long</code> for all cost expressions before multiplication.</td>
+      </tr>
+      <tr>
+        <td>JavaScript</td><td>4</td><td>134 ms to 851 ms</td><td>71.5 MB to 94.5 MB</td><td>Use numeric arrays and avoid string-heavy state keys. JavaScript <code>number</code> safely represents costs up to about <code>10^15</code>.</td>
+      </tr>
+      <tr>
+        <td>Python 3</td><td>4</td><td>1253 ms to 1666 ms</td><td>26.1 MB to 26.9 MB</td><td>Python accepted solutions rely on the linear number of states. Bottom-up DP avoids recursion overhead.</td>
+      </tr>
+      <tr>
+        <td>Rust</td><td>1</td><td>27 ms</td><td>2.8 MB</td><td>The accepted Rust DFS is the fastest and lowest-memory entry in this sample. Keep slices and integer types simple.</td>
+      </tr>
+      <tr>
+        <td>TypeScript</td><td>1</td><td>111 ms</td><td>71.9 MB</td><td>The TypeScript accepted entry mirrors the JavaScript approach; prefer array-indexed DP over maps.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports three failed submissions with status <code>Memory Limit Exceeded</code>. The likely failure pattern is materializing too many interval states or storing too much per-node metadata. The reachable split tree is linear, so a solution should not need all arbitrary substrings, a two-dimensional DP table, or memo keys for impossible intervals.</p>
+  <ul>
+    <li>Use prefix sums instead of storing substring contents or counting ones repeatedly.</li>
+    <li>Use the aligned split tree only: start, length, and equal halves.</li>
+    <li>For bottom-up DP, keep only the previous level of costs.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Lines</th>
+        <th>Bytes</th>
+        <th>Submission ID</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>1666 ms</td><td>26.1 MB</td><td>43</td><td>1297</td><td>2004497584</td></tr>
+      <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>53 ms</td><td>47.4 MB</td><td>27</td><td>891</td><td>2004369830</td></tr>
+      <tr><td>3</td><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td>851 ms</td><td>94.3 MB</td><td>34</td><td>945</td><td>2004353811</td></tr>
+      <tr><td>4</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>1253 ms</td><td>26.4 MB</td><td>37</td><td>1176</td><td>2004087911</td></tr>
+      <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>47 ms</td><td>48.9 MB</td><td>54</td><td>1582</td><td>2004121875</td></tr>
+      <tr><td>6</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>200 ms</td><td>94.5 MB</td><td>77</td><td>2001</td><td>2004127404</td></tr>
+      <tr><td>7</td><td>glm-5-cloud-t0.8-java</td><td>java</td><td><code>accepted__glm-5-cloud-t0.8-java__java.java</code></td><td>55 ms</td><td>58 MB</td><td>54</td><td>1638</td><td>2004527581</td></tr>
+      <tr><td>8</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>373 ms</td><td>85.7 MB</td><td>45</td><td>1214</td><td>2004533123</td></tr>
+      <tr><td>9</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>2926 ms</td><td>513.2 MB</td><td>34</td><td>1172</td><td>2003797137</td></tr>
+      <tr><td>10</td><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>50 ms</td><td>9.7 MB</td><td>29</td><td>746</td><td>2003818993</td></tr>
+      <tr><td>11</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>35 ms</td><td>48.4 MB</td><td>48</td><td>1488</td><td>2003738640</td></tr>
+      <tr><td>12</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>134 ms</td><td>71.5 MB</td><td>29</td><td>794</td><td>2003590433</td></tr>
+      <tr><td>13</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>27 ms</td><td>2.8 MB</td><td>35</td><td>1095</td><td>2003802911</td></tr>
+      <tr><td>14</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>111 ms</td><td>71.9 MB</td><td>29</td><td>810</td><td>2003664926</td></tr>
+      <tr><td>15</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>1506 ms</td><td>26.9 MB</td><td>43</td><td>1483</td><td>2003271566</td></tr>
+      <tr><td>16</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>1604 ms</td><td>26.3 MB</td><td>65</td><td>2790</td><td>2003602127</td></tr>
+      <tr><td>17</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>85 ms</td><td>24.4 MB</td><td>37</td><td>643</td><td>2003978008</td></tr>
+      <tr><td>18</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>45 ms</td><td>48 MB</td><td>36</td><td>952</td><td>2004010066</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

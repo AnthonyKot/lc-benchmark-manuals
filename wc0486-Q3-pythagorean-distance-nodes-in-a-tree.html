@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0486-Q3 Manual - Pythagorean Distance Nodes in a Tree</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1d2733;
+      --muted: #5c6b7a;
+      --line: #d7dee8;
+      --panel: #f7f9fc;
+      --accent: #0f6b6e;
+      --code: #eef3f7;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.5;
+    }
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 28px 24px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      color: var(--accent);
+      font-size: 22px;
+    }
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 17px;
+    }
+    p, li {
+      font-size: 15px;
+    }
+    .meta, .note {
+      color: var(--muted);
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    code {
+      background: var(--code);
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-family: Consolas, Monaco, monospace;
+      font-size: 0.94em;
+    }
+    pre {
+      overflow-x: auto;
+      background: #101923;
+      color: #f2f6fa;
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #edf3f8;
+      font-weight: 700;
+    }
+    .nowrap {
+      white-space: nowrap;
+    }
+    .small {
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Pythagorean Distance Nodes in a Tree</h1>
+  <p class="meta">Manual for problem id <code>wc0486-Q3-pythagorean-distance-nodes-in-a-tree</code>.</p>
+
+  <h2>Provenance</h2>
+  <div class="panel">
+    <p><strong>Source artifacts:</strong> <code>problem.md</code>, <code>stats.json</code>, and 25 <code>accepted__*</code> submission files in this directory.</p>
+    <p><strong>Generated stats metadata:</strong> generator tool <code>codex</code>, generator model <code>gpt-5.5</code>, generated at <code>2026-05-16T19:41:22.096747+00:00</code>.</p>
+    <p><strong>Problem metadata:</strong> Medium difficulty, function <code>specialNodes</code>, arity 5, tags <code>tree</code> and <code>breadth-first-search</code>.</p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an undirected tree with <code>n</code> nodes numbered from <code>0</code> to <code>n - 1</code>, represented by <code>edges</code>. You are also given three distinct target nodes <code>x</code>, <code>y</code>, and <code>z</code>.</p>
+  <p>For every node <code>u</code>, compute its distances to the three targets: <code>dx = dist(u, x)</code>, <code>dy = dist(u, y)</code>, and <code>dz = dist(u, z)</code>. A node is special when these three distances, sorted in ascending order as <code>a, b, c</code>, satisfy <code>a*a + b*b == c*c</code>.</p>
+  <p>Return the number of special nodes. The tree has <code>4 &lt;= n &lt;= 100000</code>, <code>edges.length == n - 1</code>, and the input is guaranteed to be a valid tree.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The tree property guarantees exactly one simple path between any two nodes, so unweighted BFS from a target gives the distance from that target to every node in linear time. The problem is therefore not about path search per node; it is about reusing three global distance arrays.</p>
+  <p>The key observation is that only three sources matter. Run BFS from <code>x</code>, from <code>y</code>, and from <code>z</code>. Then each node can be checked independently in constant time.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>n = 4</code>, <code>edges = [[0,1],[0,2],[0,3]]</code>, <code>x = 1</code>, <code>y = 2</code>, <code>z = 3</code>, the tree is a star centered at node <code>0</code>.</p>
+  <table>
+    <thead><tr><th>Node</th><th>Distances to x,y,z</th><th>Sorted</th><th>Special?</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td>1, 1, 1</td><td>1, 1, 1</td><td>No: <code>1 + 1 != 1</code></td></tr>
+      <tr><td>1</td><td>0, 2, 2</td><td>0, 2, 2</td><td>Yes: <code>0*0 + 2*2 == 2*2</code></td></tr>
+      <tr><td>2</td><td>2, 0, 2</td><td>0, 2, 2</td><td>Yes</td></tr>
+      <tr><td>3</td><td>2, 2, 0</td><td>0, 2, 2</td><td>Yes</td></tr>
+    </tbody>
+  </table>
+  <p>The answer is <code>3</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead><tr><th>Input</th><th>Output</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><code>n = 4, edges = [[0,1],[1,2],[2,3]], x = 0, y = 3, z = 2</code></td>
+        <td><code>0</code></td>
+        <td>No node has three sorted distances satisfying <code>a*a + b*b == c*c</code>.</td>
+      </tr>
+      <tr>
+        <td><code>n = 4, edges = [[0,1],[1,2],[1,3]], x = 1, y = 3, z = 0</code></td>
+        <td><code>1</code></td>
+        <td>Only node <code>1</code> has sorted distances <code>0, 1, 1</code>, which satisfies the rule.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Build an adjacency list for the undirected tree.</li>
+    <li>Run BFS from <code>x</code> to get <code>dx</code>, from <code>y</code> to get <code>dy</code>, and from <code>z</code> to get <code>dz</code>.</li>
+    <li>For each node <code>i</code>, sort the three values <code>[dx[i], dy[i], dz[i]]</code>.</li>
+    <li>Increment the answer if <code>a*a + b*b == c*c</code>.</li>
+  </ol>
+  <p><strong>Complexity:</strong> building the graph is <code>O(n)</code>, the three BFS traversals are <code>O(n)</code>, and the final scan is <code>O(n)</code>. Memory is <code>O(n)</code> for adjacency and three distance arrays.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>from collections import deque
+
+class Solution:
+    def specialNodes(self, n, edges, x, y, z):
+        graph = [[] for _ in range(n)]
+        for a, b in edges:
+            graph[a].append(b)
+            graph[b].append(a)
+
+        def bfs(src):
+            dist = [-1] * n
+            dist[src] = 0
+            q = deque([src])
+            while q:
+                u = q.popleft()
+                for v in graph[u]:
+                    if dist[v] == -1:
+                        dist[v] = dist[u] + 1
+                        q.append(v)
+            return dist
+
+        dx = bfs(x)
+        dy = bfs(y)
+        dz = bfs(z)
+
+        ans = 0
+        for i in range(n):
+            a, b, c = sorted((dx[i], dy[i], dz[i]))
+            if a * a + b * b == c * c:
+                ans += 1
+        return ans</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use zero-based node ids exactly as given by the constraints.</li>
+    <li>Add each edge in both directions.</li>
+    <li>Initialize the source distance to <code>0</code>, not <code>1</code>.</li>
+    <li>Run three traversals, not one traversal and not a BFS per candidate node.</li>
+    <li>Sort the three distances or check all three possible hypotenuse choices.</li>
+    <li>Use integer arithmetic. The largest distance is below <code>100000</code>, so squares fit in 32-bit signed int, but wider integers are harmless in C++/Java.</li>
+    <li>Return the count of nodes, not the list of nodes.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li><strong>Running shortest paths from every node:</strong> this becomes <code>O(n^2)</code> and is unnecessary.</li>
+    <li><strong>Checking only <code>dx*dx + dy*dy == dz*dz</code>:</strong> the largest distance may be any of the three values, so sort first or test all permutations.</li>
+    <li><strong>Rejecting zeros:</strong> the official examples count triples such as <code>0, 2, 2</code> and <code>0, 1, 1</code> as valid because <code>0^2 + a^2 = a^2</code>.</li>
+    <li><strong>Using DFS recursion in Python on a path-shaped tree:</strong> recursion depth can exceed the default limit for <code>n = 100000</code>. BFS with a deque avoids that risk.</li>
+    <li><strong>Assuming weighted or one-based input:</strong> the stated problem is an unweighted zero-based tree.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <p>All accepted files follow the same core family: linear graph construction, three complete tree traversals from the target nodes, and a final linear Pythagorean count. Most submissions use BFS queues; some Java variants use iterative DFS-style stack traversal, which is equivalent on an unweighted tree because each node is reached once along the unique tree path.</p>
+  <table>
+    <thead><tr><th>Family</th><th>Seen in accepted files</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Adjacency list + 3 BFS arrays</td>
+        <td>Python, C++, JavaScript, TypeScript, Go, Rust, most Java</td>
+        <td>The most direct implementation of the official hints.</td>
+      </tr>
+      <tr>
+        <td>Compressed adjacency arrays + iterative traversal</td>
+        <td><code>accepted__codex-agent-gpt-5.5-high-java__java.java</code></td>
+        <td>Lower object overhead and very fast Java runtime, but more code.</td>
+      </tr>
+      <tr>
+        <td>Sort-three or all-hypotenuse test</td>
+        <td>Both variants appear</td>
+        <td>Sorting three values is simple; checking <code>aa+bb==cc || aa+cc==bb || bb+cc==aa</code> also works.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The following concrete notes come from <code>stats.json.performance_by_language</code>. Submission runtimes are platform measurements, so compare them as rough guidance rather than absolute guarantees.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted Count</th><th>Fastest Runtime</th><th>Slowest Runtime</th><th>Memory Range</th><th>Practical Note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>cpp</td><td>1</td><td>321 ms</td><td>321 ms</td><td>377.9 MB</td><td>One vector-based BFS solution accepted; memory measurement is high for this run.</td></tr>
+      <tr><td>golang</td><td>2</td><td>107 ms</td><td>133 ms</td><td>22 MB to 38.2 MB</td><td>Go is both fast and memory-light here with queue-based traversal.</td></tr>
+      <tr><td>java</td><td>6</td><td>36 ms</td><td>158 ms</td><td>200.3 MB to 256.7 MB</td><td>The fastest accepted run is Java with array-backed adjacency; object-heavy versions still pass comfortably.</td></tr>
+      <tr><td>javascript</td><td>4</td><td>661 ms</td><td>802 ms</td><td>135 MB to 143.1 MB</td><td>Avoid <code>Array.shift()</code> for BFS queues; use a head index over an array.</td></tr>
+      <tr><td>python3</td><td>10</td><td>557 ms</td><td>752 ms</td><td>63.7 MB to 69.1 MB</td><td><code>collections.deque</code> BFS is accepted and concise; recursion is not needed.</td></tr>
+      <tr><td>rust</td><td>1</td><td>74 ms</td><td>74 ms</td><td>13.7 MB</td><td>The Rust solution is very fast and has the lowest memory in the accepted set.</td></tr>
+      <tr><td>typescript</td><td>1</td><td>642 ms</td><td>642 ms</td><td>134.5 MB</td><td>Similar to JavaScript: use an indexed queue and plain arrays.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports <code>failed_submission_status_counts</code> as an empty object, so this artifact set contains no recorded wrong-answer, TLE, runtime-error, or compile-error submissions. The failure risks above are inferred from the problem constraints and the accepted implementations, not from observed failed submissions.</p>
+
+  <h2>Full Accepted Table</h2>
+  <table class="small">
+    <thead>
+      <tr>
+        <th>#</th><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Submission ID</th><th>Lines</th><th>Bytes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>claude-sonnet-4-6</td><td>python3</td><td><code>accepted__claude-sonnet-4-6__python3.py</code></td><td class="nowrap">622 ms</td><td class="nowrap">64.4 MB</td><td>2003533863</td><td>32</td><td>902</td></tr>
+      <tr><td>2</td><td>codex-agent-gpt-5.5-high-java</td><td>java</td><td><code>accepted__codex-agent-gpt-5.5-high-java__java.java</code></td><td class="nowrap">36 ms</td><td class="nowrap">256.7 MB</td><td>2003966559</td><td>100</td><td>2576</td></tr>
+      <tr><td>3</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td class="nowrap">602 ms</td><td class="nowrap">63.7 MB</td><td>2004495743</td><td>34</td><td>991</td></tr>
+      <tr><td>4</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td class="nowrap">158 ms</td><td class="nowrap">200.3 MB</td><td>2004367536</td><td>54</td><td>1500</td></tr>
+      <tr><td>5</td><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td class="nowrap">661 ms</td><td class="nowrap">135 MB</td><td>2004352059</td><td>46</td><td>1094</td></tr>
+      <tr><td>6</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td class="nowrap">619 ms</td><td class="nowrap">63.8 MB</td><td>2004086730</td><td>35</td><td>1028</td></tr>
+      <tr><td>7</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td class="nowrap">122 ms</td><td class="nowrap">200.4 MB</td><td>2004121049</td><td>50</td><td>1461</td></tr>
+      <tr><td>8</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td class="nowrap">728 ms</td><td class="nowrap">136.5 MB</td><td>2004126613</td><td>48</td><td>1202</td></tr>
+      <tr><td>9</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td class="nowrap">607 ms</td><td class="nowrap">63.9 MB</td><td>2004092174</td><td>36</td><td>1040</td></tr>
+      <tr><td>10</td><td>glm-5-cloud</td><td>python3</td><td><code>accepted__glm-5-cloud__python3.py</code></td><td class="nowrap">640 ms</td><td class="nowrap">64.3 MB</td><td>2003680184</td><td>37</td><td>1192</td></tr>
+      <tr><td>11</td><td>glm-5-cloud-t0.0</td><td>python3</td><td><code>accepted__glm-5-cloud-t0.0__python3.py</code></td><td class="nowrap">709 ms</td><td class="nowrap">67.7 MB</td><td>2003672155</td><td>37</td><td>1145</td></tr>
+      <tr><td>12</td><td>glm-5-cloud-t0.8-java</td><td>java</td><td><code>accepted__glm-5-cloud-t0.8-java__java.java</code></td><td class="nowrap">143 ms</td><td class="nowrap">218.3 MB</td><td>2004525720</td><td>49</td><td>1414</td></tr>
+      <tr><td>13</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td class="nowrap">802 ms</td><td class="nowrap">137.1 MB</td><td>2004531223</td><td>53</td><td>1393</td></tr>
+      <tr><td>14</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td class="nowrap">600 ms</td><td class="nowrap">64.4 MB</td><td>2003724142</td><td>33</td><td>933</td></tr>
+      <tr><td>15</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td class="nowrap">321 ms</td><td class="nowrap">377.9 MB</td><td>2003795124</td><td>53</td><td>1360</td></tr>
+      <tr><td>16</td><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td class="nowrap">107 ms</td><td class="nowrap">22 MB</td><td>2003817040</td><td>52</td><td>1202</td></tr>
+      <tr><td>17</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td class="nowrap">104 ms</td><td class="nowrap">225 MB</td><td>2003736945</td><td>65</td><td>1742</td></tr>
+      <tr><td>18</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td class="nowrap">665 ms</td><td class="nowrap">143.1 MB</td><td>2003589020</td><td>58</td><td>1410</td></tr>
+      <tr><td>19</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td class="nowrap">74 ms</td><td class="nowrap">13.7 MB</td><td>2003801172</td><td>56</td><td>1535</td></tr>
+      <tr><td>20</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td class="nowrap">642 ms</td><td class="nowrap">134.5 MB</td><td>2003663125</td><td>41</td><td>1162</td></tr>
+      <tr><td>21</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td class="nowrap">646 ms</td><td class="nowrap">69.1 MB</td><td>2003270357</td><td>39</td><td>1187</td></tr>
+      <tr><td>22</td><td>qwen3.5-cloud</td><td>python3</td><td><code>accepted__qwen3.5-cloud__python3.py</code></td><td class="nowrap">752 ms</td><td class="nowrap">67.9 MB</td><td>2003505499</td><td>38</td><td>1268</td></tr>
+      <tr><td>23</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td class="nowrap">557 ms</td><td class="nowrap">64.7 MB</td><td>2003516231</td><td>37</td><td>1037</td></tr>
+      <tr><td>24</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td class="nowrap">133 ms</td><td class="nowrap">38.2 MB</td><td>2003976250</td><td>59</td><td>1015</td></tr>
+      <tr><td>25</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td class="nowrap">123 ms</td><td class="nowrap">232.5 MB</td><td>2004008105</td><td>56</td><td>1598</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

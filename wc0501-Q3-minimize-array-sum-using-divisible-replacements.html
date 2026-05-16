@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual: Minimize Array Sum Using Divisible Replacements</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17212b;
+      --muted: #586575;
+      --line: #d8dee8;
+      --soft: #f5f7fa;
+      --accent: #1f6feb;
+      --warn: #8a4b00;
+      --bad: #9b1c1c;
+      --good: #0f6b45;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: #ffffff;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 20px 56px;
+    }
+    h1 {
+      margin: 0 0 6px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 22px;
+    }
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 17px;
+    }
+    p {
+      margin: 8px 0;
+    }
+    code {
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: var(--soft);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+    pre code {
+      padding: 0;
+      background: transparent;
+      font-size: 14px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      font-size: 14px;
+    }
+    th, td {
+      padding: 8px 9px;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #eef3f8;
+      font-weight: 700;
+    }
+    ul, ol {
+      padding-left: 23px;
+    }
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .box {
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+    }
+    .ok {
+      color: var(--good);
+      font-weight: 700;
+    }
+    .warn {
+      color: var(--warn);
+      font-weight: 700;
+    }
+    .bad {
+      color: var(--bad);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Minimize Array Sum Using Divisible Replacements</h1>
+  <p class="meta">Problem id: <code>wc0501-Q3-minimize-array-sum-using-divisible-replacements</code></p>
+
+  <h2>Provenance</h2>
+  <p>This manual was assembled from the local workspace artifacts: <code>problem.md</code>, <code>stats.json</code>, and the <code>accepted__*</code> solution files in this directory.</p>
+  <ul>
+    <li>Generator metadata in <code>stats.json</code>: tool <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-16T22:55:50.996020+00:00</code>.</li>
+    <li>Difficulty: Medium. Function name: <code>minArraySum</code>. Arity: 1.</li>
+    <li>Accepted submissions available locally: 23.</li>
+    <li>Observed failed status count: <code>Time Limit Exceeded</code>: 1.</li>
+  </ul>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer array <code>nums</code>. You may perform the following operation any number of times:</p>
+  <ul>
+    <li>Choose indices <code>a</code> and <code>b</code> such that <code>nums[a] % nums[b] == 0</code>.</li>
+    <li>Replace <code>nums[a]</code> with <code>nums[b]</code>.</li>
+  </ul>
+  <p>Return the minimum possible sum of the array after any number of operations.</p>
+  <p>Constraints from the statement: <code>1 &lt;= nums.length &lt;= 10^5</code> and <code>1 &lt;= nums[i] &lt;= 10^5</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The array values form a divisibility relation. A value <code>x</code> can be reduced to any original array value <code>d</code> that divides <code>x</code>. Chained operations do not create a better non-original value; every replacement value is copied from some existing element. Therefore each element should independently become the smallest distinct value present in <code>nums</code> that divides it.</p>
+  <p>The target sum is:</p>
+  <pre><code>sum(min(d for d in distinct(nums) if x % d == 0) for x in nums)</code></pre>
+  <p>Since every <code>x</code> divides itself and is present, the minimum divisor always exists.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [4, 2, 8, 3]</code>, the distinct present values are <code>{2, 3, 4, 8}</code>.</p>
+  <table>
+    <thead><tr><th>Original value</th><th>Present divisors</th><th>Best replacement</th></tr></thead>
+    <tbody>
+      <tr><td><code>4</code></td><td><code>2, 4</code></td><td><code>2</code></td></tr>
+      <tr><td><code>2</code></td><td><code>2</code></td><td><code>2</code></td></tr>
+      <tr><td><code>8</code></td><td><code>2, 4, 8</code></td><td><code>2</code></td></tr>
+      <tr><td><code>3</code></td><td><code>3</code></td><td><code>3</code></td></tr>
+    </tbody>
+  </table>
+  <p>The final minimum array can be <code>[2, 2, 2, 3]</code>, so the answer is <code>9</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead><tr><th>Input</th><th>Output</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td><code>nums = [3,6,2]</code></td><td><code>7</code></td><td><code>6</code> can become <code>2</code>; <code>3</code> and <code>2</code> stay as they are, giving <code>[3,2,2]</code>.</td></tr>
+      <tr><td><code>nums = [7,5,9]</code></td><td><code>21</code></td><td>No value has a smaller present divisor, so the sum is unchanged.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Find <code>maxVal = max(nums)</code>.</li>
+    <li>Mark which values are present in the input.</li>
+    <li>Create an array <code>best</code>, where <code>best[x]</code> will store the smallest present divisor of <code>x</code>.</li>
+    <li>Process present values <code>d</code> in increasing order. For every multiple <code>m</code> of <code>d</code>, set <code>best[m]</code> to <code>d</code> if it is not already set.</li>
+    <li>Return <code>sum(best[x] for x in nums)</code>.</li>
+  </ol>
+  <p>Because divisors are visited from small to large, the first present divisor assigned to a multiple is the optimal replacement for that multiple. This is a sieve over multiples, with time about <code>maxVal * (1/1 + 1/2 + ...)</code> over present values, bounded comfortably for <code>maxVal = 100000</code>.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code class="language-python">class Solution:
+    def minArraySum(self, nums: list[int]) -&gt; int:
+        max_val = max(nums)
+        present = [False] * (max_val + 1)
+        for x in nums:
+            present[x] = True
+
+        best = [0] * (max_val + 1)
+        for d in range(1, max_val + 1):
+            if not present[d]:
+                continue
+            for m in range(d, max_val + 1, d):
+                if best[m] == 0:
+                    best[m] = d
+
+        return sum(best[x] for x in nums)</code></pre>
+  <p>Equivalent accepted variants initialize <code>best[x] = x</code> and only update multiples that are present, or count duplicates first and sum <code>count[value] * best[value]</code>.</p>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use a 64-bit return type for the sum in fixed-width languages: the maximum sum can reach <code>10^10</code>.</li>
+    <li>Base the sieve size on <code>max(nums)</code> or the constraint bound <code>100000</code>.</li>
+    <li>Only divisors that appear in the original input are legal replacement values.</li>
+    <li>Include <code>m = d</code> in the multiples loop, so each value can map to itself.</li>
+    <li>Do not require the target multiple to appear when filling <code>best</code>; filling all multiples is simple and accepted.</li>
+    <li>If optimizing with counts, remember duplicates contribute multiple times to the final sum.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li><span class="bad">Pairwise simulation:</span> repeatedly scanning all pairs is too slow and unnecessary.</li>
+    <li><span class="bad">Sorting and greedily changing adjacent values:</span> divisibility is not an adjacency relation.</li>
+    <li><span class="bad">Using the gcd of the whole array:</span> the replacement value must already exist as an array element.</li>
+    <li><span class="bad">Following only one operation:</span> an element may be reduced through divisibility logic to the smallest present divisor, but computing that directly is simpler than simulating chains.</li>
+    <li><span class="bad">Using 32-bit sum types:</span> <code>100000 * 100000</code> overflows signed 32-bit integers.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead><tr><th>Family</th><th>Local evidence</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Sieve all multiples of each distinct present value</td>
+        <td>Python, Java, JavaScript, TypeScript, Go submissions such as <code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code> and <code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code>.</td>
+        <td>Most direct pattern: mark present values, assign <code>best[m]</code> from small divisors.</td>
+      </tr>
+      <tr>
+        <td>Sieve only present multiples with duplicate counts</td>
+        <td>C++ and Rust examples such as <code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code> and <code>accepted__glm-5-cloud-t1.0-rust__rust.rs</code>.</td>
+        <td>Computes best replacements for distinct values and multiplies by frequency in the final sum.</td>
+      </tr>
+      <tr>
+        <td>Constraint-sized fixed arrays</td>
+        <td>Rust uses a fixed <code>100001</code> bound in <code>accepted__glm-5-cloud-t1.0-rust__rust.rs</code>.</td>
+        <td>A valid simplification because the maximum input value is <code>10^5</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>Concrete performance summary from <code>stats.json.performance_by_language</code>:</p>
+  <table>
+    <thead><tr><th>Language</th><th>Accepted count</th><th>Fastest runtime</th><th>Slowest runtime</th><th>Memory range</th><th>Practical note</th></tr></thead>
+    <tbody>
+      <tr><td>cpp</td><td>1</td><td>97 ms</td><td>97 ms</td><td>249.4 MB to 249.4 MB</td><td>Fast enough, but the observed C++ solution used noticeably high memory due to full-size vectors and platform overhead.</td></tr>
+      <tr><td>golang</td><td>3</td><td>40 ms</td><td>78 ms</td><td>12.7 MB to 44.3 MB</td><td>Good fit for simple integer slices; observed memory varies by implementation.</td></tr>
+      <tr><td>java</td><td>5</td><td>22 ms</td><td>182 ms</td><td>118.3 MB to 144 MB</td><td>Fastest observed language on runtime; memory is consistently around JVM-scale overhead.</td></tr>
+      <tr><td>javascript</td><td>4</td><td>79 ms</td><td>216 ms</td><td>78.2 MB to 94.3 MB</td><td>Use numeric arrays and loops; avoid pairwise checks.</td></tr>
+      <tr><td>python3</td><td>7</td><td>251 ms</td><td>998 ms</td><td>34.9 MB to 37.1 MB</td><td>Python passes with the sieve, but should avoid nested pair scans and unnecessary repeated sorting.</td></tr>
+      <tr><td>rust</td><td>2</td><td>30 ms</td><td>81 ms</td><td>3.7 MB to 3.7 MB</td><td>Excellent memory profile in the observed submissions.</td></tr>
+      <tr><td>typescript</td><td>1</td><td>79 ms</td><td>79 ms</td><td>85.8 MB to 85.8 MB</td><td>Same algorithmic considerations as JavaScript; keep loops simple.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> records one failed submission status: <span class="warn">Time Limit Exceeded</span>. That is consistent with approaches that compare many pairs or simulate operations until no changes remain. The accepted files avoid simulation and compute all best replacements with a divisibility sieve.</p>
+  <ul>
+    <li>Likely TLE shape: for every element, scan every other element as a possible replacement, leading toward <code>O(n^2)</code>.</li>
+    <li>Robust accepted shape: iterate over values up to <code>max(nums)</code>, not over all index pairs.</li>
+    <li>For <code>n = 100000</code>, the distinction is decisive: value-domain sieving is practical; pair-domain search is not.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Submission ID</th><th>Lines</th><th>Bytes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>494 ms</td><td>35.1 MB</td><td>2004500202</td><td>22</td><td>614</td></tr>
+      <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>37 ms</td><td>118.3 MB</td><td>2004372668</td><td>36</td><td>1033</td></tr>
+      <tr><td>3</td><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td>79 ms</td><td>78.2 MB</td><td>2004356153</td><td>28</td><td>642</td></tr>
+      <tr><td>4</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>298 ms</td><td>36.2 MB</td><td>2004089689</td><td>13</td><td>431</td></tr>
+      <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>32 ms</td><td>118.9 MB</td><td>2004122935</td><td>32</td><td>894</td></tr>
+      <tr><td>6</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>114 ms</td><td>90 MB</td><td>2004128395</td><td>26</td><td>637</td></tr>
+      <tr><td>7</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>251 ms</td><td>37.1 MB</td><td>2004095164</td><td>19</td><td>680</td></tr>
+      <tr><td>8</td><td>glm-5-cloud</td><td>python3</td><td><code>accepted__glm-5-cloud__python3.py</code></td><td>998 ms</td><td>36.2 MB</td><td>2003718298</td><td>14</td><td>449</td></tr>
+      <tr><td>9</td><td>glm-5-cloud-t0.8-java</td><td>java</td><td><code>accepted__glm-5-cloud-t0.8-java__java.java</code></td><td>182 ms</td><td>144 MB</td><td>2004529490</td><td>32</td><td>920</td></tr>
+      <tr><td>10</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>216 ms</td><td>94.3 MB</td><td>2004549691</td><td>38</td><td>883</td></tr>
+      <tr><td>11</td><td>glm-5-cloud-t1.0-rust</td><td>rust</td><td><code>accepted__glm-5-cloud-t1.0-rust__rust.rs</code></td><td>81 ms</td><td>3.7 MB</td><td>2004607710</td><td>27</td><td>808</td></tr>
+      <tr><td>12</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>525 ms</td><td>35.3 MB</td><td>2003728542</td><td>20</td><td>598</td></tr>
+      <tr><td>13</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>97 ms</td><td>249.4 MB</td><td>2003799840</td><td>39</td><td>1005</td></tr>
+      <tr><td>14</td><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>40 ms</td><td>44.3 MB</td><td>2003820624</td><td>32</td><td>630</td></tr>
+      <tr><td>15</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>22 ms</td><td>119.1 MB</td><td>2003741141</td><td>34</td><td>832</td></tr>
+      <tr><td>16</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>79 ms</td><td>92.2 MB</td><td>2003592514</td><td>39</td><td>854</td></tr>
+      <tr><td>17</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>30 ms</td><td>3.7 MB</td><td>2003815629</td><td>34</td><td>878</td></tr>
+      <tr><td>18</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>79 ms</td><td>85.8 MB</td><td>2003667314</td><td>31</td><td>623</td></tr>
+      <tr><td>19</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>514 ms</td><td>34.9 MB</td><td>2003288194</td><td>19</td><td>560</td></tr>
+      <tr><td>20</td><td>minimax-m2.7-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__minimax-m2.7-cloud-t1.0-golang__golang.go</code></td><td>47 ms</td><td>12.7 MB</td><td>2004959291</td><td>37</td><td>736</td></tr>
+      <tr><td>21</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>489 ms</td><td>34.9 MB</td><td>2003604904</td><td>21</td><td>604</td></tr>
+      <tr><td>22</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>78 ms</td><td>16.2 MB</td><td>2004554305</td><td>31</td><td>634</td></tr>
+      <tr><td>23</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>23 ms</td><td>118.6 MB</td><td>2004012308</td><td>34</td><td>875</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

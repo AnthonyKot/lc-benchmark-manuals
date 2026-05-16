@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0497-Q4-good-subsequence-queries Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2933;
+      --muted: #52606d;
+      --line: #d9e2ec;
+      --panel: #f5f7fa;
+      --accent: #0b6bcb;
+      --code: #102a43;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 28px 22px 48px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 17px;
+    }
+    p, li {
+      max-width: 92ch;
+    }
+    code, pre {
+      font-family: Consolas, "Courier New", monospace;
+      color: var(--code);
+    }
+    code {
+      background: #eef3f8;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      background: #f0f4f8;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12px 0 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #e9f2fb;
+    }
+    .note {
+      background: var(--panel);
+      border-left: 4px solid var(--accent);
+      padding: 12px 14px;
+      margin: 14px 0;
+    }
+    .meta {
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Good Subsequence Queries</h1>
+  <p class="meta">Problem id: <code>wc0497-Q4-good-subsequence-queries</code>. Function: <code>countGoodSubseq(nums, p, queries)</code>.</p>
+
+  <h2>Provenance</h2>
+  <p>This manual was assembled from the local files <code>problem.md</code>, <code>stats.json</code>, and the 13 local <code>accepted__*</code> submissions in this directory. The source problem is LeetCode “Good Subsequence Queries”, difficulty Hard, with generated metadata timestamp <code>2026-05-16T20:49:17.675359+00:00</code>.</p>
+  <p>The official hints in <code>problem.md</code> point to the main reduction: keep only elements divisible by <code>p</code>, divide them by <code>p</code>, and reason about whether the chosen reduced elements can have GCD exactly <code>1</code>.</p>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer array <code>nums</code> of length <code>n</code>, an integer <code>p</code>, and update queries <code>[ind, val]</code>. After each update, decide whether there exists a non-empty subsequence whose length is strictly less than <code>n</code> and whose GCD is exactly <code>p</code>. Return how many queries have such a subsequence.</p>
+  <p>Constraints are up to <code>5 * 10^4</code> for <code>n</code>, number of queries, values, and <code>p</code>, so recomputing over all subsequences or all large subsets is impossible.</p>
+
+  <h2>Problem Essence</h2>
+  <p>Every element in a subsequence with GCD <code>p</code> must be divisible by <code>p</code>. Divide each active element by <code>p</code>; the target becomes finding a non-empty subsequence with reduced GCD <code>1</code>.</p>
+  <p>If the GCD of all active multiples of <code>p</code> is a multiple larger than <code>p</code>, every active value shares that extra factor, so no subset can have GCD exactly <code>p</code>. The accepted family uses the fact that when the full set of active multiples has GCD <code>p</code>, the whole active set is immediately valid if not every array element is active, because its length is then less than <code>n</code>. The only delicate case is when all <code>n</code> elements are divisible by <code>p</code>; then using all elements is forbidden, so a proper subset must still have GCD <code>p</code>.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [4,8,12,16]</code>, <code>p = 2</code>, and <code>queries = [[0,3],[2,6]]</code>:</p>
+  <table>
+    <thead>
+      <tr><th>Query</th><th>Array After Update</th><th>Reason</th><th>Counts?</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>[0,3]</code></td>
+        <td><code>[3,8,12,16]</code></td>
+        <td>Multiples of <code>2</code> are <code>[8,12,16]</code>; their GCD is <code>4</code>, not <code>2</code>.</td>
+        <td>No</td>
+      </tr>
+      <tr>
+        <td><code>[2,6]</code></td>
+        <td><code>[3,8,6,16]</code></td>
+        <td>Multiples of <code>2</code> are <code>[8,6,16]</code>; their GCD is <code>2</code>. They occupy only 3 of 4 positions, so the active set itself is a proper subsequence.</td>
+        <td>Yes</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>The answer is <code>1</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Output</th><th>Key Point</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>nums = [4,5,7,8], p = 3, queries = [[0,6],[1,9],[2,3]]</code></td>
+        <td><code>2</code></td>
+        <td>After the second and third updates, multiples of <code>3</code> have GCD <code>3</code>.</td>
+      </tr>
+      <tr>
+        <td><code>nums = [5,7,9], p = 2, queries = [[1,4],[2,8]]</code></td>
+        <td><code>0</code></td>
+        <td>No update creates a subsequence with GCD exactly <code>2</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Maintain a segment tree over indices. Store <code>nums[i]</code> or <code>nums[i] / p</code> when <code>nums[i] % p == 0</code>; store <code>0</code> otherwise. GCD with <code>0</code> preserves the other side.</li>
+    <li>Maintain <code>activeCount</code>, the number of values divisible by <code>p</code>.</li>
+    <li>After each update, update <code>activeCount</code>, the array value, and one segment-tree leaf.</li>
+    <li>If <code>activeCount == 0</code>, no good subsequence exists.</li>
+    <li>If the active GCD is not <code>p</code> when storing raw values, or not <code>1</code> when storing divided values, no good subsequence exists under the simple GCD-family rule.</li>
+    <li>If <code>activeCount &lt; n</code>, the full active set is a proper subsequence, so count this query.</li>
+    <li>If <code>activeCount == n</code>, all elements are active and the full array is forbidden. Now check whether deleting one index leaves GCD <code>p</code>. For <code>n &gt;= 8</code>, the accepted implementations rely on the bounded-prime-factor argument that a proper subset with GCD <code>p</code> exists once the full divided GCD is <code>1</code>. For small <code>n</code>, query prefix/suffix GCD around each index and see whether any deletion leaves target GCD.</li>
+  </ol>
+  <div class="note">
+    <p>Why single deletion is enough for small full-active arrays: if any proper subset has GCD <code>p</code>, adding more elements cannot raise the GCD above <code>p</code> when all values are multiples of <code>p</code>. Therefore that subset can be extended to a subset of size <code>n - 1</code> with the same GCD.</p>
+  </div>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>countGoodSubseq(nums, p, queries):
+    n = len(nums)
+    build gcd segment tree:
+        leaf[i] = nums[i] if nums[i] % p == 0 else 0
+    active = count(nums[i] % p == 0)
+    answer = 0
+
+    for ind, val in queries:
+        old = nums[ind]
+        if old % p == 0: active -= 1
+        if val % p == 0: active += 1
+        nums[ind] = val
+        update leaf[ind] to val if val % p == 0 else 0
+
+        if active == 0:
+            continue
+        if tree.all_gcd() != p:
+            continue
+        if active &lt; n:
+            answer += 1
+            continue
+
+        if n &gt;= 8:
+            answer += 1
+            continue
+
+        ok = false
+        for i in 0..n-1:
+            left = range_gcd(0, i - 1)
+            right = range_gcd(i + 1, n - 1)
+            if gcd(left, right) == p:
+                ok = true
+                break
+        if ok:
+            answer += 1
+
+    return answer</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use <code>0</code> as the neutral empty value for GCD ranges.</li>
+    <li>Keep the actual <code>nums</code> array updated; every query depends on the previous updates.</li>
+    <li>Track divisibility by <code>p</code> for both the old and new value at the updated index.</li>
+    <li>Decide consistently whether the tree stores raw active values or divided values. Compare the root against <code>p</code> for raw storage and against <code>1</code> for divided storage.</li>
+    <li>Handle the forbidden full-array subsequence only when <code>activeCount == n</code>.</li>
+    <li>For the small full-active case, test <code>gcd(all except i)</code> using prefix/suffix arrays or segment-tree range queries.</li>
+    <li>Keep update/query complexity at <code>O(log n)</code>, with only a small constant fallback scan for <code>n &lt; 8</code>.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Counting a query whenever any element equals <code>p</code>. This misses cases such as <code>[6,10,15]</code> with <code>p = 1</code>, where a larger subset may be needed.</li>
+    <li>Using the GCD of the whole array, including values not divisible by <code>p</code>. Non-multiples of <code>p</code> can never appear in a valid subsequence.</li>
+    <li>Forgetting the length restriction. If every element is active, the full set is not a legal subsequence.</li>
+    <li>Assuming <code>active GCD == p</code> is always enough. It is enough when <code>activeCount &lt; n</code> and for accepted large full-active cases, but small full-active arrays need an exclusion check.</li>
+    <li>Trying all subsequences after each update. With <code>n, q &lt;= 5 * 10^4</code>, this is not viable.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <p>The accepted submissions in this workspace cluster into these families:</p>
+  <table>
+    <thead>
+      <tr><th>Family</th><th>Files</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Segment tree over active multiples</td>
+        <td>Most accepted Python, Java, JavaScript, C++, TypeScript, Rust, and Go files</td>
+        <td>Maintain active count plus a GCD segment tree. Answer immediately when active GCD reaches the target and the active set is proper.</td>
+      </tr>
+      <tr>
+        <td>Small full-active deletion check</td>
+        <td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code>, <code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code>, and similar submissions</td>
+        <td>When every index is active and <code>n</code> is small, query GCD of all elements except one index.</td>
+      </tr>
+      <tr>
+        <td>Prime-factor coverage bookkeeping</td>
+        <td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td>
+        <td>Uses SPF factorization and counts primes that cover all but one index to decide the full-active proper-subset case more explicitly.</td>
+      </tr>
+      <tr>
+        <td>Small-<code>n</code> brute force plus segment tree</td>
+        <td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td>
+        <td>Brute forces subsequences for very small <code>n</code>, then switches to a GCD segment tree.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The following concrete numbers come from <code>stats.json.performance_by_language</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted Count</th><th>Fastest Runtime</th><th>Slowest Runtime</th><th>Memory Range</th><th>Practical Note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>C++</td><td>1</td><td>123 ms</td><td>123 ms</td><td>203.1 MB</td><td>Fast enough with a standard recursive segment tree; the recorded memory is high compared with other languages.</td></tr>
+      <tr><td>Go</td><td>1</td><td>268 ms</td><td>268 ms</td><td>48 MB</td><td>Comfortable with arrays/slices and iterative GCD helpers.</td></tr>
+      <tr><td>Java</td><td>2</td><td>27 ms</td><td>61 ms</td><td>124.3-132.5 MB</td><td>Fastest recorded language in this set; use primitive arrays rather than object-heavy structures.</td></tr>
+      <tr><td>JavaScript</td><td>2</td><td>70 ms</td><td>1394 ms</td><td>79.5-117.1 MB</td><td>Performance varies sharply; compact iterative code is much faster than heavier bookkeeping.</td></tr>
+      <tr><td>Python 3</td><td>5</td><td>638 ms</td><td>7381 ms</td><td>36.2-46.2 MB</td><td>Python passes with a lean segment tree, but elaborate prime bookkeeping can be much slower.</td></tr>
+      <tr><td>Rust</td><td>1</td><td>37 ms</td><td>37 ms</td><td>6.6 MB</td><td>Excellent recorded memory and runtime with direct vector storage.</td></tr>
+      <tr><td>TypeScript</td><td>1</td><td>101 ms</td><td>101 ms</td><td>88.9 MB</td><td>Comparable to the faster JavaScript solution when arrays are used carefully.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> records failed submission statuses: 4 Time Limit Exceeded, 3 Wrong Answer, 1 Runtime Error, and 1 Compile Error.</p>
+  <ul>
+    <li>Time Limit Exceeded usually indicates subset enumeration, rebuilding too much state per query, or factor-scanning all values after every update.</li>
+    <li>Wrong Answer commonly comes from mishandling the full-array restriction, especially when all values are divisible by <code>p</code>.</li>
+    <li>Runtime Error risk is highest in recursive segment trees with undersized arrays or in factorization code that indexes beyond the precomputed limit.</li>
+    <li>Compile Error is likely mechanical; this problem has many language signatures, so use the exact starter signature.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Lines</th><th>Bytes</th><th>Submission</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>638 ms</td><td>36.2 MB</td><td>72</td><td>2350</td><td>2004089007</td></tr>
+      <tr><td>2</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>27 ms</td><td>132.5 MB</td><td>87</td><td>2476</td><td>2004122494</td></tr>
+      <tr><td>3</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>70 ms</td><td>79.5 MB</td><td>91</td><td>2522</td><td>2004127988</td></tr>
+      <tr><td>4</td><td>glm-5-cloud</td><td>python3</td><td><code>accepted__glm-5-cloud__python3.py</code></td><td>997 ms</td><td>36.4 MB</td><td>90</td><td>2753</td><td>2003277876</td></tr>
+      <tr><td>5</td><td>glm-5-cloud-t0.0</td><td>python3</td><td><code>accepted__glm-5-cloud-t0.0__python3.py</code></td><td>745 ms</td><td>38.5 MB</td><td>83</td><td>2471</td><td>2003675355</td></tr>
+      <tr><td>6</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>684 ms</td><td>37 MB</td><td>77</td><td>2588</td><td>2003727487</td></tr>
+      <tr><td>7</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>123 ms</td><td>203.1 MB</td><td>97</td><td>2966</td><td>2003798697</td></tr>
+      <tr><td>8</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>61 ms</td><td>124.3 MB</td><td>123</td><td>3632</td><td>2003740132</td></tr>
+      <tr><td>9</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>1394 ms</td><td>117.1 MB</td><td>284</td><td>9670</td><td>2003625214</td></tr>
+      <tr><td>10</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>37 ms</td><td>6.6 MB</td><td>144</td><td>3939</td><td>2003804191</td></tr>
+      <tr><td>11</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>101 ms</td><td>88.9 MB</td><td>107</td><td>2902</td><td>2003666257</td></tr>
+      <tr><td>12</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>7381 ms</td><td>46.2 MB</td><td>190</td><td>7271</td><td>2003603651</td></tr>
+      <tr><td>13</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>268 ms</td><td>48 MB</td><td>230</td><td>5555</td><td>2004553396</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

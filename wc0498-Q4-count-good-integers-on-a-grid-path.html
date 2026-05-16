@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0498-Q4 Count Good Integers on a Grid Path Manual</title>
+  <style>
+    body { font-family: Arial, sans-serif; line-height: 1.5; margin: 0; color: #1f2933; background: #f7f9fb; }
+    main { max-width: 1100px; margin: 0 auto; padding: 32px 20px 56px; background: white; }
+    h1 { margin-top: 0; font-size: 28px; }
+    h2 { margin-top: 34px; padding-bottom: 6px; border-bottom: 2px solid #dde5ee; font-size: 21px; }
+    code, pre { font-family: Consolas, "Courier New", monospace; }
+    pre { overflow-x: auto; padding: 14px; background: #101820; color: #f4f7fb; border-radius: 6px; }
+    table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14px; }
+    th, td { border: 1px solid #d5dde5; padding: 7px 9px; text-align: left; vertical-align: top; }
+    th { background: #edf2f7; }
+    .meta { background: #edf7ff; border-left: 4px solid #2f80ed; padding: 12px 14px; }
+    .warn { background: #fff7ed; border-left: 4px solid #f2994a; padding: 12px 14px; }
+    .ok { background: #eefaf1; border-left: 4px solid #27ae60; padding: 12px 14px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Count Good Integers on a Grid Path</h1>
+
+  <h2>Provenance</h2>
+  <div class="meta">
+    <p><strong>Problem id:</strong> wc0498-Q4-count-good-integers-on-a-grid-path</p>
+    <p><strong>Source files used:</strong> <code>problem.md</code>, <code>stats.json</code>, and 17 <code>accepted__*</code> implementations.</p>
+    <p><strong>Difficulty:</strong> Hard. <strong>Function:</strong> <code>countGoodIntegersOnPath(l, r, directions)</code>. <strong>Topic:</strong> dynamic programming.</p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>
+    Given integers <code>l</code> and <code>r</code>, and a six-character string <code>directions</code> containing exactly
+    three <code>D</code> moves and three <code>R</code> moves, count how many integers <code>x</code> in <code>[l, r]</code>
+    are good.
+  </p>
+  <p>
+    To test one integer, write it as a 16-digit string by left-padding with zeros, place those digits into a
+    4 by 4 grid in row-major order, start at cell <code>(0,0)</code>, follow the six moves, and read the seven visited
+    digits including the starting cell. The integer is good exactly when that seven-digit sequence is non-decreasing.
+  </p>
+  <p><strong>Constraints:</strong> <code>1 &lt;= l &lt;= r &lt;= 9 * 10^15</code>, <code>directions.length == 6</code>, with exactly three <code>D</code> and three <code>R</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>
+    The path only moves down and right, so every visited row-major index is strictly increasing. That means the
+    condition is not about adjacent grid geometry after construction; it is simply a constraint on seven positions
+    inside a fixed 16-digit number: whenever a position is on the path, its digit must be at least the previous
+    path digit.
+  </p>
+  <p>
+    Since <code>r</code> can be as large as <code>9 * 10^15</code>, direct enumeration of the range is infeasible. Count good
+    values up to a bound with digit DP, then answer <code>count(r) - count(l - 1)</code>.
+  </p>
+
+  <h2>Worked Example</h2>
+  <p>
+    For <code>l = 8</code>, <code>r = 10</code>, <code>directions = "DDDRRR"</code>, the path visits row-major indices
+    <code>[0, 4, 8, 12, 13, 14, 15]</code>.
+  </p>
+  <table>
+    <tr><th>x</th><th>16-digit form</th><th>Path digits</th><th>Good?</th></tr>
+    <tr><td>8</td><td><code>0000000000000008</code></td><td><code>[0,0,0,0,0,0,8]</code></td><td>yes</td></tr>
+    <tr><td>9</td><td><code>0000000000000009</code></td><td><code>[0,0,0,0,0,0,9]</code></td><td>yes</td></tr>
+    <tr><td>10</td><td><code>0000000000000010</code></td><td><code>[0,0,0,0,0,1,0]</code></td><td>no, because 0 follows 1</td></tr>
+  </table>
+  <p>The answer is <code>2</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <tr><th>Input</th><th>Output</th><th>Key reason</th></tr>
+    <tr>
+      <td><code>l = 123456789, r = 123456790, directions = "DDRRDR"</code></td>
+      <td><code>1</code></td>
+      <td><code>123456789</code> has path digits <code>[0,0,2,3,4,8,9]</code>; <code>123456790</code> ends with <code>9,0</code> on the path.</td>
+    </tr>
+    <tr>
+      <td><code>l = 1288561398769758, r = 1288561398769758, directions = "RRRDDD"</code></td>
+      <td><code>0</code></td>
+      <td>The path digits are <code>[1,2,8,8,3,6,8]</code>, which decreases at <code>8,3</code>.</td>
+    </tr>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Convert the path into a boolean array <code>isPath[16]</code>. Start at index 0. A move <code>R</code> adds 1; a move <code>D</code> adds 4.</li>
+    <li>Define <code>count(N)</code> as the number of good 16-digit padded values from <code>0</code> through <code>N</code>.</li>
+    <li>Run digit DP over positions <code>0..15</code>. State is usually <code>(pos, tight, last)</code>, where <code>last</code> is the most recent digit chosen at a path index.</li>
+    <li>At a path position, try only digits <code>d &gt;= last</code> and update <code>last = d</code>. At a non-path position, try all legal digits and keep <code>last</code> unchanged.</li>
+    <li>Return <code>count(r) - count(l - 1)</code>.</li>
+  </ol>
+  <p>
+    Some accepted Python implementations use a two-sided DP directly over <code>[l, r]</code> with lower and upper tight flags.
+    That is equivalent to the prefix-count method and has the same tiny state space.
+  </p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>function countGoodIntegersOnPath(l, r, directions):
+    isPath = [false] * 16
+    idx = 0
+    isPath[0] = true
+    for move in directions:
+        if move == 'D': idx += 4
+        else: idx += 1
+        isPath[idx] = true
+
+    function countUpTo(n):
+        if n &lt; 0: return 0
+        digits = decimal digits of n, left padded to length 16
+        memo = empty map
+
+        function dfs(pos, tight, last):
+            if pos == 16: return 1
+            if not tight and memo has (pos, last): return memo[(pos, last)]
+
+            limit = digits[pos] if tight else 9
+            total = 0
+            for d from 0 to limit:
+                if isPath[pos] and d &lt; last:
+                    continue
+                nextLast = d if isPath[pos] else last
+                nextTight = tight and d == limit
+                total += dfs(pos + 1, nextTight, nextLast)
+
+            if not tight: memo[(pos, last)] = total
+            return total
+
+        return dfs(0, true, 0)
+
+    return countUpTo(r) - countUpTo(l - 1)</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Pad every bound to exactly 16 digits, including small values such as <code>8</code>.</li>
+    <li>Mark the starting cell index <code>0</code> as a path index before consuming <code>directions</code>.</li>
+    <li>Use row-major index arithmetic: <code>D</code> means <code>+4</code>, <code>R</code> means <code>+1</code>.</li>
+    <li>Initialize the previous path digit to <code>0</code> or use a sentinel such as <code>-1</code>. Because the first padded digit is never negative, either works when implemented consistently.</li>
+    <li>Use integer types that can hold the answer. The maximum range is below <code>10^16</code>, so 64-bit signed integers are sufficient.</li>
+    <li>Memoize by the full state that affects the future. If caching tight states, include <code>tight</code>; if caching only loose states, <code>(pos,last)</code> is enough.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <div class="warn">
+    <ul>
+      <li>Brute force over <code>[l,r]</code>. This caused Time Limit Exceeded in the failed submissions and cannot survive ranges near <code>10^16</code>.</li>
+      <li>Checking the whole 16-digit number for non-decreasing order. Only the seven path digits matter.</li>
+      <li>Forgetting leading zeros. The grid is always filled by a 16-digit padded string.</li>
+      <li>Using grid coordinates but accidentally translating with column-major indexing. The grid is row-major, so index is <code>4 * row + col</code>.</li>
+      <li>Updating the previous digit on non-path cells. Non-path digits are unconstrained and should not affect the next path comparison.</li>
+    </ul>
+  </div>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <tr><th>Family</th><th>Seen in accepted files</th><th>Notes</th></tr>
+    <tr>
+      <td>Prefix digit DP: <code>count(r) - count(l - 1)</code></td>
+      <td>C++, Go, Java, JavaScript, Rust, TypeScript, and several Python submissions</td>
+      <td>The dominant accepted pattern. State is <code>pos</code>, <code>tight</code>, and last path digit.</td>
+    </tr>
+    <tr>
+      <td>Two-bound digit DP over <code>[l,r]</code></td>
+      <td><code>accepted__glm-5-cloud__python3.py</code></td>
+      <td>Uses lower-tight and upper-tight flags in one pass. Equivalent result, slightly more state.</td>
+    </tr>
+    <tr>
+      <td>Sentinel versus zero initial previous digit</td>
+      <td>C++ uses <code>-1</code>; many Go/Java/Python variants use <code>0</code></td>
+      <td>Both are valid because every digit is at least zero and the first path digit is included.</td>
+    </tr>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>These notes come from <code>stats.json.performance_by_language</code>, not estimates.</p>
+  <table>
+    <tr><th>Language</th><th>Accepted count</th><th>Runtime range</th><th>Memory range</th><th>Practical note</th></tr>
+    <tr><td>rust</td><td>1</td><td>0 ms</td><td>2.3 MB</td><td>Fastest and lowest memory in the recorded set.</td></tr>
+    <tr><td>golang</td><td>2</td><td>8 ms to 8 ms</td><td>4.7 MB to 9 MB</td><td>Very fast with compact fixed arrays.</td></tr>
+    <tr><td>cpp</td><td>1</td><td>15 ms</td><td>11.6 MB</td><td>Simple recursive memoization is comfortably within limits.</td></tr>
+    <tr><td>java</td><td>4</td><td>13 ms to 27 ms</td><td>46.9 MB to 47.3 MB</td><td>Runtime is strong; memory reflects JVM baseline rather than DP size.</td></tr>
+    <tr><td>typescript</td><td>1</td><td>23 ms</td><td>64.3 MB</td><td>Number arithmetic is safe here because bounds and counts stay below integer precision danger for this task's expected outputs.</td></tr>
+    <tr><td>javascript</td><td>2</td><td>32 ms to 100 ms</td><td>64.5 MB to 65.6 MB</td><td>Use numeric DP arrays or small memo keys; avoid range iteration.</td></tr>
+    <tr><td>python3</td><td>6</td><td>84 ms to 182 ms</td><td>27.7 MB to 33.2 MB</td><td><code>functools.cache</code>/<code>lru_cache</code> is enough because the state space is roughly <code>16 * 2 * 10</code>.</td></tr>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p>
+    The recorded failed submission statuses were <strong>Time Limit Exceeded: 3</strong> and <strong>Wrong Answer: 1</strong>.
+    The TLE pattern is consistent with scanning the range or doing too much per number. The Wrong Answer risk is concentrated
+    around padding, path-index construction, and whether non-path digits incorrectly update the previous path digit.
+  </p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <tr><th>#</th><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Submission</th><th>Lines</th><th>Bytes</th></tr>
+    <tr><td>1</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>179 ms</td><td>32.9 MB</td><td>2004499458</td><td>36</td><td>1295</td></tr>
+    <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>27 ms</td><td>46.9 MB</td><td>2004371722</td><td>43</td><td>1522</td></tr>
+    <tr><td>3</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>182 ms</td><td>33 MB</td><td>2004089182</td><td>40</td><td>1299</td></tr>
+    <tr><td>4</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>32 ms</td><td>65.6 MB</td><td>2004128091</td><td>56</td><td>1747</td></tr>
+    <tr><td>5</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>151 ms</td><td>32.8 MB</td><td>2004094751</td><td>43</td><td>1346</td></tr>
+    <tr><td>6</td><td>glm-5-cloud</td><td>python3</td><td><code>accepted__glm-5-cloud__python3.py</code></td><td>84 ms</td><td>27.7 MB</td><td>2003278111</td><td>45</td><td>1427</td></tr>
+    <tr><td>7</td><td>glm-5-cloud-t0.0</td><td>python3</td><td><code>accepted__glm-5-cloud-t0.0__python3.py</code></td><td>170 ms</td><td>33.2 MB</td><td>2003675567</td><td>47</td><td>1578</td></tr>
+    <tr><td>8</td><td>glm-5-cloud-t0.8-java</td><td>java</td><td><code>accepted__glm-5-cloud-t0.8-java__java.java</code></td><td>23 ms</td><td>47.2 MB</td><td>2004529051</td><td>74</td><td>2400</td></tr>
+    <tr><td>9</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>15 ms</td><td>11.6 MB</td><td>2003799015</td><td>56</td><td>1637</td></tr>
+    <tr><td>10</td><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>8 ms</td><td>4.7 MB</td><td>2003820326</td><td>90</td><td>1813</td></tr>
+    <tr><td>11</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>21 ms</td><td>47.3 MB</td><td>2003740393</td><td>70</td><td>2232</td></tr>
+    <tr><td>12</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>100 ms</td><td>64.5 MB</td><td>2003591922</td><td>68</td><td>2225</td></tr>
+    <tr><td>13</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>0 ms</td><td>2.3 MB</td><td>2003804522</td><td>78</td><td>2930</td></tr>
+    <tr><td>14</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>23 ms</td><td>64.3 MB</td><td>2003666528</td><td>61</td><td>1975</td></tr>
+    <tr><td>15</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>175 ms</td><td>32.8 MB</td><td>2003287874</td><td>39</td><td>1788</td></tr>
+    <tr><td>16</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>8 ms</td><td>9 MB</td><td>2004553647</td><td>72</td><td>1285</td></tr>
+    <tr><td>17</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>13 ms</td><td>46.9 MB</td><td>2004053935</td><td>67</td><td>1826</td></tr>
+  </table>
+</main>
+</body>
+</html>

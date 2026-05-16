@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0495-Q3-sum-of-sortable-integers Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18202a;
+      --muted: #586575;
+      --line: #d8dee8;
+      --panel: #f7f9fc;
+      --accent: #0b6b58;
+      --warn: #9a4f00;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.15;
+    }
+    h2 {
+      margin-top: 32px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 22px;
+    }
+    h3 {
+      margin-top: 20px;
+      font-size: 17px;
+    }
+    code, pre {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 14px;
+      background: #111827;
+      color: #f8fafc;
+      border-radius: 6px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--panel);
+    }
+    .meta, .note {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px 14px;
+    }
+    .tag {
+      display: inline-block;
+      margin: 2px 4px 2px 0;
+      padding: 2px 7px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    .ok { color: var(--accent); font-weight: 700; }
+    .warn { color: var(--warn); font-weight: 700; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Sum of Sortable Integers</h1>
+  <p class="meta"><strong>Problem id:</strong> wc0495-Q3-sum-of-sortable-integers. This manual was built from <code>problem.md</code>, <code>stats.json</code>, and the local <code>accepted__*</code> submissions.</p>
+
+  <h2>Provenance</h2>
+  <ul>
+    <li><strong>Title:</strong> Sum of Sortable Integers</li>
+    <li><strong>Difficulty:</strong> Hard</li>
+    <li><strong>Function:</strong> <code>sortableIntegers(nums)</code></li>
+    <li><strong>Source URL:</strong> <a href="https://leetcode.com/problems/sum-of-sortable-integers/">https://leetcode.com/problems/sum-of-sortable-integers/</a></li>
+    <li><strong>Generated stats timestamp:</strong> 2026-05-16T20:34:24.950345+00:00</li>
+    <li><strong>Accepted submissions available locally:</strong> 17</li>
+  </ul>
+  <p>
+    <span class="tag">array</span>
+    <span class="tag">math</span>
+    <span class="tag">sorting</span>
+    <span class="tag">enumeration</span>
+  </p>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer array <code>nums</code> of length <code>n</code>. An integer <code>k</code> is called sortable if <code>k</code> divides <code>n</code> and the array can be sorted into non-decreasing order after this operation:</p>
+  <ul>
+    <li>Partition <code>nums</code> into consecutive non-empty subarrays of length <code>k</code>.</li>
+    <li>Cyclically rotate each subarray independently any number of times left or right.</li>
+  </ul>
+  <p>Return the sum of all sortable integers <code>k</code>.</p>
+  <p><strong>Constraints:</strong> <code>1 &lt;= n == nums.length &lt;= 100000</code>, <code>1 &lt;= nums[i] &lt;= 100000</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The block boundaries are fixed for a chosen divisor <code>k</code>. Rotations cannot move an element from one block to another, so each original block must become exactly the corresponding block of the globally sorted array after some cyclic shift.</p>
+  <p>There are two equivalent ways to test this:</p>
+  <ul>
+    <li><strong>Official rotation-match view:</strong> sort a copy <code>s</code>. For every block <code>[i, i+k)</code>, verify that <code>s[i..i+k-1]</code> occurs inside two concatenated copies of <code>nums[i..i+k-1]</code>.</li>
+    <li><strong>Accepted simplification:</strong> every block must be cyclically non-decreasing, meaning at most one descent when including the wrap edge. Also, after each block is rotated into non-decreasing order, the maximum of the previous block cannot exceed the minimum of the current block.</li>
+  </ul>
+  <p>The second test avoids explicitly building the globally sorted array for each candidate and is enough because a cyclically sorted block contributes exactly its sorted multiset, while the block-to-block min/max condition guarantees the concatenation is globally non-decreasing.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [3,1,2]</code>, <code>n = 3</code> and the divisors are <code>1</code> and <code>3</code>.</p>
+  <ul>
+    <li><code>k = 1</code>: blocks are <code>[3]</code>, <code>[1]</code>, <code>[2]</code>. Singletons cannot change order, and <code>3 &gt; 1</code>, so this fails.</li>
+    <li><code>k = 3</code>: the only block is <code>[3,1,2]</code>. It has one cyclic descent, from <code>3</code> to <code>1</code>, and rotating after that descent gives <code>[1,2,3]</code>. This succeeds.</li>
+  </ul>
+  <p>The sum of sortable divisors is <code>3</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead><tr><th>Input</th><th>Output</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td><code>[7,6,5]</code></td><td><code>0</code></td><td><code>k = 1</code> preserves the descending order. <code>k = 3</code> has more than one cyclic descent, so no rotation sorts it.</td></tr>
+      <tr><td><code>[5,8]</code></td><td><code>3</code></td><td>The array is already sorted. Both divisors, <code>1</code> and <code>2</code>, are sortable, so the answer is <code>1 + 2</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Let <code>n = nums.length</code>.</li>
+    <li>Enumerate all divisors <code>k</code> of <code>n</code>. A non-divisor can never be valid because the partition would not cover the array with equal blocks.</li>
+    <li>For each block <code>[start, start+k)</code>, count descents inside the circular block: adjacent pairs <code>nums[j] &gt; nums[j+1]</code> plus the wrap pair <code>nums[start+k-1] &gt; nums[start]</code>.</li>
+    <li>If any block has more than one circular descent, no rotation can make that block non-decreasing.</li>
+    <li>Track each block's minimum and maximum. If <code>previousBlockMax &gt; currentBlockMin</code>, the independently sorted blocks cannot concatenate into a globally non-decreasing array.</li>
+    <li>If all blocks pass, add <code>k</code> to the answer.</li>
+  </ol>
+  <p class="note"><strong>Complexity:</strong> divisor enumeration gives at most a few hundred candidates for <code>n &lt;= 100000</code>. Scanning all blocks for one divisor costs <code>O(n)</code>, so the direct accepted method is <code>O(n * d(n))</code>, where <code>d(n)</code> is the number of divisors. This is comfortably small for the constraint.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>function sortableIntegers(nums):
+    n = length(nums)
+    ans = 0
+
+    for each divisor k of n:
+        ok = true
+        prevMax = -infinity
+
+        for start in 0, k, 2k, ... n-k:
+            descents = 0
+            mn = +infinity
+            mx = -infinity
+
+            for offset from 0 to k-1:
+                x = nums[start + offset]
+                mn = min(mn, x)
+                mx = max(mx, x)
+                if offset + 1 &lt; k and nums[start + offset] &gt; nums[start + offset + 1]:
+                    descents += 1
+
+            if nums[start + k - 1] &gt; nums[start]:
+                descents += 1
+
+            if descents &gt; 1 or prevMax &gt; mn:
+                ok = false
+                break
+
+            prevMax = mx
+
+        if ok:
+            ans += k
+
+    return ans</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Only test <code>k</code> values that divide <code>n</code>.</li>
+    <li>Count the wrap descent <code>last &gt; first</code>; omitting this accepts blocks that cannot be rotated into sorted order.</li>
+    <li>Allow equal adjacent values. The comparison is strictly <code>&gt;</code>, not <code>&gt;=</code>.</li>
+    <li>Reset <code>prevMax</code> for every candidate <code>k</code>.</li>
+    <li>Use <code>prevMax &gt; currentMin</code>, not <code>&gt;=</code>, because equal boundary values are allowed in non-decreasing order.</li>
+    <li>Return an integer sum of divisors. With <code>n &lt;= 100000</code>, the answer fits normal 32-bit integer ranges, but wider types are harmless.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li><span class="warn">Checking each block in isolation only:</span> <code>[2,3][1,4]</code> has individually sorted blocks for <code>k = 2</code>, but the whole result cannot be non-decreasing because <code>3 &gt; 1</code>.</li>
+    <li><span class="warn">Counting only internal descents:</span> <code>[2,3,1]</code> has one internal descent and is rotatable, while <code>[3,2,1]</code> has two internal descents and is not. The wrap edge still matters for cases such as already sorted blocks.</li>
+    <li><span class="warn">Sorting every block and comparing only multisets:</span> rotations preserve cyclic order, not just values. A block such as <code>[2,1,3]</code> has the right multiset for <code>[1,2,3]</code> but cannot be rotated into it.</li>
+    <li><span class="warn">Treating duplicates as breaks:</span> <code>[2,2,1]</code> rotates to <code>[1,2,2]</code>. Equal values are compatible with non-decreasing order.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead><tr><th>Family</th><th>Files observed</th><th>Core idea</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Descent plus block min/max</td>
+        <td>Several Java, Python, and JavaScript accepted files, including <code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code> and <code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td>
+        <td>For each divisor, every block must have at most one circular descent, and adjacent rotated blocks must satisfy <code>prevMax &lt;= currentMin</code>.</td>
+        <td>Simple, deterministic, no hashing, no sorted-copy block matching needed.</td>
+      </tr>
+      <tr>
+        <td>Sorted-target rotation matching</td>
+        <td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code>, <code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code>, and related solutions</td>
+        <td>Sort a copy of <code>nums</code>, then confirm each target sorted segment equals a cyclic rotation of the corresponding original block.</td>
+        <td>Matches the official hints. Some implementations use direct comparison after finding the descent; one C++ implementation uses rolling hashes.</td>
+      </tr>
+      <tr>
+        <td>Prefix-assisted descent counting</td>
+        <td>Python variants such as <code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td>
+        <td>Precompute prefix sums of adjacent drops, then query internal block descents in <code>O(1)</code> while still scanning for min/max.</td>
+        <td>Helps readability for descent counts, though min/max still cost per block unless extra range data structures are added.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>These notes use <code>stats.json.performance_by_language</code> directly.</p>
+  <table>
+    <thead><tr><th>Language</th><th>Accepted count</th><th>Runtime range</th><th>Memory range</th><th>Practical note</th></tr></thead>
+    <tbody>
+      <tr><td>C++</td><td>1</td><td>43 ms to 43 ms</td><td>109.5 MB to 109.5 MB</td><td>Fastest recorded runtime overall. The accepted C++ file used rolling hashes over original and sorted arrays, trading memory for speed.</td></tr>
+      <tr><td>Go</td><td>1</td><td>55 ms to 55 ms</td><td>12.8 MB to 12.8 MB</td><td>Lowest recorded memory. Direct rotation checks are efficient enough without heavyweight structures.</td></tr>
+      <tr><td>Java</td><td>6</td><td>49 ms to 183 ms</td><td>70.3 MB to 76.6 MB</td><td>Very competitive. The fastest Java solution, <code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code>, used the descent/min/max rule and ran in 49 ms.</td></tr>
+      <tr><td>JavaScript</td><td>3</td><td>79 ms to 339 ms</td><td>64.3 MB to 76.3 MB</td><td>Accepted comfortably. Keep loops numeric and avoid allocating per-block arrays in hot paths.</td></tr>
+      <tr><td>Python 3</td><td>6</td><td>777 ms to 3739 ms</td><td>30.9 MB to 43 MB</td><td>Accepted but slower. Avoid repeated slicing for every block where possible; explicit loops and prefix drop counts help.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p>The failed submission summary in <code>stats.json</code> lists: <strong>Wrong Answer: 2</strong>, <strong>Compile Error: 1</strong>, and <strong>Time Limit Exceeded: 1</strong>.</p>
+  <ul>
+    <li><strong>Wrong Answer risk:</strong> most likely from missing the block-boundary check, mishandling the wrap descent, or checking only sorted multisets rather than cyclic order.</li>
+    <li><strong>Time Limit risk:</strong> comparing every possible rotation naively with fresh slices can approach <code>O(sum(k * n))</code> over divisors with high constants. Use descent logic or targeted rotation comparison.</li>
+    <li><strong>Compile Error risk:</strong> the function signature must match the platform starter exactly, especially Java class/method names and JavaScript export shape.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Lines</th><th>Bytes</th><th>Submission ID</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>codex-agent-gpt-5.5-java</td><td>java</td><td><code>accepted__codex-agent-gpt-5.5-java__java.java</code></td><td>50 ms</td><td>70.5 MB</td><td>56</td><td>1430</td><td>2003969641</td></tr>
+      <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>3739 ms</td><td>32.4 MB</td><td>54</td><td>1652</td><td>2004498525</td></tr>
+      <tr><td>3</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>99 ms</td><td>76.1 MB</td><td>74</td><td>2181</td><td>2004370637</td></tr>
+      <tr><td>4</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>777 ms</td><td>31.6 MB</td><td>54</td><td>1541</td><td>2004088487</td></tr>
+      <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>49 ms</td><td>70.3 MB</td><td>42</td><td>1308</td><td>2004122194</td></tr>
+      <tr><td>6</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>79 ms</td><td>64.3 MB</td><td>60</td><td>1428</td><td>2004127691</td></tr>
+      <tr><td>7</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>1314 ms</td><td>30.9 MB</td><td>54</td><td>1734</td><td>2004093985</td></tr>
+      <tr><td>8</td><td>glm-5-cloud-t0.8-java</td><td>java</td><td><code>accepted__glm-5-cloud-t0.8-java__java.java</code></td><td>182 ms</td><td>76.6 MB</td><td>58</td><td>1590</td><td>2004528271</td></tr>
+      <tr><td>9</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>339 ms</td><td>76.3 MB</td><td>72</td><td>1983</td><td>2004533763</td></tr>
+      <tr><td>10</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>1288 ms</td><td>42.9 MB</td><td>69</td><td>2143</td><td>2003726738</td></tr>
+      <tr><td>11</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>43 ms</td><td>109.5 MB</td><td>62</td><td>2094</td><td>2003797977</td></tr>
+      <tr><td>12</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>164 ms</td><td>72.6 MB</td><td>79</td><td>2284</td><td>2003739470</td></tr>
+      <tr><td>13</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>97 ms</td><td>72.5 MB</td><td>84</td><td>1847</td><td>2003591116</td></tr>
+      <tr><td>14</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>2170 ms</td><td>31.7 MB</td><td>57</td><td>1723</td><td>2003272214</td></tr>
+      <tr><td>15</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>1450 ms</td><td>43 MB</td><td>69</td><td>2292</td><td>2003602902</td></tr>
+      <tr><td>16</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>55 ms</td><td>12.8 MB</td><td>89</td><td>2183</td><td>2003978956</td></tr>
+      <tr><td>17</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>183 ms</td><td>72.4 MB</td><td>79</td><td>2291</td><td>2004010757</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minimum Cost to Merge Sorted Lists Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #5b6770;
+      --line: #d9e0e6;
+      --soft: #f5f7f9;
+      --accent: #0f6b78;
+      --warn: #8a4b00;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: #ffffff;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 24px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      line-height: 1.15;
+    }
+    h2 {
+      margin-top: 34px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--line);
+      font-size: 1.35rem;
+    }
+    h3 {
+      margin-top: 22px;
+      font-size: 1.05rem;
+    }
+    p, li {
+      max-width: 82ch;
+    }
+    code, pre {
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      overflow-x: auto;
+      background: #111820;
+      color: #f4f7fa;
+      border-radius: 6px;
+      padding: 14px 16px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12px 0 22px;
+      font-size: 0.92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--soft);
+      font-weight: 700;
+    }
+    .meta {
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: #eef8fa;
+      padding: 12px 16px;
+      margin: 14px 0;
+    }
+    .warning {
+      border-left-color: var(--warn);
+      background: #fff6e8;
+    }
+    .scroll {
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Minimum Cost to Merge Sorted Lists</h1>
+  <p class="meta">Problem id: <code>wc0483-Q4-minimum-cost-to-merge-sorted-lists</code>. Function: <code>minMergeCost(lists)</code>. Difficulty: Hard.</p>
+
+  <h2>Provenance</h2>
+  <p>This manual was built from the local artifacts <code>problem.md</code>, <code>stats.json</code>, and the 22 <code>accepted__*</code> solution files in this directory. The source problem URL recorded in <code>problem.md</code> is <code>https://leetcode.com/problems/minimum-cost-to-merge-sorted-lists/</code>. The generator metadata in <code>stats.json</code> records model <code>gpt-5.5</code> and generation timestamp <code>2026-05-16T19:28:27.643740+00:00</code>.</p>
+
+  <h2>Problem Statement</h2>
+  <p>You are given <code>lists</code>, a 2D array of non-empty integer arrays. Every inner array is already sorted in non-decreasing order.</p>
+  <p>Repeatedly choose two different lists <code>a</code> and <code>b</code>, merge them into one sorted list, remove the originals, and insert the merged list. The merge cost is:</p>
+  <pre><code>len(a) + len(b) + abs(median(a) - median(b))</code></pre>
+  <p>The median is the middle element of the sorted list; for even length, use the left middle element. Continue until one list remains and return the minimum possible total cost.</p>
+  <p>Constraints: <code>2 &lt;= lists.length &lt;= 12</code>, <code>1 &lt;= lists[i].length &lt;= 500</code>, values are between <code>-10^9</code> and <code>10^9</code>, each list is sorted, and the total number of elements is at most 2000.</p>
+
+  <h2>Problem Essence</h2>
+  <p>This is not a greedy merge problem. Because the median term depends on the exact set of original lists already merged into each side, the state is a subset of original list indices. With at most 12 lists, all subsets are feasible.</p>
+  <div class="callout">
+    <p>Let <code>mask</code> represent a merged group of original lists. Precompute <code>len[mask]</code> and <code>median[mask]</code>. Then solve the optimal binary merge tree with subset DP.</p>
+  </div>
+
+  <h2>Worked Example</h2>
+  <p>For <code>lists = [[1,3,5],[2,4],[6,7,8]]</code>, the output is <code>18</code>.</p>
+  <ol>
+    <li>Merge <code>[1,3,5]</code> and <code>[2,4]</code>. Length cost is <code>3 + 2</code>; medians are <code>3</code> and <code>2</code>; merge cost is <code>3 + 2 + abs(3 - 2) = 6</code>. The merged list is <code>[1,2,3,4,5]</code>.</li>
+    <li>Merge <code>[1,2,3,4,5]</code> and <code>[6,7,8]</code>. Length cost is <code>5 + 3</code>; medians are <code>3</code> and <code>7</code>; merge cost is <code>5 + 3 + abs(3 - 7) = 12</code>.</li>
+    <li>Total: <code>6 + 12 = 18</code>.</li>
+  </ol>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>[[1,1,5],[1,4,7,8]]</code></td><td><code>10</code></td><td>Only one merge: <code>3 + 4 + abs(1 - 4)</code>.</td></tr>
+      <tr><td><code>[[1],[3]]</code></td><td><code>4</code></td><td>Only one merge: <code>1 + 1 + abs(1 - 3)</code>.</td></tr>
+      <tr><td><code>[[1],[1]]</code></td><td><code>2</code></td><td>Only one merge: <code>1 + 1 + abs(1 - 1)</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <p>Use dynamic programming over bitmasks. For any non-singleton <code>mask</code>, split it into two non-empty disjoint submasks <code>sub</code> and <code>other = mask ^ sub</code>. The final merge of those two groups costs:</p>
+  <pre><code>len[mask] + abs(median[sub] - median[other])</code></pre>
+  <p>Since <code>len[mask] = len[sub] + len[other]</code>, this is exactly the statement's length term plus the median distance. The recurrence is:</p>
+  <pre><code>dp[1 &lt;&lt; i] = 0
+dp[mask] = min over proper non-empty submasks:
+           dp[sub] + dp[mask ^ sub]
+           + len[mask]
+           + abs(median[sub] - median[mask ^ sub])</code></pre>
+  <p>To avoid evaluating both <code>(sub, other)</code> and <code>(other, sub)</code>, either require <code>sub &lt; other</code> or force one fixed bit of <code>mask</code> into <code>sub</code>.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>def minMergeCost(lists):
+    n = len(lists)
+    N = 1 &lt;&lt; n
+
+    len_mask = [0] * N
+    median = [0] * N
+
+    # Precompute len_mask[mask].
+    for mask in range(1, N):
+        lsb = mask &amp; -mask
+        i = lsb.bit_length() - 1
+        len_mask[mask] = len_mask[mask ^ lsb] + len(lists[i])
+
+    # Precompute median[mask] by one accepted family:
+    # 1. merge sorted arrays for each mask, or
+    # 2. coordinate-compress values and binary-search the k-th element, or
+    # 3. binary-search value range with upper_bound/countLE on each list.
+
+    INF = 10**30
+    dp = [INF] * N
+    for i in range(n):
+        dp[1 &lt;&lt; i] = 0
+
+    for mask in range(1, N):
+        if mask &amp; (mask - 1) == 0:
+            continue
+        sub = (mask - 1) &amp; mask
+        while sub:
+            other = mask ^ sub
+            if sub &lt; other:
+                dp[mask] = min(
+                    dp[mask],
+                    dp[sub] + dp[other] + len_mask[mask]
+                    + abs(median[sub] - median[other])
+                )
+            sub = (sub - 1) &amp; mask
+
+    return dp[N - 1]</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use 64-bit integers for the answer and DP values in Java, C++, Go, Rust, C#, and similar languages.</li>
+    <li>Represent each group by a bitmask over original list indices; do not mutate the input list collection during DP.</li>
+    <li>For median index, use left middle: zero-based index <code>(total_length - 1) // 2</code>, or one-based rank <code>(total_length + 1) // 2</code>.</li>
+    <li>Precompute every <code>median[mask]</code> before DP transitions.</li>
+    <li>Initialize singleton masks to cost <code>0</code>; no merge is needed for one list.</li>
+    <li>When enumerating submasks, skip empty and full submasks and avoid double-counting symmetric splits.</li>
+    <li>Return <code>dp[(1 &lt;&lt; n) - 1]</code>.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li><strong>Huffman-style greedy by shortest length:</strong> the median distance can dominate and invalidate a length-only priority queue.</li>
+    <li><strong>Greedy by closest medians:</strong> the length term is paid repeatedly depending on tree shape, so local median closeness is not enough.</li>
+    <li><strong>Using average for even lengths:</strong> the statement requires the left middle element, not the arithmetic average.</li>
+    <li><strong>Using only current list medians without subset state:</strong> the median of a merged group depends on all values in that subset.</li>
+    <li><strong>Simulating one arbitrary merge order:</strong> the answer asks for the minimum over all binary merge trees.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead>
+      <tr><th>Family</th><th>Seen in accepted files</th><th>Median precompute idea</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Subset DP plus materialized merged arrays</td>
+        <td>Java solutions such as <code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td>
+        <td>Build <code>merged[mask]</code> by merging <code>merged[prev]</code> with one original sorted list, then take index <code>(len - 1) / 2</code>.</td>
+        <td>Simple and robust. Memory can be high because many masks store arrays.</td>
+      </tr>
+      <tr>
+        <td>Subset DP plus coordinate-compressed k-th search</td>
+        <td>Python solutions such as <code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td>
+        <td>Compress all values; precompute counts of elements <code>&lt;= value</code> per original list; binary-search the first value whose subset count reaches the median rank.</td>
+        <td>Avoids storing every merged array. Good fit for Python under <code>n &lt;= 12</code>.</td>
+      </tr>
+      <tr>
+        <td>Subset DP plus value-range binary search</td>
+        <td>TypeScript and JavaScript solutions such as <code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td>
+        <td>Binary-search over the min and max values present in the subset; count with upper-bound in each original sorted list.</td>
+        <td>Works over large integer ranges because each value test is logarithmic per list, but coordinate compression is often cleaner.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The following notes use the concrete <code>stats.json.performance_by_language</code> data.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted count</th><th>Runtime range</th><th>Memory range</th><th>Practical note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>TypeScript</td><td>1</td><td>228 ms</td><td>66.2 MB</td><td>Fastest recorded submission overall. Numeric answers remain within safe integer range here, but keep DP values as numbers carefully.</td></tr>
+      <tr><td>Java</td><td>5</td><td>220-260 ms</td><td>273.9-285.1 MB</td><td>Very consistent runtime. Use <code>long[] dp</code>; materialized merged arrays explain the high memory in several Java submissions.</td></tr>
+      <tr><td>Rust</td><td>1</td><td>290 ms</td><td>18.6 MB</td><td>Low memory and fast; <code>i64</code> is the natural return/DP type.</td></tr>
+      <tr><td>Go</td><td>2</td><td>596-1410 ms</td><td>9.1-13.3 MB</td><td>Lowest memory among multi-submission languages. Use <code>int64</code> for DP and answer.</td></tr>
+      <tr><td>JavaScript</td><td>4</td><td>1049-2398 ms</td><td>128-131.4 MB</td><td>Accepted comfortably, but submask DP plus median precompute needs tight loops and an efficient upper-bound helper.</td></tr>
+      <tr><td>C++</td><td>1</td><td>2346 ms</td><td>569 MB</td><td>The recorded C++ solution used much more memory than other languages, likely from storing merged subset arrays. A count-based median precompute should reduce this.</td></tr>
+      <tr><td>Python 3</td><td>8</td><td>2355-8099 ms</td><td>20.1-63.2 MB</td><td>Accepted but closest to the time edge. Prefer compressed counts, avoid repeated full list merges inside transitions, and halve symmetric submask checks.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> records two failed submissions, both with status <strong>Time Limit Exceeded</strong>. The likely failure modes for this problem are repeated median recomputation during every DP transition, physically merging lists inside the transition loop, or evaluating all symmetric submask splits without pruning in a slower language.</p>
+  <div class="callout warning">
+    <p>The DP has around <code>3^n</code> split work before symmetry pruning. With <code>n = 12</code>, that is feasible, but only if median and length lookups are already precomputed.</p>
+  </div>
+
+  <h2>Full Accepted Table</h2>
+  <div class="scroll">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Model</th>
+          <th>Language</th>
+          <th>File</th>
+          <th>Runtime</th>
+          <th>Memory</th>
+          <th>Submission</th>
+          <th>Lines</th>
+          <th>Bytes</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>claude-sonnet-4-6</td><td>python3</td><td><code>accepted__claude-sonnet-4-6__python3.py</code></td><td>3108 ms</td><td>20.4 MB</td><td>2003533267</td><td>37</td><td>1133</td></tr>
+        <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>260 ms</td><td>285.1 MB</td><td>2004366754</td><td>53</td><td>2014</td></tr>
+        <tr><td>3</td><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td>2398 ms</td><td>131.4 MB</td><td>2004351409</td><td>58</td><td>1980</td></tr>
+        <tr><td>4</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>253 ms</td><td>276.9 MB</td><td>2004120799</td><td>65</td><td>2186</td></tr>
+        <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>1049 ms</td><td>130.5 MB</td><td>2004126322</td><td>59</td><td>1923</td></tr>
+        <tr><td>6</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>3055 ms</td><td>20.2 MB</td><td>2004091746</td><td>56</td><td>2014</td></tr>
+        <tr><td>7</td><td>glm-5-cloud</td><td>python3</td><td><code>accepted__glm-5-cloud__python3.py</code></td><td>3503 ms</td><td>20.1 MB</td><td>2003679556</td><td>45</td><td>1527</td></tr>
+        <tr><td>8</td><td>glm-5-cloud-t0.0</td><td>python3</td><td><code>accepted__glm-5-cloud-t0.0__python3.py</code></td><td>3351 ms</td><td>20.1 MB</td><td>2003671318</td><td>42</td><td>1704</td></tr>
+        <tr><td>9</td><td>glm-5-cloud-t0.8-java</td><td>java</td><td><code>accepted__glm-5-cloud-t0.8-java__java.java</code></td><td>246 ms</td><td>273.9 MB</td><td>2004525057</td><td>73</td><td>2456</td></tr>
+        <tr><td>10</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>1202 ms</td><td>128 MB</td><td>2004530438</td><td>74</td><td>1950</td></tr>
+        <tr><td>11</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>2355 ms</td><td>20.4 MB</td><td>2003723715</td><td>60</td><td>2019</td></tr>
+        <tr><td>12</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>2346 ms</td><td>569 MB</td><td>2003794361</td><td>49</td><td>1442</td></tr>
+        <tr><td>13</td><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>596 ms</td><td>9.1 MB</td><td>2003816506</td><td>70</td><td>1321</td></tr>
+        <tr><td>14</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>260 ms</td><td>274.1 MB</td><td>2003736466</td><td>66</td><td>2151</td></tr>
+        <tr><td>15</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>1167 ms</td><td>130.5 MB</td><td>2003588596</td><td>67</td><td>2021</td></tr>
+        <tr><td>16</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>290 ms</td><td>18.6 MB</td><td>2003800570</td><td>62</td><td>2027</td></tr>
+        <tr><td>17</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>228 ms</td><td>66.2 MB</td><td>2003662417</td><td>87</td><td>2666</td></tr>
+        <tr><td>18</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>6414 ms</td><td>52.8 MB</td><td>2003269875</td><td>76</td><td>2546</td></tr>
+        <tr><td>19</td><td>qwen3.5-cloud</td><td>python3</td><td><code>accepted__qwen3.5-cloud__python3.py</code></td><td>6287 ms</td><td>63.2 MB</td><td>2003505091</td><td>63</td><td>2498</td></tr>
+        <tr><td>20</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>8099 ms</td><td>20.3 MB</td><td>2003515618</td><td>71</td><td>2572</td></tr>
+        <tr><td>21</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>1410 ms</td><td>13.3 MB</td><td>2003975558</td><td>82</td><td>1508</td></tr>
+        <tr><td>22</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>220 ms</td><td>277.3 MB</td><td>2004007438</td><td>71</td><td>2277</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

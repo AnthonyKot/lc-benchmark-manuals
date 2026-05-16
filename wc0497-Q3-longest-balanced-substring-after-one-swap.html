@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0497-Q3 Longest Balanced Substring After One Swap Manual</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      color: #202124;
+      background: #f6f8fb;
+    }
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 32px 22px 56px;
+      background: #fff;
+    }
+    h1 {
+      margin: 0 0 16px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin-top: 34px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #d9e2ef;
+      font-size: 22px;
+    }
+    code, pre {
+      font-family: Consolas, "Liberation Mono", Menlo, monospace;
+    }
+    code {
+      background: #eef2f7;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 14px 16px;
+      background: #111827;
+      color: #e5e7eb;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid #d8dee9;
+      padding: 7px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #edf2f7;
+    }
+    .note {
+      background: #f0f7ff;
+      border-left: 4px solid #2f6fed;
+      padding: 10px 14px;
+      margin: 12px 0;
+    }
+    .warn {
+      background: #fff7ed;
+      border-left: 4px solid #f97316;
+      padding: 10px 14px;
+      margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Longest Balanced Substring After One Swap</h1>
+
+  <h2>Provenance</h2>
+  <p><strong>Problem id:</strong> <code>wc0497-Q3-longest-balanced-substring-after-one-swap</code></p>
+  <p><strong>Source artifacts used:</strong> <code>problem.md</code>, <code>stats.json</code>, and 16 local <code>accepted__*</code> submissions.</p>
+  <p><strong>Function:</strong> <code>longestBalanced(s)</code>, arity 1. Difficulty: Medium. Constraint: <code>1 &lt;= s.length &lt;= 100000</code>; <code>s</code> is binary.</p>
+
+  <h2>Problem Statement</h2>
+  <p>You are given a binary string <code>s</code>. A string is balanced if it has the same number of <code>0</code> and <code>1</code> characters. You may perform at most one swap between any two positions in the whole string, then choose a balanced substring. Return the maximum possible length of such a substring.</p>
+  <p>The empty substring is balanced, so the answer can be <code>0</code> when the string has only one character kind.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The swap matters only through the selected substring's character counts. If the chosen substring is already balanced, no swap is needed. If it has two more <code>1</code>s than <code>0</code>s, it can become balanced by swapping one inside <code>1</code> with one outside <code>0</code>. If it has two more <code>0</code>s than <code>1</code>s, it can become balanced by swapping one inside <code>0</code> with one outside <code>1</code>.</p>
+  <p>Therefore a candidate substring needs prefix-balance difference <code>0</code>, <code>+2</code>, or <code>-2</code>. The <code>+2</code> case also needs at least one <code>0</code> outside the substring. The <code>-2</code> case also needs at least one <code>1</code> outside the substring.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>s = "100001"</code>, the answer is <code>4</code>.</p>
+  <ol>
+    <li>Total counts are four <code>0</code>s and two <code>1</code>s, so no answer can exceed <code>2 * min(4, 2) = 4</code>.</li>
+    <li>Swap the middle <code>0</code> at index 2 with the final <code>1</code>. The string becomes <code>"101000"</code>.</li>
+    <li>The substring <code>"1010"</code> has two <code>0</code>s and two <code>1</code>s, so length <code>4</code> is reachable and optimal.</li>
+  </ol>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>"100001"</code></td><td><code>4</code></td><td>One swap creates a balanced substring of length 4.</td></tr>
+      <tr><td><code>"111"</code></td><td><code>0</code></td><td>There are no <code>0</code>s, so no non-empty balanced substring is possible.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <p>Use a prefix balance <code>P</code> with <code>+1</code> for <code>1</code> and <code>-1</code> for <code>0</code>. For substring <code>[l, r)</code>, its imbalance is <code>P[r] - P[l]</code>.</p>
+  <ul>
+    <li><code>P[r] - P[l] == 0</code>: already balanced.</li>
+    <li><code>P[r] - P[l] == 2</code>: two extra <code>1</code>s; valid only if not all zeros of the whole string lie inside <code>[l, r)</code>.</li>
+    <li><code>P[r] - P[l] == -2</code>: two extra <code>0</code>s; valid only if not all ones of the whole string lie inside <code>[l, r)</code>.</li>
+  </ul>
+  <p>The accepted implementations use two equivalent families:</p>
+  <ul>
+    <li>Prefix-sum buckets with earliest and latest positions for each balance value.</li>
+    <li>Linear arrays over the balance range <code>[-n, n]</code>, recording first occurrences and adjusted first occurrences after the first global <code>0</code> or <code>1</code>.</li>
+  </ul>
+  <p>A clean linear implementation scans prefix positions from left to right. For each right endpoint <code>r</code>, it asks for the earliest compatible <code>l</code> with balance <code>P[r]</code>, <code>P[r] - 2</code>, and <code>P[r] + 2</code>. If the earliest one-swap candidate would cover every needed outside character, switch to the earliest occurrence that starts after the first such character.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>def longestBalanced(s):
+    n = len(s)
+    P = [0] * (n + 1)
+    count zeros, ones, first_zero, last_zero, first_one, last_one
+
+    for i, ch in enumerate(s):
+        P[i + 1] = P[i] + (1 if ch == '1' else -1)
+
+    first[value] = earliest prefix index with this balance
+    first_after_first_zero[value] = earliest prefix index &gt; first_zero
+    first_after_first_one[value] = earliest prefix index &gt; first_one
+
+    ans = 0
+    for r in range(0, n + 1):
+        v = P[r]
+
+        record first[v] and the adjusted first arrays for this prefix index
+
+        # no swap: P[r] - P[l] == 0
+        ans = max(ans, r - first[v])
+
+        # too many 1s: need an outside 0, so substring must not cover every 0
+        l = first[v - 2]
+        if l exists:
+            if not (l &lt;= first_zero and r &gt; last_zero):
+                ans = max(ans, r - l)
+            else use first_after_first_zero[v - 2] if it exists
+
+        # too many 0s: need an outside 1, so substring must not cover every 1
+        l = first[v + 2]
+        if l exists:
+            if not (l &lt;= first_one and r &gt; last_one):
+                ans = max(ans, r - l)
+            else use first_after_first_one[v + 2] if it exists
+
+    return ans</code></pre>
+  <p>Use an offset such as <code>n</code> or <code>n + 2</code> when storing balances in arrays, because balances range from <code>-n</code> to <code>n</code>.</p>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Return an even length; the prefix-difference rule naturally does this.</li>
+    <li>Handle all-zero and all-one strings; one of the one-swap branches must be disabled and the answer may be <code>0</code>.</li>
+    <li>Include prefix index <code>0</code> and prefix index <code>n</code>.</li>
+    <li>For <code>+2</code>, check for an outside <code>0</code>; for <code>-2</code>, check for an outside <code>1</code>.</li>
+    <li>Do not simulate swaps. The selected window's imbalance and outside availability are sufficient.</li>
+    <li>Keep the algorithm <code>O(n)</code> or <code>O(n log n)</code>; quadratic window enumeration will not fit <code>n = 100000</code>.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <div class="warn">
+    <p><strong>Only computing the longest balanced substring before any swap.</strong> This misses windows with imbalance exactly <code>2</code> or <code>-2</code>.</p>
+    <p><strong>Allowing any imbalance of absolute value 2.</strong> A swap can fix it only when the opposite character exists outside the selected substring.</p>
+    <p><strong>Capping by <code>2 * min(total0, total1)</code> and returning the cap blindly.</strong> The cap is necessary but not sufficient because the balanced characters must form a substring after one swap.</p>
+    <p><strong>Greedy local swap near a longest run.</strong> The best window may be determined by prefix-balance positions far apart, not by local run structure.</p>
+  </div>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead>
+      <tr><th>Family</th><th>Files</th><th>Core idea</th><th>Complexity</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Linear prefix arrays</td>
+        <td>Java, JavaScript, C++, Rust, TypeScript variants</td>
+        <td>Store first balance positions in arrays indexed by shifted balance; use first/last global positions of each character to validate outside availability.</td>
+        <td><code>O(n)</code> time, <code>O(n)</code> memory</td>
+      </tr>
+      <tr>
+        <td>Prefix buckets plus binary search</td>
+        <td>Python variants</td>
+        <td>Group prefix indices by balance and use sorted lists plus <code>bisect</code> or earliest/latest endpoints to find the longest valid <code>0</code>, <code>+2</code>, or <code>-2</code> window.</td>
+        <td><code>O(n log n)</code> or near-linear depending on bucket scan, <code>O(n)</code> memory</td>
+      </tr>
+      <tr>
+        <td>Suffix/prefix availability arrays</td>
+        <td>Go variant</td>
+        <td>Track next needed character, prefix/suffix availability, and last compatible prefix positions by balance.</td>
+        <td><code>O(n)</code> time, <code>O(n)</code> memory</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>These concrete numbers come from <code>stats.json.performance_by_language</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted count</th><th>Fastest</th><th>Slowest</th><th>Memory range</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>C++</td><td>1</td><td>504 ms</td><td>504 ms</td><td>275.4 MB</td><td>The accepted C++ file is linear but reports high memory, likely from full balance-index arrays.</td></tr>
+      <tr><td>Go</td><td>1</td><td>81 ms</td><td>81 ms</td><td>37.4 MB</td><td>The Go solution is both fast and moderate in memory with explicit integer arrays.</td></tr>
+      <tr><td>Java</td><td>4</td><td>38 ms</td><td>385 ms</td><td>49.6 MB to 279.8 MB</td><td>Java shows the fastest run overall; array implementation details strongly affect memory.</td></tr>
+      <tr><td>JavaScript</td><td>4</td><td>483 ms</td><td>892 ms</td><td>103 MB to 119.3 MB</td><td>JavaScript passes comfortably but is slower than the fastest typed-language submissions.</td></tr>
+      <tr><td>Python 3</td><td>4</td><td>940 ms</td><td>2325 ms</td><td>45.1 MB to 82 MB</td><td>Python accepted solutions rely on prefix buckets and bisect; keep object churn low.</td></tr>
+      <tr><td>Rust</td><td>1</td><td>102 ms</td><td>102 ms</td><td>12.6 MB</td><td>The Rust solution has the lowest reported memory in the set.</td></tr>
+      <tr><td>TypeScript</td><td>1</td><td>810 ms</td><td>810 ms</td><td>103.5 MB</td><td>TypeScript performance is similar to the JavaScript range.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> records 4 failed submissions, all with status <strong>Wrong Answer</strong>. No Time Limit Exceeded or Memory Limit Exceeded failures are listed, which points to edge-case logic rather than raw complexity as the main failure mode.</p>
+  <ul>
+    <li>Most likely wrong-answer source: forgetting the outside-character requirement for imbalance <code>+2</code> or <code>-2</code>.</li>
+    <li>Another likely source: mishandling windows that include every <code>0</code> or every <code>1</code>, where the needed incoming character does not exist outside.</li>
+    <li>All-one or all-zero cases must return <code>0</code>, not <code>2</code>.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Lines</th><th>Bytes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>385 ms</td><td>279.8 MB</td><td>70</td><td>2640</td></tr>
+      <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td>867 ms</td><td>112.8 MB</td><td>84</td><td>2306</td></tr>
+      <tr><td>3</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>1723 ms</td><td>45.1 MB</td><td>81</td><td>3111</td></tr>
+      <tr><td>4</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>55 ms</td><td>49.6 MB</td><td>107</td><td>3856</td></tr>
+      <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>815 ms</td><td>103 MB</td><td>97</td><td>2873</td></tr>
+      <tr><td>6</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>940 ms</td><td>46.2 MB</td><td>99</td><td>3550</td></tr>
+      <tr><td>7</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>483 ms</td><td>104.5 MB</td><td>90</td><td>2942</td></tr>
+      <tr><td>8</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>2325 ms</td><td>82 MB</td><td>62</td><td>1904</td></tr>
+      <tr><td>9</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>504 ms</td><td>275.4 MB</td><td>66</td><td>2058</td></tr>
+      <tr><td>10</td><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>81 ms</td><td>37.4 MB</td><td>138</td><td>3479</td></tr>
+      <tr><td>11</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>278 ms</td><td>275.5 MB</td><td>71</td><td>2334</td></tr>
+      <tr><td>12</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>892 ms</td><td>119.3 MB</td><td>98</td><td>2286</td></tr>
+      <tr><td>13</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>102 ms</td><td>12.6 MB</td><td>133</td><td>4471</td></tr>
+      <tr><td>14</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>810 ms</td><td>103.5 MB</td><td>73</td><td>1940</td></tr>
+      <tr><td>15</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>1766 ms</td><td>54.6 MB</td><td>72</td><td>2668</td></tr>
+      <tr><td>16</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>38 ms</td><td>56.3 MB</td><td>100</td><td>3365</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

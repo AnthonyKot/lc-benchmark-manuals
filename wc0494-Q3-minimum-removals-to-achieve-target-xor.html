@@ -1,0 +1,244 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minimum Removals to Achieve Target XOR - Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2933;
+      --muted: #52606d;
+      --line: #d9e2ec;
+      --panel: #f8fafc;
+      --accent: #0f766e;
+      --code: #111827;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: white;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 22px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      line-height: 1.2;
+    }
+    h2 {
+      margin-top: 34px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--line);
+      font-size: 1.35rem;
+    }
+    h3 {
+      margin-top: 22px;
+      font-size: 1.05rem;
+    }
+    p, li {
+      max-width: 86ch;
+    }
+    code {
+      font-family: Consolas, Monaco, monospace;
+      color: var(--code);
+      background: #eef2f7;
+      padding: 0.08rem 0.25rem;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      background: #111827;
+      color: #f9fafb;
+      padding: 16px;
+      border-radius: 8px;
+      line-height: 1.45;
+    }
+    pre code {
+      color: inherit;
+      background: transparent;
+      padding: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0 22px;
+      font-size: 0.92rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #edf7f6;
+      color: #134e4a;
+    }
+    .meta, .note {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--accent);
+      padding: 12px 14px;
+      border-radius: 8px;
+    }
+    .muted {
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Minimum Removals to Achieve Target XOR</h1>
+  <p class="muted">Problem id: <code>wc0494-Q3-minimum-removals-to-achieve-target-xor</code></p>
+
+  <h2>Provenance</h2>
+  <div class="meta">
+    <p><strong>Source files used:</strong> <code>problem.md</code>, <code>stats.json</code>, and the local <code>accepted__*</code> solution files.</p>
+    <p><strong>Generator metadata:</strong> tool <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-16T20:28:54.126527+00:00</code>.</p>
+    <p><strong>LeetCode metadata:</strong> difficulty Medium, function <code>minRemovals(nums, target)</code>, topic tags array, dynamic programming, bit manipulation.</p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer array <code>nums</code> and an integer <code>target</code>. You may remove any number of elements from <code>nums</code>, possibly zero. Return the minimum number of removals required so that the bitwise XOR of the remaining elements equals <code>target</code>. If it is impossible, return <code>-1</code>. The XOR of an empty array is <code>0</code>.</p>
+  <p><strong>Constraints:</strong> <code>1 &lt;= nums.length &lt;= 40</code>, <code>0 &lt;= nums[i] &lt;= 10000</code>, <code>0 &lt;= target &lt;= 10000</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>Removing elements leaves a subsequence, but order does not matter for XOR. The task is really to choose a subset to keep whose XOR is <code>target</code>, while maximizing how many elements are kept. The answer is then <code>n - maxKept</code>. Equivalently, compute the XOR of all elements as <code>total</code>; the removed elements must XOR to <code>total ^ target</code>, and the answer is the minimum size of such a removed subset.</p>
+  <p>The value bound makes every possible XOR fit below <code>2^14 = 16384</code>, so a small DP over XOR states is enough. The length bound also allows meet-in-the-middle over two halves of at most 20 elements each.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [1,2,3]</code> and <code>target = 2</code>, the XOR of all numbers is <code>1 ^ 2 ^ 3 = 0</code>. If using removed-subset DP, removed elements must XOR to <code>0 ^ 2 = 2</code>. The smallest removed subset with XOR <code>2</code> is <code>[2]</code>, so the answer is <code>1</code>.</p>
+  <p>Using kept-subset DP gives the same result: the largest kept subset with XOR <code>2</code> is <code>[1,3]</code>, of size <code>2</code>. Since <code>n = 3</code>, removals are <code>3 - 2 = 1</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead><tr><th>Input</th><th>Output</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td><code>nums = [2,4], target = 1</code></td><td><code>-1</code></td><td>No subset of the elements can be kept with XOR <code>1</code>, so no removal set can make the remainder XOR to <code>1</code>.</td></tr>
+      <tr><td><code>nums = [7], target = 7</code></td><td><code>0</code></td><td>The full array already has XOR <code>7</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <h3>Preferred DP: maximize kept elements</h3>
+  <ol>
+    <li>Let <code>MAX = 1 &lt;&lt; 14</code>, or compute the next power of two greater than the bitwise OR of all values and <code>target</code>.</li>
+    <li>Maintain <code>dp[x]</code> as the maximum number of kept elements that can produce XOR <code>x</code>. Initialize <code>dp[0] = 0</code> and all other states to <code>-1</code>.</li>
+    <li>For each <code>num</code>, copy the current DP and try keeping this element: <code>next[x ^ num] = max(next[x ^ num], dp[x] + 1)</code>.</li>
+    <li>After all numbers, if <code>dp[target] == -1</code>, return <code>-1</code>. Otherwise return <code>len(nums) - dp[target]</code>.</li>
+  </ol>
+  <h3>Equivalent DP: minimize removed elements</h3>
+  <ol>
+    <li>Compute <code>need = xor(nums) ^ target</code>.</li>
+    <li>Maintain <code>dp[x]</code> as the minimum number of removed elements producing XOR <code>x</code>.</li>
+    <li>Return <code>dp[need]</code>, or <code>-1</code> if absent.</li>
+  </ol>
+  <p>Both formulations are correct because XOR is associative and every element is either kept or removed. They differ only in which side of the partition is optimized.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code class="language-python">class Solution:
+    def minRemovals(self, nums: List[int], target: int) -&gt; int:
+        max_xor = 1 &lt;&lt; 14
+        dp = [-1] * max_xor
+        dp[0] = 0
+
+        for num in nums:
+            ndp = dp[:]
+            for x in range(max_xor):
+                if dp[x] != -1:
+                    nx = x ^ num
+                    ndp[nx] = max(ndp[nx], dp[x] + 1)
+            dp = ndp
+
+        if dp[target] == -1:
+            return -1
+        return len(nums) - dp[target]</code></pre>
+  <p>Time complexity is <code>O(n * 2^14)</code>, at most about <code>655,360</code> state transitions for <code>n = 40</code>. Space complexity is <code>O(2^14)</code>.</p>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use a fresh copy of DP for each element so the same element is not used more than once.</li>
+    <li>Represent unreachable states explicitly, for example <code>-1</code> for max-kept DP or <code>inf</code> for min-removed DP.</li>
+    <li>Return <code>0</code> when the full array already satisfies the target; the DP naturally handles this.</li>
+    <li>Handle <code>target = 0</code>; keeping no elements is valid because the XOR of an empty array is <code>0</code>.</li>
+    <li>If using a dynamic state size, include all bits that appear in any <code>num</code> or in <code>target</code>. A fixed <code>1 &lt;&lt; 14</code> is valid under the given constraints.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li><strong>Greedy removal by value or bit:</strong> XOR has cancellation behavior, so locally removing a number that fixes one bit can break another bit later.</li>
+    <li><strong>Checking only individual elements:</strong> A target may require a combination, such as <code>1 ^ 3 = 2</code>.</li>
+    <li><strong>Using current-row updates in-place without a copy:</strong> This can reuse one element multiple times in the same iteration and create invalid states.</li>
+    <li><strong>Returning the minimum kept subset size:</strong> The problem asks for minimum removals, so with kept-subset DP you must maximize kept count.</li>
+    <li><strong>Forgetting empty remainder:</strong> If the target is <code>0</code>, removing every element is allowed.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead><tr><th>Family</th><th>Accepted examples</th><th>Core idea</th><th>Complexity</th></tr></thead>
+    <tbody>
+      <tr><td>Max-kept XOR DP</td><td>C++, Java, JavaScript, Python, Go submissions</td><td>Track the largest subset size for every XOR value, then return <code>n - dp[target]</code>.</td><td><code>O(n * 2^14)</code> time, <code>O(2^14)</code> space.</td></tr>
+      <tr><td>Min-removed XOR DP</td><td>Java, Rust, Python submissions</td><td>Compute <code>need = totalXor ^ target</code> and minimize how many removed elements produce <code>need</code>.</td><td><code>O(n * 2^14)</code> time, <code>O(2^14)</code> space.</td></tr>
+      <tr><td>Meet in the middle</td><td>Python submissions such as <code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>Enumerate best kept counts by XOR for each half and combine complementary XOR values.</td><td><code>O(2^(n/2) * n)</code> generation in simple form, <code>O(2^(n/2))</code> space.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>Concrete figures below come from <code>stats.json.performance_by_language</code>.</p>
+  <table>
+    <thead><tr><th>Language</th><th>Accepted count</th><th>Runtime range</th><th>Memory range</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td>C++</td><td>1</td><td>21 ms</td><td>64.6 MB</td><td>The single C++ DP submission is the fastest non-Java-family low-level baseline in the table.</td></tr>
+      <tr><td>Go</td><td>2</td><td>238 ms to 269 ms</td><td>22.8 MB to 49 MB</td><td>Both Go submissions are comfortably within limits; array DP is a good fit.</td></tr>
+      <tr><td>Java</td><td>6</td><td>12 ms to 816 ms</td><td>46.7 MB to 49.5 MB</td><td>The fastest recorded submission overall is Java at 12 ms; Java memory is tightly clustered around 47-50 MB.</td></tr>
+      <tr><td>JavaScript</td><td>4</td><td>347 ms to 750 ms</td><td>61.7 MB to 89.3 MB</td><td>Use dense arrays instead of object-heavy state maps when possible; JS memory reached 89.3 MB in the slowest-memory accepted record.</td></tr>
+      <tr><td>Python 3</td><td>9</td><td>215 ms to 11768 ms</td><td>19.3 MB to 32.6 MB</td><td>Python varies widely. The best submissions use compact DP or optimized enumeration; naive meet-in-the-middle mask loops can still pass but may be much slower.</td></tr>
+      <tr><td>Rust</td><td>1</td><td>266 ms</td><td>2.3 MB</td><td>The Rust submission has the lowest recorded memory by a wide margin.</td></tr>
+      <tr><td>TypeScript</td><td>1</td><td>678 ms</td><td>62.6 MB</td><td>TypeScript accepted with the same DP idea; expect runtime and memory closer to JavaScript than to C++ or Java.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports <code>failed_submission_status_counts: {}</code>, so no concrete failed submission statuses were available in the local data. The main implementation risks inferred from accepted solutions are DP state reuse, optimizing the wrong side of the keep/remove partition, and choosing an XOR array size that omits valid target bits.</p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Lines</th><th>Bytes</th><th>Submission ID</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>codex-agent-gpt-5.5-java</td><td>java</td><td><code>accepted__codex-agent-gpt-5.5-java__java.java</code></td><td>12 ms</td><td>46.7 MB</td><td>45</td><td>1140</td><td>2003969409</td></tr>
+      <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>10218 ms</td><td>20.6 MB</td><td>37</td><td>1042</td><td>2004498089</td></tr>
+      <tr><td>3</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>816 ms</td><td>49.5 MB</td><td>57</td><td>1782</td><td>2004370337</td></tr>
+      <tr><td>4</td><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td>750 ms</td><td>61.7 MB</td><td>54</td><td>1501</td><td>2004354281</td></tr>
+      <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>4581 ms</td><td>19.3 MB</td><td>21</td><td>632</td><td>2004088241</td></tr>
+      <tr><td>6</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>152 ms</td><td>47 MB</td><td>24</td><td>707</td><td>2004122060</td></tr>
+      <tr><td>7</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>689 ms</td><td>63.7 MB</td><td>46</td><td>1179</td><td>2004127582</td></tr>
+      <tr><td>8</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>4500 ms</td><td>19.3 MB</td><td>27</td><td>867</td><td>2004093765</td></tr>
+      <tr><td>9</td><td>glm-5-cloud</td><td>python3</td><td><code>accepted__glm-5-cloud__python3.py</code></td><td>11768 ms</td><td>32.6 MB</td><td>47</td><td>1387</td><td>2003277033</td></tr>
+      <tr><td>10</td><td>glm-5-cloud-t0.0</td><td>python3</td><td><code>accepted__glm-5-cloud-t0.0__python3.py</code></td><td>9308 ms</td><td>20.5 MB</td><td>51</td><td>1473</td><td>2003674268</td></tr>
+      <tr><td>11</td><td>glm-5-cloud-t0.8-java</td><td>java</td><td><code>accepted__glm-5-cloud-t0.8-java__java.java</code></td><td>795 ms</td><td>48.9 MB</td><td>45</td><td>1463</td><td>2004527985</td></tr>
+      <tr><td>12</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>347 ms</td><td>89.3 MB</td><td>82</td><td>2487</td><td>2004533501</td></tr>
+      <tr><td>13</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>4159 ms</td><td>19.5 MB</td><td>26</td><td>748</td><td>2003726352</td></tr>
+      <tr><td>14</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>21 ms</td><td>64.6 MB</td><td>32</td><td>804</td><td>2003797632</td></tr>
+      <tr><td>15</td><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>269 ms</td><td>49 MB</td><td>36</td><td>754</td><td>2003819318</td></tr>
+      <tr><td>16</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>151 ms</td><td>46.9 MB</td><td>32</td><td>855</td><td>2003739134</td></tr>
+      <tr><td>17</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>506 ms</td><td>75.3 MB</td><td>25</td><td>674</td><td>2003590833</td></tr>
+      <tr><td>18</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>266 ms</td><td>2.3 MB</td><td>29</td><td>808</td><td>2003803313</td></tr>
+      <tr><td>19</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>678 ms</td><td>62.6 MB</td><td>47</td><td>1253</td><td>2003665354</td></tr>
+      <tr><td>20</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>263 ms</td><td>19.4 MB</td><td>28</td><td>944</td><td>2003271809</td></tr>
+      <tr><td>21</td><td>qwen3.5-cloud</td><td>python3</td><td><code>accepted__qwen3.5-cloud__python3.py</code></td><td>215 ms</td><td>20.6 MB</td><td>23</td><td>673</td><td>2003508030</td></tr>
+      <tr><td>22</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>236 ms</td><td>22.7 MB</td><td>32</td><td>1332</td><td>2003602561</td></tr>
+      <tr><td>23</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>238 ms</td><td>22.8 MB</td><td>45</td><td>931</td><td>2003978596</td></tr>
+      <tr><td>24</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>135 ms</td><td>47 MB</td><td>49</td><td>1776</td><td>2004010418</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

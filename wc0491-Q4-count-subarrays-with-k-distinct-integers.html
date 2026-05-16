@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0491-Q4-count-subarrays-with-k-distinct-integers Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #52606d;
+      --line: #d7dee8;
+      --panel: #f6f8fb;
+      --accent: #0f766e;
+      --code: #101828;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: #ffffff;
+    }
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 32px 22px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 22px;
+    }
+    p, li {
+      font-size: 15px;
+    }
+    .meta, .note {
+      color: var(--muted);
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    code {
+      font-family: Consolas, Monaco, "Courier New", monospace;
+      color: var(--code);
+      background: #eef2f7;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      background: #111827;
+      color: #f9fafb;
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    pre code {
+      color: inherit;
+      background: transparent;
+      padding: 0;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #edf4f3;
+    }
+    .tag {
+      display: inline-block;
+      margin: 2px 4px 2px 0;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #e6f4f1;
+      color: var(--accent);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Count Subarrays With K Distinct Integers</h1>
+  <p class="meta">Problem id: <code>wc0491-Q4-count-subarrays-with-k-distinct-integers</code></p>
+
+  <h2>Provenance</h2>
+  <div class="panel">
+    <p>This manual was built from the local workspace files <code>problem.md</code>, <code>stats.json</code>, and the six <code>accepted__*</code> submissions.</p>
+    <p><strong>Difficulty:</strong> Hard. <strong>Function:</strong> <code>countSubarrays(nums, k, m)</code>. <strong>Tags:</strong>
+      <span class="tag">array</span><span class="tag">hash-table</span><span class="tag">sliding-window</span><span class="tag">counting</span>
+    </p>
+    <p><strong>Accepted submissions analyzed:</strong> 6. <strong>Observed failed statuses:</strong> Wrong Answer 4, Time Limit Exceeded 6, Compile Error 1.</p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer array <code>nums</code> and two integers <code>k</code> and <code>m</code>.</p>
+  <p>Return the number of non-empty subarrays such that the subarray contains exactly <code>k</code> distinct integers and every distinct integer present in the subarray appears at least <code>m</code> times.</p>
+  <p><strong>Constraints:</strong> <code>1 &lt;= nums.length &lt;= 100000</code>, <code>1 &lt;= nums[i] &lt;= 100000</code>, and <code>1 &lt;= k, m &lt;= nums.length</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>For each possible left boundary, valid right boundaries form a contiguous suffix inside the range where the window still has at most <code>k</code> distinct values. The first right boundary must make all <code>k</code> values reach frequency at least <code>m</code>; the last right boundary is just before a <code>(k+1)</code>th distinct value would enter.</p>
+  <p>The count for a fixed left is therefore:</p>
+  <pre><code>number of valid rights = maxRightAtMostK - minRightAllMature + 1</code></pre>
+  <p>when the minimal mature window exists; otherwise it contributes zero.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [1,2,1,2,2]</code>, <code>k = 2</code>, <code>m = 2</code>, the answer is <code>2</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Subarray</th><th>Distinct count</th><th>Frequencies</th><th>Valid?</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>[1,2,1,2]</code></td><td>2</td><td><code>{1:2, 2:2}</code></td><td>yes</td></tr>
+      <tr><td><code>[1,2,1,2,2]</code></td><td>2</td><td><code>{1:2, 2:3}</code></td><td>yes</td></tr>
+    </tbody>
+  </table>
+  <p>For left index <code>0</code>, the minimal right that makes both distinct values appear twice is index <code>3</code>. The maximal right with at most two distinct values is index <code>4</code>. That gives two valid endings: <code>3</code> and <code>4</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <p>For <code>nums = [3,1,2,4]</code>, <code>k = 2</code>, <code>m = 1</code>, the answer is <code>3</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Subarray</th><th>Distinct count</th><th>Frequencies</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>[3,1]</code></td><td>2</td><td><code>{3:1, 1:1}</code></td></tr>
+      <tr><td><code>[1,2]</code></td><td>2</td><td><code>{1:1, 2:1}</code></td></tr>
+      <tr><td><code>[2,4]</code></td><td>2</td><td><code>{2:1, 4:1}</code></td></tr>
+    </tbody>
+  </table>
+  <p>Because <code>m = 1</code>, every present value is already mature. The problem reduces to counting subarrays with exactly two distinct values.</p>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <p>The clearest accepted linear algorithm uses two sliding windows anchored at the same left boundary.</p>
+  <ol>
+    <li>Maintain window A with counts, <code>distinctA</code>, and <code>validA</code>, where <code>validA</code> is the number of distinct values whose count is at least <code>m</code>. Expand its right pointer until either the window has exactly <code>k</code> distinct values and all <code>k</code> are mature, or adding a new value would exceed <code>k</code> distinct values.</li>
+    <li>Maintain window B with counts and <code>distinctB</code>. Expand its right pointer as far as possible while keeping at most <code>k</code> distinct values.</li>
+    <li>If window A is valid, add <code>rightB - rightA + 1</code>. Every end from the minimal mature end through the maximal at-most-<code>k</code> end is valid.</li>
+    <li>Remove <code>nums[left]</code> from both windows and advance <code>left</code>.</li>
+  </ol>
+  <p>Use <code>long</code>/<code>long long</code>/<code>int64</code> for the answer, because the number of subarrays can be quadratic in <code>n</code>.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>long countSubarrays(nums, k, m):
+    n = nums.length
+    freqNeed = zero array or map
+    freqLimit = zero array or map
+    rightNeed = 0
+    rightLimit = 0
+    distinctNeed = 0
+    matureNeed = 0
+    distinctLimit = 0
+    ans = 0
+
+    for left in 0 .. n-1:
+        while rightNeed &lt; n:
+            if distinctNeed == k and matureNeed == k:
+                break
+            x = nums[rightNeed]
+            if freqNeed[x] == 0 and distinctNeed == k:
+                break
+            if freqNeed[x] == 0:
+                distinctNeed += 1
+            freqNeed[x] += 1
+            if freqNeed[x] == m:
+                matureNeed += 1
+            rightNeed += 1
+
+        while rightLimit &lt; n:
+            x = nums[rightLimit]
+            if freqLimit[x] == 0 and distinctLimit == k:
+                break
+            if freqLimit[x] == 0:
+                distinctLimit += 1
+            freqLimit[x] += 1
+            rightLimit += 1
+
+        if distinctNeed == k and matureNeed == k:
+            ans += rightLimit - rightNeed + 1
+
+        y = nums[left]
+        if freqNeed[y] == m:
+            matureNeed -= 1
+        freqNeed[y] -= 1
+        if freqNeed[y] == 0:
+            distinctNeed -= 1
+
+        if freqLimit[y] == 1:
+            distinctLimit -= 1
+        freqLimit[y] -= 1
+
+    return ans</code></pre>
+  <p class="note">The skeleton uses exclusive right pointers, matching the fastest Java accepted file. If using inclusive right pointers, adjust the final addition accordingly.</p>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Return type is 64-bit.</li>
+    <li>Frequency storage handles values up to <code>100000</code>; an array is faster than a hash map in Java, JavaScript, C++, and Python here.</li>
+    <li>When a count rises from <code>m - 1</code> to <code>m</code>, increment the mature-value counter exactly once.</li>
+    <li>When removing the left value, decrement the mature counter before lowering the frequency if the old count is exactly <code>m</code>.</li>
+    <li>Do not let the minimal-mature window include more than <code>k</code> distinct values.</li>
+    <li>Do not count a left boundary unless <code>distinct == k</code> and <code>mature == k</code>.</li>
+    <li>Test <code>m = 1</code>, <code>k = 1</code>, all equal values, all distinct values, and cases where no answer exists.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li><strong>Plain exactly-k distinct:</strong> Counting <code>atMost(k) - atMost(k-1)</code> without enforcing the frequency threshold accepts windows where some value appears fewer than <code>m</code> times.</li>
+    <li><strong>Only checking total length:</strong> A window of length at least <code>k * m</code> is not enough; the counts can be uneven.</li>
+    <li><strong>Shrinking the mature window greedily after it becomes valid:</strong> If the pointer is moved past the first valid right for a fixed left, the count of valid endings is off.</li>
+    <li><strong>Using 32-bit answer storage:</strong> With <code>n = 100000</code>, the answer may exceed <code>2^31 - 1</code>.</li>
+    <li><strong>Forgetting the transition at exactly <code>m</code>:</strong> Incrementing mature count for every count above <code>m</code> inflates the validity test.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead>
+      <tr><th>Family</th><th>Files</th><th>Idea</th><th>Complexity</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Dual right-bound sliding windows</td>
+        <td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code>, <code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code>, <code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td>
+        <td>For each left, compute the minimal right that satisfies exactly <code>k</code> mature values and the maximal right with at most <code>k</code> distinct values.</td>
+        <td><code>O(n)</code> time, <code>O(U)</code> memory.</td>
+      </tr>
+      <tr>
+        <td>Three left-bound windows</td>
+        <td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td>
+        <td>For each right, intersect the range of left positions that gives at most <code>k</code>, excludes at most <code>k-1</code>, and has at least <code>k</code> mature values.</td>
+        <td><code>O(n)</code> time, <code>O(U)</code> memory.</td>
+      </tr>
+      <tr>
+        <td>Ordered latest-occurrence set</td>
+        <td><code>accepted__codex-agent-gpt-5.5-java__java.java</code></td>
+        <td>Keep the top <code>k</code> values by latest occurrence and track each value's earliest start that still gives <code>m</code> copies.</td>
+        <td><code>O(n log U)</code> time, <code>O(n)</code> memory.</td>
+      </tr>
+      <tr>
+        <td>Segment tree over left positions</td>
+        <td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td>
+        <td>Maintain forbidden left intervals for values that have not accumulated <code>m</code> appearances in the current right prefix, then query exactly-k left range.</td>
+        <td><code>O(n log n)</code> time, <code>O(n + U)</code> memory.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>These notes use <code>stats.json.performance_by_language</code> directly.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted count</th><th>Fastest</th><th>Slowest</th><th>Memory range</th><th>Practical note</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Java</td>
+        <td>3</td>
+        <td>26 ms, <code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td>
+        <td>469 ms, <code>accepted__codex-agent-gpt-5.5-java__java.java</code></td>
+        <td>72.8 MB to 111.7 MB</td>
+        <td>The array-based dual-window implementation is much faster than ordered-set or map-heavy approaches.</td>
+      </tr>
+      <tr>
+        <td>JavaScript</td>
+        <td>1</td>
+        <td>428 ms, <code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td>
+        <td>428 ms, same file</td>
+        <td>80 MB</td>
+        <td>Use numeric arrays sized to <code>100001</code>; avoid nested maps or per-window object churn.</td>
+      </tr>
+      <tr>
+        <td>Python 3</td>
+        <td>2</td>
+        <td>523 ms, <code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td>
+        <td>11581 ms, <code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td>
+        <td>27.3 MB to 40.4 MB</td>
+        <td>The linear multi-window solution is accepted comfortably; the segment-tree solution is accepted but close to the wrong performance direction for Python.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p>The stats show more Time Limit Exceeded submissions than Wrong Answer submissions: 6 TLE, 4 WA, and 1 Compile Error. That points to two main risks.</p>
+  <ul>
+    <li><strong>TLE risk:</strong> Checking every subarray or recomputing distinct/frequency maps per start is too slow for <code>n = 100000</code>. Even <code>O(n sqrt n)</code> style experiments are risky compared with the accepted <code>O(n)</code> windows.</li>
+    <li><strong>WA risk:</strong> The validity condition combines exactly <code>k</code> distinct with all counts at least <code>m</code>. It is easy to count windows where only the distinct count is right, or where only <code>k</code> values are mature but an extra immature distinct value is also present.</li>
+    <li><strong>Compile risk:</strong> Keep the function signature exactly as supplied by the platform; Java returns <code>long</code>, not <code>int</code>.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Submission ID</th>
+        <th>Lines</th>
+        <th>Bytes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>codex-agent-gpt-5.5-java</td>
+        <td>java</td>
+        <td><code>accepted__codex-agent-gpt-5.5-java__java.java</code></td>
+        <td>469 ms</td>
+        <td>111.7 MB</td>
+        <td>2003968797</td>
+        <td>148</td>
+        <td>4250</td>
+      </tr>
+      <tr>
+        <td>deepseek-v4-pro-cloud-t0.0</td>
+        <td>python3</td>
+        <td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td>
+        <td>523 ms</td>
+        <td>27.3 MB</td>
+        <td>2004087723</td>
+        <td>63</td>
+        <td>1945</td>
+      </tr>
+      <tr>
+        <td>deepseek-v4-pro-cloud-t0.0-java</td>
+        <td>java</td>
+        <td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td>
+        <td>26 ms</td>
+        <td>72.8 MB</td>
+        <td>2004121753</td>
+        <td>56</td>
+        <td>1900</td>
+      </tr>
+      <tr>
+        <td>deepseek-v4-pro-cloud-t0.0-javascript</td>
+        <td>javascript</td>
+        <td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td>
+        <td>428 ms</td>
+        <td>80 MB</td>
+        <td>2004127277</td>
+        <td>56</td>
+        <td>1767</td>
+      </tr>
+      <tr>
+        <td>kimi-k2.5-cloud-t0.0-java</td>
+        <td>java</td>
+        <td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td>
+        <td>72 ms</td>
+        <td>82.5 MB</td>
+        <td>2003738321</td>
+        <td>103</td>
+        <td>3005</td>
+      </tr>
+      <tr>
+        <td>qwen3.5-cloud-t1.0</td>
+        <td>python3</td>
+        <td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td>
+        <td>11581 ms</td>
+        <td>40.4 MB</td>
+        <td>2003517782</td>
+        <td>173</td>
+        <td>5561</td>
+      </tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0489-Q4 Maximum Subarray XOR with Bounded Range Manual</title>
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, sans-serif; line-height: 1.55; margin: 0; color: #17202a; background: #f7f8fb; }
+    main { max-width: 1080px; margin: 0 auto; padding: 32px 20px 56px; background: #fff; }
+    h1 { margin-top: 0; font-size: 2rem; }
+    h2 { margin-top: 2rem; padding-top: .75rem; border-top: 1px solid #d9dee7; font-size: 1.35rem; }
+    code, pre { font-family: ui-monospace, SFMono-Regular, Consolas, monospace; }
+    code { background: #eef1f6; padding: .08rem .28rem; border-radius: 4px; }
+    pre { overflow: auto; background: #111827; color: #f9fafb; padding: 16px; border-radius: 8px; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .92rem; }
+    th, td { border: 1px solid #d9dee7; padding: 8px 10px; text-align: left; vertical-align: top; }
+    th { background: #eef1f6; }
+    .meta { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 8px 20px; padding: 12px 16px; background: #eef6ff; border-radius: 8px; }
+    .note { background: #fff7df; border-left: 4px solid #d69e2e; padding: 10px 14px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Maximum Subarray XOR with Bounded Range</h1>
+
+  <h2>Provenance</h2>
+  <div class="meta">
+    <div><strong>Problem id:</strong> wc0489-Q4-maximum-subarray-xor-with-bounded-range</div>
+    <div><strong>Difficulty:</strong> Hard</div>
+    <div><strong>Function:</strong> <code>maxXor(nums, k)</code></div>
+    <div><strong>Accepted files analyzed:</strong> 24</div>
+    <div><strong>Generated from:</strong> <code>problem.md</code>, <code>stats.json</code>, and <code>accepted__*</code> files</div>
+    <div><strong>Core tags:</strong> array, bit manipulation, trie, sliding window, monotonic queue, prefix XOR</div>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given a non-negative integer array <code>nums</code> and an integer <code>k</code>. Select a non-empty contiguous subarray whose maximum element minus minimum element is at most <code>k</code>. The value of a selected subarray is the XOR of all its elements. Return the maximum possible value.</p>
+  <p>Constraints: <code>1 &lt;= nums.length &lt;= 4 * 10^4</code>, <code>0 &lt;= nums[i] &lt; 2^15</code>, and <code>0 &lt;= k &lt; 2^15</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The range condition is about ordinary values inside a contiguous window, while the objective is an XOR over a subarray. For a fixed right endpoint <code>r</code>, once the smallest valid left boundary <code>L</code> is known, every start <code>l in [L, r]</code> produces a valid subarray ending at <code>r</code>. Its XOR is <code>pref[r + 1] ^ pref[l]</code>. Therefore, the task becomes: maintain all currently valid prefix XORs <code>pref[l]</code> and answer maximum XOR queries against <code>pref[r + 1]</code>.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [5,4,5,6]</code> and <code>k = 2</code>, the best subarray is <code>[4,5,6]</code>. Its maximum is <code>6</code>, minimum is <code>4</code>, and <code>6 - 4 = 2</code>, so it is valid. Its value is <code>4 ^ 5 ^ 6 = 7</code>, so the answer is <code>7</code>.</p>
+  <p>Prefix XORs are <code>[0,5,1,4,2]</code>. At right endpoint <code>r = 3</code>, the valid start indices include <code>1,2,3</code>. Querying a trie containing <code>pref[1]</code>, <code>pref[2]</code>, and <code>pref[3]</code> with <code>pref[4] = 2</code> can produce <code>2 ^ pref[1] = 2 ^ 5 = 7</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead><tr><th>Input</th><th>Output</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td><code>nums = [5,4,5,6], k = 1</code></td><td><code>6</code></td><td>The single-element subarray <code>[6]</code> is valid and has XOR <code>6</code>. Longer high-XOR candidates are blocked by the tighter max-min bound.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Compute prefix XORs, where <code>pref[0] = 0</code> and <code>pref[i + 1] = pref[i] ^ nums[i]</code>.</li>
+    <li>Scan right endpoint <code>r</code> from left to right.</li>
+    <li>Maintain two monotonic deques of indices: a decreasing deque for the current maximum and an increasing deque for the current minimum.</li>
+    <li>While <code>nums[maxDeque.front] - nums[minDeque.front] &gt; k</code>, remove <code>pref[L]</code> from the trie, evict index <code>L</code> from deque fronts if present, and increment <code>L</code>.</li>
+    <li>Ensure the trie contains exactly prefix indices for valid starts <code>l in [L, r]</code>, then query it with <code>pref[r + 1]</code>.</li>
+    <li>Update the answer with the query result.</li>
+  </ol>
+  <p>The accepted submissions use two equivalent orderings: insert <code>pref[r]</code> before querying <code>pref[r + 1]</code>, or carry <code>pref[r]</code> from the previous iteration after querying. The invariant is what matters: at query time, the trie must contain all and only valid start prefixes for subarrays ending at <code>r</code>.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>def maxXor(nums, k):
+    n = len(nums)
+    pref = [0] * (n + 1)
+    for i, x in enumerate(nums):
+        pref[i + 1] = pref[i] ^ x
+
+    trie = CountedBinaryTrie(bit_high=14)  # 15-bit values are enough for this problem
+    max_dq = deque()  # indices, values decreasing
+    min_dq = deque()  # indices, values increasing
+    left = 0
+    ans = 0
+
+    for r, x in enumerate(nums):
+        while max_dq and nums[max_dq[-1]] &lt;= x:
+            max_dq.pop()
+        max_dq.append(r)
+
+        while min_dq and nums[min_dq[-1]] &gt;= x:
+            min_dq.pop()
+        min_dq.append(r)
+
+        trie.insert(pref[r])
+
+        while nums[max_dq[0]] - nums[min_dq[0]] &gt; k:
+            trie.remove(pref[left])
+            if max_dq[0] == left:
+                max_dq.popleft()
+            if min_dq[0] == left:
+                min_dq.popleft()
+            left += 1
+
+        ans = max(ans, trie.query_max_xor(pref[r + 1]))
+
+    return ans</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use prefix XORs; do not recompute subarray XORs directly.</li>
+    <li>Use counts in trie nodes so deleting stale prefixes does not break duplicate prefix values.</li>
+    <li>Use 15 bits for values under <code>2^15</code>; using 16 bits is also safe and appears in some accepted solutions.</li>
+    <li>When moving <code>L</code>, delete <code>pref[L]</code>, not <code>nums[L]</code>.</li>
+    <li>Keep deques as indices, not values, so expired boundaries can be removed correctly.</li>
+    <li>At every query, the trie must be non-empty because a single-element subarray ending at <code>r</code> is always a possible start after inserting <code>pref[r]</code>.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Sorting the array or using value buckets loses contiguity, so it cannot solve the subarray problem.</li>
+    <li>Maintaining only the best prefix XOR is insufficient; maximum XOR requires bitwise branching over all eligible prefixes.</li>
+    <li>Checking only the longest valid window misses shorter subarrays inside the window that may have a larger XOR.</li>
+    <li>Using a trie without per-node counts fails when the left boundary moves or duplicate prefixes exist.</li>
+    <li>Calling JavaScript <code>Array.shift()</code> heavily for queues can add overhead; accepted JavaScript still passed, but head pointers are usually safer for larger inputs.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <p>All accepted files follow the same asymptotic family: sliding window plus monotonic min/max queues plus counted binary trie over prefix XORs. The main implementation variants are:</p>
+  <ul>
+    <li><strong>Object-node trie:</strong> common in Python, Java, and JavaScript; each node stores two children and a count.</li>
+    <li><strong>Array-index trie:</strong> used in faster systems-language submissions and some JavaScript; stores child indices and counts in arrays or vectors for less allocation overhead.</li>
+    <li><strong>Deque implementation choice:</strong> Python uses <code>collections.deque</code>, Java often uses <code>ArrayDeque</code> or raw arrays, Rust uses <code>VecDeque</code>, and Go uses slices with head indexes.</li>
+  </ul>
+  <p>Time complexity is <code>O(n * B)</code>, where <code>B</code> is 15 or 16 trie levels. Space complexity is <code>O(n * B)</code> in the worst case for trie nodes plus <code>O(n)</code> for prefix XORs and deques.</p>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The following notes use <code>stats.json.performance_by_language</code> directly.</p>
+  <table>
+    <thead><tr><th>Language</th><th>Accepted count</th><th>Runtime range</th><th>Memory range</th><th>Practical note</th></tr></thead>
+    <tbody>
+      <tr><td>Rust</td><td>1</td><td>96 ms</td><td>4.3 MB</td><td>Fastest and lowest memory in the sample; array-backed trie and compact integer storage are ideal here.</td></tr>
+      <tr><td>Java</td><td>6</td><td>149 ms to 206 ms</td><td>73.1 MB to 126.1 MB</td><td>Very fast despite object overhead; raw-array deques and avoiding unnecessary allocation help.</td></tr>
+      <tr><td>Go</td><td>2</td><td>175 ms to 185 ms</td><td>16.4 MB to 53.8 MB</td><td>Consistently fast; slice-backed queues and integer-array tries are natural fits.</td></tr>
+      <tr><td>C++</td><td>1</td><td>207 ms</td><td>138 MB</td><td>Runtime is strong, but this accepted submission used high memory compared with Rust and Go.</td></tr>
+      <tr><td>JavaScript</td><td>4</td><td>362 ms to 773 ms</td><td>88.8 MB to 131.2 MB</td><td>Passes comfortably with the right algorithm; use indexed arrays and queue heads when possible.</td></tr>
+      <tr><td>TypeScript</td><td>1</td><td>426 ms</td><td>93.4 MB</td><td>Comparable to JavaScript; keep data structures simple and numeric.</td></tr>
+      <tr><td>Python 3</td><td>9</td><td>2637 ms to 3175 ms</td><td>31 MB to 42.3 MB</td><td>Algorithmic complexity is sufficient, but careful node representation such as <code>__slots__</code> or array nodes matters.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports an empty <code>failed_submission_status_counts</code> object, so there are no recorded wrong-answer, timeout, runtime-error, or memory-limit failure buckets in this dataset. The likely failure modes must be inferred from the accepted implementations: stale prefixes left in the trie, deleting the wrong prefix when <code>L</code> moves, missing duplicate counts, and off-by-one errors around <code>pref[r]</code> versus <code>pref[r + 1]</code>.</p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Lines</th><th>Bytes</th><th>Submission ID</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>claude-sonnet-4-6</td><td>python3</td><td>accepted__claude-sonnet-4-6__python3.py</td><td>2917 ms</td><td>31 MB</td><td>76</td><td>2180</td><td>2003534929</td></tr>
+      <tr><td>2</td><td>codex-agent-gpt-5.5-java</td><td>java</td><td>accepted__codex-agent-gpt-5.5-java__java.java</td><td>206 ms</td><td>76 MB</td><td>90</td><td>2689</td><td>2003968404</td></tr>
+      <tr><td>3</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</td><td>2637 ms</td><td>32.3 MB</td><td>92</td><td>3073</td><td>2004496910</td></tr>
+      <tr><td>4</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</td><td>150 ms</td><td>76 MB</td><td>102</td><td>2996</td><td>2004368931</td></tr>
+      <tr><td>5</td><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</td><td>737 ms</td><td>95.1 MB</td><td>101</td><td>2936</td><td>2004353185</td></tr>
+      <tr><td>6</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</td><td>3000 ms</td><td>31.7 MB</td><td>80</td><td>2408</td><td>2004087361</td></tr>
+      <tr><td>7</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</td><td>149 ms</td><td>74.9 MB</td><td>94</td><td>2779</td><td>2004121478</td></tr>
+      <tr><td>8</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</td><td>431 ms</td><td>88.8 MB</td><td>78</td><td>2291</td><td>2004127027</td></tr>
+      <tr><td>9</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</td><td>2679 ms</td><td>32.4 MB</td><td>82</td><td>2527</td><td>2004092939</td></tr>
+      <tr><td>10</td><td>glm-5-cloud</td><td>python3</td><td>accepted__glm-5-cloud__python3.py</td><td>2759 ms</td><td>35.3 MB</td><td>86</td><td>3004</td><td>2003276239</td></tr>
+      <tr><td>11</td><td>glm-5-cloud-t0.0</td><td>python3</td><td>accepted__glm-5-cloud-t0.0__python3.py</td><td>2715 ms</td><td>32.3 MB</td><td>80</td><td>2416</td><td>2003672975</td></tr>
+      <tr><td>12</td><td>glm-5-cloud-t0.8-java</td><td>java</td><td>accepted__glm-5-cloud-t0.8-java__java.java</td><td>149 ms</td><td>73.1 MB</td><td>92</td><td>2796</td><td>2004526658</td></tr>
+      <tr><td>13</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td>accepted__glm-5-cloud-t0.8-javascript__javascript.js</td><td>773 ms</td><td>100.4 MB</td><td>86</td><td>2381</td><td>2004532259</td></tr>
+      <tr><td>14</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td>accepted__kimi-k2.5-cloud-t0.0__python3.py</td><td>2877 ms</td><td>31.3 MB</td><td>83</td><td>2568</td><td>2003725243</td></tr>
+      <tr><td>15</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</td><td>207 ms</td><td>138 MB</td><td>94</td><td>2596</td><td>2003796186</td></tr>
+      <tr><td>16</td><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</td><td>175 ms</td><td>16.4 MB</td><td>105</td><td>2411</td><td>2003818035</td></tr>
+      <tr><td>17</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td>accepted__kimi-k2.5-cloud-t0.0-java__java.java</td><td>188 ms</td><td>77.1 MB</td><td>114</td><td>3195</td><td>2003737858</td></tr>
+      <tr><td>18</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</td><td>362 ms</td><td>131.2 MB</td><td>106</td><td>2868</td><td>2003589845</td></tr>
+      <tr><td>19</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</td><td>96 ms</td><td>4.3 MB</td><td>121</td><td>3204</td><td>2003802195</td></tr>
+      <tr><td>20</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</td><td>426 ms</td><td>93.4 MB</td><td>92</td><td>2542</td><td>2003664205</td></tr>
+      <tr><td>21</td><td>minimax-m2.7-cloud</td><td>python3</td><td>accepted__minimax-m2.7-cloud__python3.py</td><td>3175 ms</td><td>34.3 MB</td><td>92</td><td>3226</td><td>2003271190</td></tr>
+      <tr><td>22</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td>accepted__qwen3.5-cloud-t1.0__python3.py</td><td>2865 ms</td><td>42.3 MB</td><td>105</td><td>3502</td><td>2003517286</td></tr>
+      <tr><td>23</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td>accepted__qwen3.5-cloud-t1.0-golang__golang.go</td><td>185 ms</td><td>53.8 MB</td><td>106</td><td>2575</td><td>2003977427</td></tr>
+      <tr><td>24</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td>accepted__qwen3.5-cloud-t1.0-java__java.java</td><td>157 ms</td><td>126.1 MB</td><td>103</td><td>3320</td><td>2004009394</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

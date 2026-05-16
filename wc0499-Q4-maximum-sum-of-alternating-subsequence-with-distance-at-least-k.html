@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual: Maximum Sum of Alternating Subsequence With Distance at Least K</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #18212f;
+      --muted: #5b6575;
+      --line: #d9dee7;
+      --panel: #f7f9fc;
+      --accent: #0f6a63;
+      --code: #f1f4f8;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: white;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 22px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 30px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 22px;
+    }
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 17px;
+    }
+    p, li {
+      max-width: 86ch;
+    }
+    code, pre {
+      font-family: Consolas, "Courier New", monospace;
+    }
+    code {
+      background: var(--code);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 14px;
+    }
+    .meta, .note {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px 14px;
+    }
+    .meta dl {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 6px 14px;
+      margin: 0;
+    }
+    dt {
+      font-weight: 700;
+    }
+    dd {
+      margin: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 9px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: #edf2f7;
+    }
+    .compact td, .compact th {
+      padding: 6px 7px;
+    }
+    .pill {
+      display: inline-block;
+      color: white;
+      background: var(--accent);
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Maximum Sum of Alternating Subsequence With Distance at Least K</h1>
+  <p><span class="pill">Hard</span> Function: <code>maxAlternatingSum(nums, k)</code></p>
+
+  <h2>Provenance</h2>
+  <div class="meta">
+    <dl>
+      <dt>Problem id</dt>
+      <dd>wc0499-Q4-maximum-sum-of-alternating-subsequence-with-distance-at-least-k</dd>
+      <dt>Source files used</dt>
+      <dd><code>problem.md</code>, <code>stats.json</code>, and 18 <code>accepted__*</code> implementations.</dd>
+      <dt>Generated from stats</dt>
+      <dd>2026-05-16T22:48:18.426695+00:00 by codex / gpt-5.5.</dd>
+      <dt>LeetCode URL</dt>
+      <dd>https://leetcode.com/problems/maximum-sum-of-alternating-subsequence-with-distance-at-least-k/</dd>
+    </dl>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer array <code>nums</code> of length <code>n</code> and an integer <code>k</code>. Choose a subsequence with indices <code>0 &lt;= i1 &lt; i2 &lt; ... &lt; im &lt; n</code> such that consecutive chosen indices are at least <code>k</code> apart: <code>i(t+1) - i(t) &gt;= k</code>.</p>
+  <p>The chosen values must be strictly alternating: either <code>nums[i1] &lt; nums[i2] &gt; nums[i3] &lt; ...</code> or <code>nums[i1] &gt; nums[i2] &lt; nums[i3] &gt; ...</code>. A subsequence of length 1 is valid. Return the maximum possible sum of selected values.</p>
+  <p>Constraints: <code>1 &lt;= n &lt;= 100000</code>, <code>1 &lt;= nums[i] &lt;= 100000</code>, and <code>1 &lt;= k &lt;= n</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>For every index <code>i</code>, the last comparison into <code>i</code> is either upward, meaning the previous selected value is smaller than <code>nums[i]</code>, or downward, meaning the previous selected value is larger. The distance rule means index <code>i</code> may only extend subsequences ending at indices <code>j &lt;= i-k</code>.</p>
+  <p>The core task is therefore repeated range maximum queries by value: among eligible previous indices, find the best downward-ending score with value less than the current value, and the best upward-ending score with value greater than the current value.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [5,4,2]</code> and <code>k = 2</code>, the answer is <code>7</code>.</p>
+  <ol>
+    <li>At index 0, value 5 can stand alone, so both state interpretations can contribute score 5.</li>
+    <li>At index 1, no earlier index is at distance at least 2, so value 4 can only stand alone.</li>
+    <li>At index 2, index 0 becomes eligible because <code>2 - 0 = 2</code>. Since <code>5 &gt; 2</code>, the subsequence <code>[5, 2]</code> is a valid downward step and has score <code>5 + 2 = 7</code>.</li>
+  </ol>
+  <p>The best score is <code>7</code>, using indices <code>[0, 2]</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table class="compact">
+    <thead>
+      <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>nums = [3,5,4,2,4], k = 1</code></td>
+        <td><code>14</code></td>
+        <td>Use indices <code>[0,1,3,4]</code>, values <code>[3,5,2,4]</code>, which satisfy <code>3 &lt; 5 &gt; 2 &lt; 4</code>.</td>
+      </tr>
+      <tr>
+        <td><code>nums = [5], k = 1</code></td>
+        <td><code>5</code></td>
+        <td>A one-element subsequence is always strictly alternating.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <p>Maintain two DP values for each index:</p>
+  <ul>
+    <li><code>up[i]</code>: best sum of a valid subsequence ending at <code>i</code> whose last move is upward, so the previous value is <code>&lt; nums[i]</code>.</li>
+    <li><code>down[i]</code>: best sum ending at <code>i</code> whose last move is downward, so the previous value is <code>&gt; nums[i]</code>.</li>
+  </ul>
+  <p>Before computing states for index <code>i</code>, insert index <code>i-k</code> into query structures. This single delayed insertion makes every stored state distance-valid for the current and future indices.</p>
+  <pre><code>up[i]   = nums[i] + max(0, best down[j] where j &lt;= i-k and nums[j] &lt; nums[i])
+down[i] = nums[i] + max(0, best up[j]   where j &lt;= i-k and nums[j] &gt; nums[i])
+answer = max(answer, up[i], down[i])</code></pre>
+  <p>Use two Fenwick trees or segment trees that store maximum DP score by value. One tree queries values smaller than the current value directly. The other handles values greater than the current value either with a reversed coordinate or with a suffix-query segment tree.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>function maxAlternatingSum(nums, k):
+    n = len(nums)
+    values = coordinate_compress(nums)  // or use max(nums) because nums[i] &lt;= 100000
+    lessTree = FenwickMax(size(values))       // stores down[j] by nums[j]
+    greaterTree = FenwickMax(size(values))    // stores up[j] by reversed nums[j]
+    up = array of length n
+    down = array of length n
+    ans = 0
+
+    for i in 0 .. n-1:
+        if i &gt;= k:
+            j = i - k
+            p = rank(nums[j])
+            lessTree.update(p, down[j])
+            greaterTree.update(reverse(p), up[j])
+
+        p = rank(nums[i])
+        bestSmallerDown = lessTree.query(p - 1)
+        up[i] = nums[i] + max(0, bestSmallerDown)
+
+        bestLargerUp = greaterTree.query(reverse(p) - 1)
+        down[i] = nums[i] + max(0, bestLargerUp)
+
+        ans = max(ans, up[i], down[i])
+
+    return ans</code></pre>
+  <p>If the tree uses <code>-infinity</code> for empty ranges, convert an empty result to <code>0</code> so a single element remains valid.</p>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use 64-bit integer return storage: maximum score can exceed 32-bit signed range.</li>
+    <li>Insert only index <code>i-k</code> before processing <code>i</code>; after that, the tree contains exactly all indices <code>&lt;= i-k</code>.</li>
+    <li>Use strict value inequalities: smaller query is <code>&lt; current</code>, larger query is <code>&gt; current</code>. Equal values cannot extend the alternating sequence.</li>
+    <li>Allow length-1 subsequences by initializing each state from the current value or by adding <code>max(0, query)</code>.</li>
+    <li>For greater-than queries with a Fenwick prefix tree, reverse the compressed index.</li>
+    <li>Return the maximum over both states at every index, not just the final index.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Using ordinary alternating-subsequence DP without the distance delay. It will illegally chain adjacent elements when <code>k &gt; 1</code>.</li>
+    <li>Using non-strict comparisons. Equal neighboring selected values are not alternating.</li>
+    <li>Keeping only one best previous score. The direction of the last move matters because the next move must reverse direction.</li>
+    <li>Trying <code>O(nk)</code> or scanning all earlier eligible positions for each index. With <code>n = 100000</code>, that is too slow.</li>
+    <li>Using 32-bit <code>int</code> for scores in Java/C++/Go/Rust. The selected sum can be around <code>1e10</code>.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead>
+      <tr><th>Family</th><th>How it appears in accepted files</th><th>Complexity</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Fenwick max tree over raw value range</td>
+        <td>Several Python, Java, C++, and JavaScript solutions use value indices up to <code>max(nums)</code>, maintaining one tree for smaller values and one reversed tree for larger values.</td>
+        <td><code>O(n log V)</code> time, <code>O(n + V)</code> memory, where <code>V &lt;= 100000</code>.</td>
+      </tr>
+      <tr>
+        <td>Fenwick max tree with coordinate compression</td>
+        <td>Go, JavaScript, TypeScript, Rust, and some Python-style solutions compress the distinct values first, then use prefix maxima on compressed ranks.</td>
+        <td><code>O(n log m)</code> time, <code>O(n + m)</code> memory, where <code>m</code> is the number of distinct values.</td>
+      </tr>
+      <tr>
+        <td>Segment tree range maximum</td>
+        <td>The official hints name segment tree; it is equivalent here to Fenwick max because all queries are value prefixes or suffixes.</td>
+        <td><code>O(n log V)</code> or <code>O(n log m)</code> time.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The following notes use <code>stats.json.performance_by_language</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted count</th><th>Runtime range</th><th>Memory range</th><th>Practical note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>C++</td><td>1</td><td>446 ms</td><td>322.8 MB</td><td>Fast enough with vectors and Fenwick trees, but the recorded C++ submission used high memory compared with most others.</td></tr>
+      <tr><td>Go</td><td>2</td><td>192-224 ms</td><td>17.8-23.6 MB</td><td>Very strong for this problem; compressed Fenwick arrays gave low memory and sub-250 ms runtimes.</td></tr>
+      <tr><td>Java</td><td>4</td><td>119-179 ms</td><td>188.3-272.6 MB</td><td>Fastest recorded language group by runtime. Use <code>long[]</code> for DP/tree scores.</td></tr>
+      <tr><td>JavaScript</td><td>3</td><td>665-1472 ms</td><td>107.5-117 MB</td><td>Accepted with array-based Fenwick trees. Avoid object-heavy segment tree nodes.</td></tr>
+      <tr><td>Python 3</td><td>6</td><td>3315-6636 ms</td><td>39.5-74.4 MB</td><td>Accepted but close enough to require tight loops, list arrays, and Fenwick rather than recursive segment trees.</td></tr>
+      <tr><td>Rust</td><td>1</td><td>199 ms</td><td>6.7 MB</td><td>Excellent memory profile in the recorded run; arrays/vectors map cleanly to the DP.</td></tr>
+      <tr><td>TypeScript</td><td>1</td><td>1391 ms</td><td>111.9 MB</td><td>Accepted with the same compressed Fenwick approach as JavaScript.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p>The stats record 3 failed submissions, all with status <strong>Time Limit Exceeded</strong>. That matches the main implementation risk: any approach that scans many previous indices per current index can degrade to quadratic behavior. A correct accepted implementation should do a logarithmic value query and update for each index.</p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Submission</th>
+        <th>Lines</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>4927 ms</td><td>57.4 MB</td><td>2004499726</td><td>64</td></tr>
+      <tr><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>119 ms</td><td>268.8 MB</td><td>2004372158</td><td>62</td></tr>
+      <tr><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td>665 ms</td><td>107.5 MB</td><td>2004355719</td><td>72</td></tr>
+      <tr><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>4339 ms</td><td>40 MB</td><td>2004089376</td><td>49</td></tr>
+      <tr><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>121 ms</td><td>268.4 MB</td><td>2004122743</td><td>63</td></tr>
+      <tr><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>1472 ms</td><td>116.6 MB</td><td>2004128215</td><td>67</td></tr>
+      <tr><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>4340 ms</td><td>40.4 MB</td><td>2004094940</td><td>57</td></tr>
+      <tr><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>6636 ms</td><td>51 MB</td><td>2003728108</td><td>94</td></tr>
+      <tr><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>446 ms</td><td>322.8 MB</td><td>2003799290</td><td>61</td></tr>
+      <tr><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>192 ms</td><td>23.6 MB</td><td>2004549011</td><td>147</td></tr>
+      <tr><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>179 ms</td><td>188.3 MB</td><td>2003740699</td><td>97</td></tr>
+      <tr><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>1280 ms</td><td>117 MB</td><td>2003592210</td><td>86</td></tr>
+      <tr><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>199 ms</td><td>6.7 MB</td><td>2003815142</td><td>101</td></tr>
+      <tr><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>1391 ms</td><td>111.9 MB</td><td>2003666834</td><td>65</td></tr>
+      <tr><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>3527 ms</td><td>74.4 MB</td><td>2003287969</td><td>76</td></tr>
+      <tr><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>3315 ms</td><td>39.5 MB</td><td>2003604443</td><td>66</td></tr>
+      <tr><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>224 ms</td><td>17.8 MB</td><td>2004553914</td><td>88</td></tr>
+      <tr><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>133 ms</td><td>272.6 MB</td><td>2004011957</td><td>51</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

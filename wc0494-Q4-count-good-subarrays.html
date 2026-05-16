@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0494-Q4-count-good-subarrays Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #52616b;
+      --line: #d9e2ec;
+      --panel: #f7f9fb;
+      --accent: #0b6bcb;
+      --bad: #9f3412;
+      --good: #116149;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 20px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      line-height: 1.15;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid var(--line);
+      font-size: 1.35rem;
+    }
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 1.05rem;
+    }
+    code, pre {
+      font-family: Consolas, Menlo, Monaco, "Courier New", monospace;
+    }
+    code {
+      background: #edf2f7;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #111827;
+      color: #f8fafc;
+      line-height: 1.45;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      font-size: 0.94rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: #edf2f7;
+      font-weight: 700;
+    }
+    .meta, .note {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 12px 14px;
+    }
+    .pill {
+      display: inline-block;
+      margin: 2px 4px 2px 0;
+      padding: 2px 8px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: #fff;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+    .ok { color: var(--good); font-weight: 700; }
+    .warn { color: var(--bad); font-weight: 700; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Count Good Subarrays</h1>
+  <p class="meta">
+    Problem id: <code>wc0494-Q4-count-good-subarrays</code>.
+    Difficulty: <strong>Hard</strong>.
+    Function: <code>countGoodSubarrays(nums)</code>.
+    Tags:
+    <span class="pill">array</span>
+    <span class="pill">stack</span>
+    <span class="pill">bit-manipulation</span>
+    <span class="pill">monotonic-stack</span>
+  </p>
+
+  <h2>Provenance</h2>
+  <p>
+    This manual was generated from the local artifacts <code>problem.md</code>,
+    <code>stats.json</code>, and the <code>accepted__*</code> solution files in this
+    directory. The source metadata reports generator <code>codex</code>, model
+    <code>gpt-5.5</code>, generated at <code>2026-05-16T20:31:38.098595+00:00</code>,
+    with 21 accepted submissions.
+  </p>
+  <p>
+    Original problem URL recorded in <code>problem.md</code>:
+    <a href="https://leetcode.com/problems/count-good-subarrays/">https://leetcode.com/problems/count-good-subarrays/</a>.
+  </p>
+
+  <h2>Problem Statement</h2>
+  <p>
+    Given an integer array <code>nums</code>, a non-empty subarray is called
+    <strong>good</strong> if the bitwise OR of all elements in that subarray is
+    equal to at least one element present in that same subarray. Return the
+    number of good subarrays.
+  </p>
+  <p>
+    Constraints: <code>1 &lt;= nums.length &lt;= 10^5</code> and
+    <code>0 &lt;= nums[i] &lt;= 10^9</code>.
+  </p>
+
+  <h2>Problem Essence</h2>
+  <p>
+    A subarray's OR contains every bit that appears anywhere in the subarray.
+    If that OR is equal to an element inside the subarray, that element must
+    contain all bits used by every other element. Equivalently, a subarray is
+    good if its bitwise OR equals its maximum-capability element under bit
+    containment. The official hint phrases this as OR equals the subarray's
+    maximum element, because any element missing a bit from the OR cannot be
+    the OR value.
+  </p>
+  <p>
+    The core task is to count, for each possible owner element <code>nums[i]</code>,
+    how far left and right a subarray can extend while no element introduces
+    a bit absent from <code>nums[i]</code>. Equal values must be de-duplicated so
+    the same good subarray is counted once.
+  </p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [4,2,3]</code>, all subarrays are:</p>
+  <table>
+    <thead>
+      <tr><th>Subarray</th><th>OR</th><th>Good?</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>[4]</code></td><td><code>4</code></td><td class="ok">Yes</td><td>OR equals the element 4.</td></tr>
+      <tr><td><code>[2]</code></td><td><code>2</code></td><td class="ok">Yes</td><td>OR equals the element 2.</td></tr>
+      <tr><td><code>[3]</code></td><td><code>3</code></td><td class="ok">Yes</td><td>OR equals the element 3.</td></tr>
+      <tr><td><code>[4,2]</code></td><td><code>6</code></td><td class="warn">No</td><td>No element is 6.</td></tr>
+      <tr><td><code>[2,3]</code></td><td><code>3</code></td><td class="ok">Yes</td><td><code>2 | 3 = 3</code>, and 3 is present.</td></tr>
+      <tr><td><code>[4,2,3]</code></td><td><code>7</code></td><td class="warn">No</td><td>No element is 7.</td></tr>
+    </tbody>
+  </table>
+  <p>The answer is <code>4</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Output</th><th>Explanation</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>nums = [1,3,1]</code></td>
+        <td><code>6</code></td>
+        <td>
+          Every subarray containing 3 has OR 3, and subarrays containing only
+          1 have OR 1. Therefore every one of the six subarrays is good.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <p>
+    Use the bit-containment rule: a subarray owned by index <code>i</code> is valid
+    only if every included number has no bit outside <code>nums[i]</code>.
+  </p>
+  <ol>
+    <li>
+      Sweep left to right. For each index <code>i</code>, compute
+      <code>left_bad[i]</code>, the nearest index to the left containing at least
+      one bit that is not set in <code>nums[i]</code>. Maintain
+      <code>last_pos[bit]</code> for the most recent set bit position.
+    </li>
+    <li>
+      Sweep right to left. Compute <code>right_bad[i]</code>, the nearest index to
+      the right containing a bit absent from <code>nums[i]</code>. Maintain
+      <code>next_pos[bit]</code>.
+    </li>
+    <li>
+      Track <code>prev_same[i]</code>, the previous occurrence of
+      <code>nums[i]</code>. Count each good subarray by its first occurrence of
+      the OR value, so the effective left blocker is
+      <code>max(left_bad[i], prev_same[i])</code>.
+    </li>
+    <li>
+      Contribution of index <code>i</code>:
+      <code>(i - max(left_bad[i], prev_same[i])) * (right_bad[i] - i)</code>.
+      Sum this in 64-bit arithmetic.
+    </li>
+  </ol>
+  <p>
+    With values below <code>10^9</code>, 30 bits are sufficient; many accepted
+    submissions scan 31 bits to be conservative. Complexity is
+    <code>O(n * B)</code>, where <code>B</code> is 30 or 31, and memory is
+    <code>O(n + B)</code>.
+  </p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>def countGoodSubarrays(nums):
+    n = len(nums)
+    B = 31
+
+    left_bad = [-1] * n
+    last = [-1] * B
+    for i, x in enumerate(nums):
+        blocker = -1
+        for b in range(B):
+            if (x &gt;&gt; b) &amp; 1 == 0:
+                blocker = max(blocker, last[b])
+        left_bad[i] = blocker
+        for b in range(B):
+            if (x &gt;&gt; b) &amp; 1:
+                last[b] = i
+
+    right_bad = [n] * n
+    nxt = [n] * B
+    for i in range(n - 1, -1, -1):
+        x = nums[i]
+        blocker = n
+        for b in range(B):
+            if (x &gt;&gt; b) &amp; 1 == 0:
+                blocker = min(blocker, nxt[b])
+        right_bad[i] = blocker
+        for b in range(B):
+            if (x &gt;&gt; b) &amp; 1:
+                nxt[b] = i
+
+    ans = 0
+    prev = {}
+    for i, x in enumerate(nums):
+        p = prev.get(x, -1)
+        left_blocker = max(left_bad[i], p)
+        ans += (i - left_blocker) * (right_bad[i] - i)
+        prev[x] = i
+    return ans</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use a 64-bit return accumulator; the answer can be <code>n * (n + 1) / 2</code>.</li>
+    <li>Scan all relevant bits, normally 0 through 30 exclusive for <code>&lt; 10^9</code>, or 0 through 31 exclusive for safety.</li>
+    <li>For an owner value <code>x</code>, blockers come from bits where <code>x</code> has 0, not bits where <code>x</code> has 1.</li>
+    <li>Left blockers use the maximum previous bad position; right blockers use the minimum next bad position.</li>
+    <li>Handle duplicates by requiring the owner index to be the first selected occurrence of that OR value: start must be after the previous same value.</li>
+    <li>Return the count, not the count modulo anything.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>
+      <strong>Counting only subarrays where OR equals the numerical maximum without checking duplicate ownership.</strong>
+      This double-counts ranges containing repeated copies of the OR value.
+    </li>
+    <li>
+      <strong>Sliding window with a single OR value.</strong>
+      Bitwise OR is monotonic when extending but not invertible when moving the
+      left edge, so a naive two-pointer window loses information.
+    </li>
+    <li>
+      <strong>Enumerating all subarrays.</strong>
+      <code>O(n^2)</code> is too slow for <code>n = 100000</code>.
+    </li>
+    <li>
+      <strong>Using 32-bit integer for the answer.</strong>
+      The all-good case reaches 5,000,050,000 when <code>n = 100000</code>.
+    </li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead>
+      <tr><th>Family</th><th>Idea</th><th>Examples in accepted files</th><th>Tradeoffs</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Bit blocker ranges plus duplicate ownership</td>
+        <td>
+          Precompute nearest bad bit on each side for every index, then count
+          rectangles of starts and ends owned by the first occurrence of each
+          value.
+        </td>
+        <td>
+          <code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code>,
+          <code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code>, and most
+          Java/Go/Rust/C++ style submissions.
+        </td>
+        <td>
+          Fast, predictable <code>O(31n)</code>; requires careful duplicate handling.
+        </td>
+      </tr>
+      <tr>
+        <td>Distinct OR states ending at each right endpoint</td>
+        <td>
+          Maintain compressed OR values for all subarrays ending at <code>r</code>.
+          For each OR value, count starts whose range contains a previous
+          occurrence of that exact value.
+        </td>
+        <td>
+          <code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code>.
+        </td>
+        <td>
+          Compact and often simpler in Python; still bounded by the number of
+          distinct OR states per endpoint, usually at most the bit count.
+        </td>
+      </tr>
+      <tr>
+        <td>Official maximum-owner / monotonic-stack framing</td>
+        <td>
+          Assign each subarray to an index that owns the maximum value range,
+          then shrink the range by excluding positions with bits outside that
+          owner. This is the same mathematical decision rule expressed through
+          maximum ownership.
+        </td>
+        <td>
+          Reflected by the official hints in <code>problem.md</code>; accepted
+          files often simplify the ownership by using previous-equal handling
+          and bit blockers directly.
+        </td>
+        <td>
+          Good for proving uniqueness; more moving parts if implemented with
+          explicit monotonic stacks.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>
+    These notes use <code>stats.json.performance_by_language</code> directly.
+    All listed languages have accepted solutions, but the constant factors vary.
+  </p>
+  <table>
+    <thead>
+      <tr>
+        <th>Language</th><th>Count</th><th>Fastest runtime</th><th>Slowest runtime</th>
+        <th>Lowest memory</th><th>Highest memory</th><th>Practical note</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>Rust</td><td>1</td><td>274 ms</td><td>274 ms</td><td>6.2 MB</td><td>6.2 MB</td><td>Best recorded runtime and memory; fixed arrays for bit positions are ideal.</td></tr>
+      <tr><td>Golang</td><td>2</td><td>352 ms</td><td>493 ms</td><td>17.7 MB</td><td>18 MB</td><td>Low memory and stable speed with slices plus a map for previous equal values.</td></tr>
+      <tr><td>Java</td><td>5</td><td>357 ms</td><td>442 ms</td><td>99.8 MB</td><td>129.8 MB</td><td>Fast enough with primitive arrays; memory is higher but consistent.</td></tr>
+      <tr><td>JavaScript</td><td>4</td><td>360 ms</td><td>512 ms</td><td>85.4 MB</td><td>104.1 MB</td><td>Number arithmetic is safe for the answer here; avoid boxed-heavy structures.</td></tr>
+      <tr><td>C++</td><td>1</td><td>420 ms</td><td>420 ms</td><td>203.5 MB</td><td>203.5 MB</td><td>The accepted C++ entry is fast, though its reported memory is the highest among compiled entries.</td></tr>
+      <tr><td>TypeScript</td><td>1</td><td>609 ms</td><td>609 ms</td><td>111.5 MB</td><td>111.5 MB</td><td>Similar to JavaScript but with a higher recorded runtime in this sample.</td></tr>
+      <tr><td>Python 3</td><td>7</td><td>1576 ms</td><td>12872 ms</td><td>39.3 MB</td><td>122.2 MB</td><td>Python passes, but implementation shape matters. The compressed OR-state submission was the fastest Python record.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p>
+    The stats include two failed submission statuses: <strong>1 Wrong Answer</strong>
+    and <strong>1 Time Limit Exceeded</strong>. The likely causes line up with
+    this problem's traps: missing duplicate ownership can produce wrong counts,
+    and quadratic subarray enumeration or expensive per-window recomputation can
+    time out.
+  </p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Model</th><th>Language</th><th>File</th>
+        <th>Runtime</th><th>Memory</th><th>Submission ID</th><th>Lines</th><th>Bytes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>5870 ms</td><td>39.6 MB</td><td>2004498331</td><td>62</td><td>2079</td></tr>
+      <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>357 ms</td><td>99.8 MB</td><td>2004370488</td><td>83</td><td>2709</td></tr>
+      <tr><td>3</td><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td>512 ms</td><td>85.4 MB</td><td>2004354428</td><td>74</td><td>2389</td></tr>
+      <tr><td>4</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>6112 ms</td><td>45.9 MB</td><td>2004088368</td><td>46</td><td>1618</td></tr>
+      <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>368 ms</td><td>129.7 MB</td><td>2004122120</td><td>65</td><td>1987</td></tr>
+      <tr><td>6</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>486 ms</td><td>104.1 MB</td><td>2004127636</td><td>64</td><td>1851</td></tr>
+      <tr><td>7</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>1576 ms</td><td>39.3 MB</td><td>2004093868</td><td>31</td><td>1152</td></tr>
+      <tr><td>8</td><td>glm-5-cloud-t0.0</td><td>python3</td><td><code>accepted__glm-5-cloud-t0.0__python3.py</code></td><td>6090 ms</td><td>40.1 MB</td><td>2003674592</td><td>66</td><td>2196</td></tr>
+      <tr><td>9</td><td>glm-5-cloud-t0.8-java</td><td>java</td><td><code>accepted__glm-5-cloud-t0.8-java__java.java</code></td><td>442 ms</td><td>129.7 MB</td><td>2004528126</td><td>59</td><td>1765</td></tr>
+      <tr><td>10</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>470 ms</td><td>89.1 MB</td><td>2004533648</td><td>86</td><td>2812</td></tr>
+      <tr><td>11</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>5645 ms</td><td>43 MB</td><td>2003726524</td><td>59</td><td>1814</td></tr>
+      <tr><td>12</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>420 ms</td><td>203.5 MB</td><td>2003797789</td><td>68</td><td>1957</td></tr>
+      <tr><td>13</td><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>493 ms</td><td>18 MB</td><td>2003819459</td><td>88</td><td>1887</td></tr>
+      <tr><td>14</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>385 ms</td><td>104.2 MB</td><td>2003739308</td><td>64</td><td>1970</td></tr>
+      <tr><td>15</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>360 ms</td><td>92 MB</td><td>2003590973</td><td>44</td><td>1136</td></tr>
+      <tr><td>16</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>274 ms</td><td>6.2 MB</td><td>2003803457</td><td>71</td><td>1996</td></tr>
+      <tr><td>17</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>609 ms</td><td>111.5 MB</td><td>2003665483</td><td>53</td><td>1587</td></tr>
+      <tr><td>18</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>12872 ms</td><td>122.2 MB</td><td>2003271963</td><td>84</td><td>2872</td></tr>
+      <tr><td>19</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>4584 ms</td><td>42.5 MB</td><td>2003602690</td><td>68</td><td>2474</td></tr>
+      <tr><td>20</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>352 ms</td><td>17.7 MB</td><td>2003978797</td><td>85</td><td>1701</td></tr>
+      <tr><td>21</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>361 ms</td><td>129.8 MB</td><td>2004010601</td><td>85</td><td>2810</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

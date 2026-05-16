@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maximum Points Activated with One Addition - Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #596579;
+      --line: #d9dee8;
+      --panel: #f7f9fc;
+      --accent: #0f766e;
+      --code: #eef3f8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.18;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--line);
+      font-size: 22px;
+    }
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 17px;
+    }
+    p { margin: 8px 0; }
+    ul, ol { margin-top: 8px; padding-left: 24px; }
+    li { margin: 5px 0; }
+    code {
+      background: var(--code);
+      padding: 1px 5px;
+      border-radius: 4px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      overflow-x: auto;
+      background: #111827;
+      color: #f8fafc;
+      padding: 14px;
+      border-radius: 8px;
+      line-height: 1.45;
+    }
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 7px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--panel);
+      font-weight: 700;
+    }
+    .meta {
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: var(--panel);
+      padding: 10px 14px;
+      margin: 12px 0;
+    }
+    .small { font-size: 13px; color: var(--muted); }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Maximum Points Activated with One Addition</h1>
+  <p class="meta">Problem id: <code>wc0493-Q4-maximum-points-activated-with-one-addition</code>. Function: <code>maxActivated(points)</code>. Difficulty: Hard.</p>
+
+  <h2>Provenance</h2>
+  <p>This manual was created from the local files <code>problem.md</code>, <code>stats.json</code>, and the 22 local <code>accepted__*</code> submissions. The source metadata reports generator <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-16T20:26:25.646397+00:00</code>.</p>
+  <p>The accepted corpus covers C++, Go, Java, JavaScript, Python 3, Rust, and TypeScript. All accepted implementations use union-find in some form.</p>
+
+  <h2>Problem Statement</h2>
+  <p>You are given distinct integer coordinate points <code>[x_i, y_i]</code>. If a point is activated, every existing point with the same x-coordinate or the same y-coordinate becomes activated, and this propagation continues until it reaches a fixed point.</p>
+  <p>You may add exactly one new point at an integer coordinate not already present. Activation starts from that newly added point. Return the maximum total number of activated points, including the new point.</p>
+  <p>Constraints: <code>1 &lt;= points.length &lt;= 100000</code>, coordinates are between <code>-10^9</code> and <code>10^9</code>, and all original coordinates are distinct.</p>
+
+  <h2>Problem Essence</h2>
+  <p>Think of the original points as edges in a bipartite graph: every distinct x-coordinate is one kind of node, every distinct y-coordinate is the other kind, and each point <code>(x, y)</code> is an edge connecting x to y. Activating a point reaches exactly the connected component containing its x/y coordinate nodes.</p>
+  <p>Adding a new point <code>(x0, y0)</code> can connect at most two existing components: the component already containing <code>x0</code>, and the component already containing <code>y0</code>. If either coordinate is new, that side contributes no original points. Therefore the best move is to connect the two largest existing components, then add 1 for the inserted point.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>points = [[1,1],[1,2],[2,2]]</code>, all three original points belong to one connected component because <code>(1,1)</code> shares x with <code>(1,2)</code>, and <code>(1,2)</code> shares y with <code>(2,2)</code>.</p>
+  <p>Add <code>(1,3)</code>. The new point activates the x=1 component, which then propagates through y=2 and reaches all three original points. The answer is <code>3 + 1 = 4</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>[[2,2],[1,1],[3,3]]</code></td>
+        <td><code>3</code></td>
+        <td>Each original point is isolated. Add <code>(1,2)</code> to connect two singleton components, activating two original points plus the new one.</td>
+      </tr>
+      <tr>
+        <td><code>[[2,3],[2,2],[1,1],[4,5]]</code></td>
+        <td><code>4</code></td>
+        <td>The component containing <code>(2,3)</code> and <code>(2,2)</code> has size 2. Add <code>(2,1)</code> to also reach singleton <code>(1,1)</code>, giving <code>2 + 1 + 1 = 4</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Build connected components among the original points using DSU.</li>
+    <li>Two points are in the same component if they share an x-coordinate, share a y-coordinate, or are connected through a chain of such shares.</li>
+    <li>Count how many original points are in each component.</li>
+    <li>Let <code>a</code> and <code>b</code> be the two largest component sizes, using <code>b = 0</code> if only one component exists.</li>
+    <li>Return <code>a + b + 1</code>.</li>
+  </ol>
+  <div class="callout">
+    <p>The added point never needs to be enumerated. Since coordinates are integers and the original set is finite, a coordinate pair can be chosen to connect the target components without duplicating an existing point. If there is only one original component, add a point sharing either an existing x or y, or any nearby unused coordinate paired with one existing coordinate, and activate all original points plus the new point.</p>
+  </div>
+  <p>Complexity is <code>O(n alpha(n))</code> expected with hash maps and DSU, or <code>O(n log n)</code> if coordinate compression is done by sorting. Memory is <code>O(n)</code>.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>def maxActivated(points):
+    n = len(points)
+    parent = list(range(n))
+    size = [1] * n
+    first_x = {}
+    first_y = {}
+
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+
+    def union(a, b):
+        ra, rb = find(a), find(b)
+        if ra == rb:
+            return
+        if size[ra] &lt; size[rb]:
+            ra, rb = rb, ra
+        parent[rb] = ra
+        size[ra] += size[rb]
+
+    for i, (x, y) in enumerate(points):
+        if x in first_x:
+            union(i, first_x[x])
+        else:
+            first_x[x] = i
+        if y in first_y:
+            union(i, first_y[y])
+        else:
+            first_y[y] = i
+
+    best1 = best2 = 0
+    for i in range(n):
+        if find(i) == i:
+            s = size[i]
+            if s &gt; best1:
+                best1, best2 = s, best1
+            elif s &gt; best2:
+                best2 = s
+    return best1 + best2 + 1</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use DSU with path compression and union by size/rank.</li>
+    <li>Hash x-coordinate to one representative point index, and y-coordinate to one representative point index; union against that representative.</li>
+    <li>When computing final component sizes, call <code>find(i)</code> or rely only on roots whose sizes were maintained by union.</li>
+    <li>Track the two largest root sizes in one pass; sorting all component sizes is fine but unnecessary.</li>
+    <li>Return <code>largest + second_largest + 1</code>; this also handles the one-component case because <code>second_largest</code> stays 0.</li>
+    <li>Use 32-bit integers for counts, but keep coordinates in a type that can hold <code>[-10^9, 10^9]</code>.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Choosing the most frequent x and most frequent y independently. Frequency does not capture transitive activation through alternating x/y chains.</li>
+    <li>Running BFS from every possible coordinate or every pair of components. The added point only connects at most two components, so exhaustive search is avoidable.</li>
+    <li>Counting coordinate-node component sizes instead of original-point counts. The answer counts activated points, not distinct x/y values.</li>
+    <li>Forgetting the inserted point. The answer is original activated count plus 1.</li>
+    <li>Returning only the largest component when all points are already connected. You can still add a valid new point and count it, so the answer is <code>n + 1</code>.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <h3>Point-index DSU</h3>
+  <p>Most Java and JavaScript submissions use one DSU node per original point. For each point index <code>i</code>, maps <code>x -&gt; first index</code> and <code>y -&gt; first index</code> union <code>i</code> with previous representatives. Component size is maintained directly as number of original points.</p>
+  <h3>Coordinate-node DSU</h3>
+  <p>Several Python and Rust-style implementations create DSU nodes for compressed x-values and y-values. Each point unions its x-node and y-node. After all unions, the solution counts original points per component root. This is close to the official graph model and avoids point-to-point unions.</p>
+  <h3>Coordinate compression variant</h3>
+  <p>The Rust accepted file sorts and deduplicates x and y arrays, then uses binary search to map coordinates to DSU ids. This trades hash lookups during construction for sorting and predictable compact ids.</p>
+
+  <h2>Language and Performance Notes</h2>
+  <p>These notes use <code>stats.json.performance_by_language</code> directly.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted Count</th><th>Runtime Range</th><th>Memory Range</th><th>Practical Note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>C++</td><td>1</td><td>211 ms</td><td>266.1 MB</td><td>The single C++ accepted solution is solid but not the fastest in this sample; unordered maps and DSU overhead dominate.</td></tr>
+      <tr><td>Go</td><td>1</td><td>127 ms</td><td>29.7 MB</td><td>Go performs well with maps and arrays; memory is far below Java/C++ in this run.</td></tr>
+      <tr><td>Java</td><td>6</td><td>61 ms to 131 ms</td><td>257.1 MB to 279.8 MB</td><td>Fastest overall sample is Java at 61 ms, but memory is consistently high because of arrays plus boxed hash-map keys.</td></tr>
+      <tr><td>JavaScript</td><td>4</td><td>382 ms to 835 ms</td><td>113.6 MB to 141.5 MB</td><td>Accepted JS solutions pass with standard <code>Map</code> and iterative DSU, but runtime varies widely.</td></tr>
+      <tr><td>Python 3</td><td>8</td><td>379 ms to 572 ms</td><td>63 MB to 77.1 MB</td><td>Python is comfortably accepted when using dictionaries and iterative path compression; avoid quadratic graph traversal.</td></tr>
+      <tr><td>Rust</td><td>1</td><td>79 ms</td><td>12.9 MB</td><td>The Rust coordinate-compression solution has the lowest memory and second-fastest runtime in the corpus.</td></tr>
+      <tr><td>TypeScript</td><td>1</td><td>784 ms</td><td>150.5 MB</td><td>TypeScript passes but is near the slower end; keep <code>find</code> iterative if recursion depth is a concern.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p>The recorded failed submission status counts are small: 1 Compile Error and 1 Time Limit Exceeded.</p>
+  <ul>
+    <li>The Time Limit Exceeded result is consistent with approaches that simulate activation repeatedly from many candidates or compare many component pairs instead of taking the two largest components.</li>
+    <li>The Compile Error risk is most likely language-interface mismatch: wrong method name, wrong class wrapper, or coordinate types/data structures not matching the starter signature.</li>
+    <li>No Wrong Answer statuses are listed in the stats, but common logical traps still include forgetting the <code>+1</code> for the new point and counting coordinate nodes instead of original points.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Submission ID</th><th>Lines</th><th>Bytes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>codex-agent-gpt-5.5-java</td><td>java</td><td><code>accepted__codex-agent-gpt-5.5-java__java.java</code></td><td>87 ms</td><td>273.3 MB</td><td>2003969211</td><td>86</td><td>2336</td></tr>
+      <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>379 ms</td><td>69 MB</td><td>2004497949</td><td>54</td><td>1670</td></tr>
+      <tr><td>3</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>131 ms</td><td>279.8 MB</td><td>2004370156</td><td>54</td><td>1880</td></tr>
+      <tr><td>4</td><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td>835 ms</td><td>141.5 MB</td><td>2004354110</td><td>52</td><td>1469</td></tr>
+      <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>511 ms</td><td>63 MB</td><td>2004088138</td><td>50</td><td>1404</td></tr>
+      <tr><td>6</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>89 ms</td><td>273.7 MB</td><td>2004121992</td><td>62</td><td>1925</td></tr>
+      <tr><td>7</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>382 ms</td><td>113.6 MB</td><td>2004127519</td><td>62</td><td>1488</td></tr>
+      <tr><td>8</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>425 ms</td><td>63.1 MB</td><td>2004093665</td><td>67</td><td>1885</td></tr>
+      <tr><td>9</td><td>glm-5-cloud</td><td>python3</td><td><code>accepted__glm-5-cloud__python3.py</code></td><td>410 ms</td><td>63.9 MB</td><td>2003276930</td><td>46</td><td>1488</td></tr>
+      <tr><td>10</td><td>glm-5-cloud-t0.0</td><td>python3</td><td><code>accepted__glm-5-cloud-t0.0__python3.py</code></td><td>416 ms</td><td>68.1 MB</td><td>2003674100</td><td>47</td><td>1435</td></tr>
+      <tr><td>11</td><td>glm-5-cloud-t0.8-java</td><td>java</td><td><code>accepted__glm-5-cloud-t0.8-java__java.java</code></td><td>108 ms</td><td>275.1 MB</td><td>2004527840</td><td>69</td><td>2001</td></tr>
+      <tr><td>12</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>712 ms</td><td>139.1 MB</td><td>2004533378</td><td>62</td><td>1494</td></tr>
+      <tr><td>13</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>415 ms</td><td>67.5 MB</td><td>2003726235</td><td>46</td><td>1302</td></tr>
+      <tr><td>14</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>211 ms</td><td>266.1 MB</td><td>2003797431</td><td>60</td><td>1759</td></tr>
+      <tr><td>15</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>104 ms</td><td>257.1 MB</td><td>2003738964</td><td>76</td><td>2049</td></tr>
+      <tr><td>16</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>397 ms</td><td>118.2 MB</td><td>2003590705</td><td>70</td><td>1560</td></tr>
+      <tr><td>17</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>79 ms</td><td>12.9 MB</td><td>2003803169</td><td>82</td><td>2190</td></tr>
+      <tr><td>18</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>784 ms</td><td>150.5 MB</td><td>2003665187</td><td>66</td><td>2028</td></tr>
+      <tr><td>19</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>572 ms</td><td>68.4 MB</td><td>2003271697</td><td>60</td><td>1769</td></tr>
+      <tr><td>20</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>435 ms</td><td>77.1 MB</td><td>2003602436</td><td>70</td><td>2206</td></tr>
+      <tr><td>21</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>127 ms</td><td>29.7 MB</td><td>2003978372</td><td>77</td><td>1641</td></tr>
+      <tr><td>22</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>61 ms</td><td>273.2 MB</td><td>2004010237</td><td>73</td><td>1918</td></tr>
+    </tbody>
+  </table>
+  <p class="small">End of manual.</p>
+</main>
+</body>
+</html>

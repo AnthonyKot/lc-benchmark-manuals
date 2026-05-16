@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0491-Q3-minimum-bitwise-or-from-grid Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2933;
+      --muted: #52616b;
+      --line: #d9e2ec;
+      --soft: #f5f7fa;
+      --accent: #0b7285;
+      --warn: #9a3412;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 32px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 22px;
+    }
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 17px;
+    }
+    p {
+      margin: 8px 0;
+    }
+    code, pre {
+      font-family: Consolas, "Liberation Mono", Menlo, monospace;
+    }
+    code {
+      background: var(--soft);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      background: #111827;
+      color: #f9fafb;
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--soft);
+      font-weight: 700;
+    }
+    ul, ol {
+      padding-left: 24px;
+    }
+    .meta {
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: #eef8fa;
+      padding: 10px 14px;
+      margin: 12px 0;
+    }
+    .warning {
+      border-left-color: var(--warn);
+      background: #fff7ed;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Minimum Bitwise OR From Grid</h1>
+  <p class="meta">Problem id: <code>wc0491-Q3-minimum-bitwise-or-from-grid</code>. Function: <code>minimumOR(grid)</code>. Difficulty: Medium.</p>
+
+  <h2>Provenance</h2>
+  <p>This manual was built from the local artifacts <code>problem.md</code>, <code>stats.json</code>, and the <code>accepted__*</code> solution files in the current directory.</p>
+  <ul>
+    <li>Source title: Minimum Bitwise OR From Grid.</li>
+    <li>Problem URL recorded in <code>problem.md</code>: <code>https://leetcode.com/problems/minimum-bitwise-or-from-grid/</code>.</li>
+    <li>Generator metadata from <code>stats.json</code>: tool <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-16T20:13:14.299993+00:00</code>.</li>
+    <li>Accepted submissions represented locally: 19 across Python 3, Java, JavaScript, TypeScript, Go, and C++.</li>
+  </ul>
+
+  <h2>Problem Statement</h2>
+  <p>You are given a two-dimensional integer array <code>grid</code> of size <code>m x n</code>. You must select exactly one integer from each row. Return the minimum possible bitwise OR of the selected integers.</p>
+  <p>Constraints from the statement:</p>
+  <ul>
+    <li><code>1 &lt;= m == grid.length &lt;= 100000</code></li>
+    <li><code>1 &lt;= n == grid[i].length &lt;= 100000</code></li>
+    <li><code>m * n &lt;= 100000</code></li>
+    <li><code>1 &lt;= grid[i][j] &lt;= 100000</code></li>
+  </ul>
+
+  <h2>Problem Essence</h2>
+  <p>The selection is independent by row once a proposed OR mask is fixed. For a candidate answer mask <code>target</code>, a row is satisfiable if it contains at least one value whose set bits are all contained in <code>target</code>. That condition can be written as <code>(value | target) == target</code>, or equivalently <code>(value &amp; ~target) == 0</code>.</p>
+  <p>To minimize the OR, decide bits from most significant to least significant. Keep higher bits fixed at their best known values, tentatively set the current bit to 0, allow all lower bits to be 1, and test whether every row has at least one compatible value. If the test fails, the current bit is forced to 1.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>grid = [[1,5],[2,4]]</code>, the answer is <code>3</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Choice</th><th>OR</th><th>Why</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Pick <code>1</code> from row 1 and <code>2</code> from row 2</td><td><code>1 | 2 = 3</code></td><td>Both rows are represented, and the OR has bits 0 and 1 set.</td></tr>
+      <tr><td>Pick <code>1</code> and <code>4</code></td><td><code>5</code></td><td>Worse than 3.</td></tr>
+      <tr><td>Pick <code>5</code> and any row-2 value</td><td>At least <code>5</code> or <code>7</code></td><td>Worse than 3.</td></tr>
+    </tbody>
+  </table>
+  <p>The bitwise greedy view reaches the same conclusion: bit 2 can be excluded because row 1 has <code>1</code> and row 2 has <code>2</code>; bit 1 cannot be excluded after keeping bit 2 out because row 2 needs either <code>2</code> or <code>4</code>; bit 0 cannot be excluded because row 1 needs <code>1</code> or <code>5</code>. The result is binary <code>011</code>, or <code>3</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Output</th><th>Explanation</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>[[3,5],[6,4]]</code></td><td><code>5</code></td><td>Choose <code>5</code> from the first row and <code>4</code> from the second row; <code>5 | 4 = 5</code>.</td></tr>
+      <tr><td><code>[[7,9,8]]</code></td><td><code>7</code></td><td>There is only one row, so choosing its smallest achievable OR value, <code>7</code>, is optimal.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <div class="callout">
+    <p><strong>Feasibility rule:</strong> a proposed mask <code>target</code> is achievable if every row contains at least one <code>x</code> such that <code>(x | target) == target</code>.</p>
+  </div>
+  <ol>
+    <li>Use bits 16 down to 0, because <code>grid[i][j] &lt;= 100000 &lt; 2^17</code>. Some accepted submissions use a dynamic <code>max_value.bit_length()</code> or a wider fixed bound such as 20.</li>
+    <li>Maintain <code>ans</code>, the forced prefix of the answer for higher bits.</li>
+    <li>At bit <code>b</code>, build <code>candidate = ans | ((1 &lt;&lt; b) - 1)</code>. This means higher bits match <code>ans</code>, current bit is 0, and lower bits are unconstrained.</li>
+    <li>If <code>candidate</code> is feasible, leave bit <code>b</code> as 0.</li>
+    <li>If <code>candidate</code> is not feasible, set <code>ans |= 1 &lt;&lt; b</code>.</li>
+    <li>Return <code>ans</code>.</li>
+  </ol>
+  <p>Time complexity is <code>O(B * m * n)</code>, where <code>B</code> is at most 17 under the constraints. Space complexity is <code>O(1)</code> beyond the input for the mask-check version.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>class Solution:
+    def minimumOR(self, grid: List[List[int]]) -&gt; int:
+        def feasible(target: int) -&gt; bool:
+            for row in grid:
+                ok = False
+                for x in row:
+                    if (x | target) == target:
+                        ok = True
+                        break
+                if not ok:
+                    return False
+            return True
+
+        ans = 0
+        for b in range(16, -1, -1):
+            candidate = ans | ((1 &lt;&lt; b) - 1)
+            if not feasible(candidate):
+                ans |= 1 &lt;&lt; b
+        return ans</code></pre>
+  <p>The equivalent inverse-mask style is also accepted: track bits that can be forced to zero, test whether each row has a value with <code>(value &amp; zero_mask) == 0</code>, and return the complement inside the 17-bit universe.</p>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Confirm the bit limit. For this constraint, fixed bits <code>16..0</code> are enough.</li>
+    <li>For a target mask, scan each row and stop as soon as one compatible value is found.</li>
+    <li>Do not require the same column across rows; each row can choose any of its own values.</li>
+    <li>When testing bit <code>b</code>, keep lower bits permissive with <code>((1 &lt;&lt; b) - 1)</code>.</li>
+    <li>Return only the forced bits accumulated in <code>ans</code>, not the last permissive candidate.</li>
+    <li>Use integer bitwise operations only; no sorting, priority queues, dynamic programming over rows, or recursion is needed.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li><strong>Choosing the minimum value from each row.</strong> The minimum numeric value per row does not necessarily minimize the combined OR, because a slightly larger value can have bits that are already present elsewhere.</li>
+    <li><strong>Binary search over numeric answers.</strong> The predicate <code>feasible(mask)</code> is monotone under bit inclusion, not ordinary integer order. For example, increasing from <code>3</code> to <code>4</code> drops low bits, so compatibility can disappear. One local JavaScript accepted file uses numeric binary search, but the robust intended approach is greedy bit fixing.</li>
+    <li><strong>Testing only the current bit independently.</strong> A row value with the current bit clear may still contain a higher bit that was already excluded. The feasibility test must respect the whole candidate mask.</li>
+    <li><strong>Trying all row choices.</strong> The product of row lengths can be enormous even though total cells are only <code>100000</code>.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead>
+      <tr><th>Family</th><th>Seen in accepted files</th><th>Core idea</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Greedy target-mask feasibility</td>
+        <td>Java, Python 3, TypeScript, several Go/Python variants</td>
+        <td>Build the answer from high bit to low bit; test <code>(x | target) == target</code> per row.</td>
+        <td>Recommended. Constant extra memory and direct proof from bitwise monotonicity.</td>
+      </tr>
+      <tr>
+        <td>Greedy zero-mask complement</td>
+        <td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code>, some Python variants</td>
+        <td>Track bits that can be forced to zero; each row needs a value with no overlap against the zero mask.</td>
+        <td>Equivalent to target-mask feasibility. Return <code>((1 &lt;&lt; 17) - 1) ^ zero_mask</code>.</td>
+      </tr>
+      <tr>
+        <td>Row candidate filtering</td>
+        <td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td>
+        <td>When a bit can be excluded, remove row values that have that bit set.</td>
+        <td>Conceptually clear but can allocate extra vectors and had high reported memory in the local stats.</td>
+      </tr>
+      <tr>
+        <td>Numeric binary search over masks</td>
+        <td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td>
+        <td>Searches integer range with the subset predicate.</td>
+        <td>Not recommended for reimplementation because the predicate is not monotone in numeric order.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The following notes use <code>stats.json.performance_by_language</code> directly.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted Count</th><th>Runtime Range</th><th>Memory Range</th><th>Practical note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>C++</td><td>1</td><td>552 ms to 552 ms</td><td>423.8 MB to 423.8 MB</td><td>The lone C++ entry uses row filtering with copied candidate vectors, explaining the unusually high memory and runtime for C++.</td></tr>
+      <tr><td>Go</td><td>2</td><td>0 ms to 9 ms</td><td>17.5 MB to 22 MB</td><td>The zero-mask loop is compact and fast; Go had the lowest memory among languages represented.</td></tr>
+      <tr><td>Java</td><td>5</td><td>3 ms to 5 ms</td><td>136 MB to 136.6 MB</td><td>Java accepted submissions are consistently fast; memory is stable around the runtime baseline reported by the judge.</td></tr>
+      <tr><td>JavaScript</td><td>2</td><td>3 ms to 3 ms</td><td>78.2 MB to 78.7 MB</td><td>Reported runtime is excellent, but prefer the greedy bit loop rather than numeric binary search when rewriting.</td></tr>
+      <tr><td>Python 3</td><td>8</td><td>47 ms to 897 ms</td><td>41.9 MB to 62.4 MB</td><td>Python passes comfortably with early breaks and a 17-bit loop. Avoid extra per-bit row copies.</td></tr>
+      <tr><td>TypeScript</td><td>1</td><td>10 ms to 10 ms</td><td>78.2 MB to 78.2 MB</td><td>A direct greedy mask solution is sufficient; JavaScript bitwise numbers are safe because values fit well under 32 bits.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> records 3 failed submissions: 1 Wrong Answer and 2 Time Limit Exceeded.</p>
+  <ul>
+    <li>The Wrong Answer pattern is consistent with treating mask feasibility as a numeric monotone property, testing bits independently, or greedily picking row-local minima.</li>
+    <li>The Time Limit Exceeded pattern is consistent with enumerating combinations, using heavy dynamic programming over possible OR values without pruning, or rescanning with unnecessary copied state.</li>
+    <li>The accepted solutions avoid exponential search and keep the outer loop to at most 17 bit decisions.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Submission ID</th>
+        <th>Lines</th>
+        <th>Bytes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>60 ms</td><td>44 MB</td><td>2004497324</td><td>34</td><td>1183</td></tr>
+      <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>3 ms</td><td>136.6 MB</td><td>2004369364</td><td>26</td><td>666</td></tr>
+      <tr><td>3</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>202 ms</td><td>43.7 MB</td><td>2004087662</td><td>24</td><td>939</td></tr>
+      <tr><td>4</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>3 ms</td><td>136.5 MB</td><td>2004121691</td><td>26</td><td>678</td></tr>
+      <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>3 ms</td><td>78.7 MB</td><td>2004127219</td><td>34</td><td>845</td></tr>
+      <tr><td>6</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>47 ms</td><td>43.8 MB</td><td>2004093259</td><td>28</td><td>909</td></tr>
+      <tr><td>7</td><td>glm-5-cloud</td><td>python3</td><td><code>accepted__glm-5-cloud__python3.py</code></td><td>897 ms</td><td>62.4 MB</td><td>2003276511</td><td>32</td><td>1121</td></tr>
+      <tr><td>8</td><td>glm-5-cloud-t0.0</td><td>python3</td><td><code>accepted__glm-5-cloud-t0.0__python3.py</code></td><td>123 ms</td><td>42 MB</td><td>2003673459</td><td>34</td><td>965</td></tr>
+      <tr><td>9</td><td>glm-5-cloud-t0.8-java</td><td>java</td><td><code>accepted__glm-5-cloud-t0.8-java__java.java</code></td><td>3 ms</td><td>136.5 MB</td><td>2004527104</td><td>33</td><td>1037</td></tr>
+      <tr><td>10</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>3 ms</td><td>78.2 MB</td><td>2004532670</td><td>35</td><td>835</td></tr>
+      <tr><td>11</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>76 ms</td><td>41.9 MB</td><td>2003725711</td><td>29</td><td>800</td></tr>
+      <tr><td>12</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>552 ms</td><td>423.8 MB</td><td>2003796624</td><td>44</td><td>1310</td></tr>
+      <tr><td>13</td><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>9 ms</td><td>17.5 MB</td><td>2003818494</td><td>25</td><td>632</td></tr>
+      <tr><td>14</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>5 ms</td><td>136 MB</td><td>2003738173</td><td>28</td><td>697</td></tr>
+      <tr><td>15</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>10 ms</td><td>78.2 MB</td><td>2003664650</td><td>38</td><td>884</td></tr>
+      <tr><td>16</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>95 ms</td><td>42.1 MB</td><td>2003271351</td><td>35</td><td>1075</td></tr>
+      <tr><td>17</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>71 ms</td><td>43.9 MB</td><td>2003517617</td><td>36</td><td>1628</td></tr>
+      <tr><td>18</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>0 ms</td><td>22 MB</td><td>2003977852</td><td>34</td><td>1072</td></tr>
+      <tr><td>19</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>3 ms</td><td>136.6 MB</td><td>2004009707</td><td>31</td><td>892</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0482-Q4 Manual - Number of Balanced Integers in a Range</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #5a6878;
+      --line: #d8dee8;
+      --soft: #f6f8fb;
+      --accent: #1f6feb;
+      --code: #0f172a;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.18;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 22px;
+    }
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 17px;
+    }
+    p, li {
+      font-size: 15px;
+    }
+    .meta, .note {
+      color: var(--muted);
+    }
+    .panel {
+      background: var(--soft);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    code {
+      font-family: Consolas, Monaco, monospace;
+      color: var(--code);
+      background: #eef2f7;
+      border-radius: 4px;
+      padding: 1px 4px;
+    }
+    pre {
+      overflow-x: auto;
+      background: #0f172a;
+      color: #e5edf7;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    pre code {
+      color: inherit;
+      background: transparent;
+      padding: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px;
+      font-size: 13px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 7px 8px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: #edf2f8;
+      font-weight: 700;
+    }
+    tbody tr:nth-child(even) {
+      background: #fafbfd;
+    }
+    .nowrap {
+      white-space: nowrap;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Number of Balanced Integers in a Range</h1>
+  <p class="meta">Problem id: <code>wc0482-Q4-number-of-balanced-integers-in-a-range</code>. Difficulty: Hard. Function: <code>countBalanced(low, high)</code>.</p>
+
+  <h2>Provenance</h2>
+  <div class="panel">
+    <p>This manual was generated from the local workspace artifacts: <code>problem.md</code>, <code>stats.json</code>, and the <code>accepted__*</code> solution files. The problem source in <code>problem.md</code> identifies the LeetCode problem URL as <code>https://leetcode.com/problems/number-of-balanced-integers-in-a-range/</code>.</p>
+    <p>Statistics source: <code>stats.json</code>, generated at <code>2026-05-16T19:22:26.561935+00:00</code> by <code>codex</code> using model <code>gpt-5.5</code>. The accepted corpus contains 26 submissions.</p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>Given two integers <code>low</code> and <code>high</code>, return the number of balanced integers in the inclusive range <code>[low, high]</code>.</p>
+  <p>An integer is balanced when it has at least two digits and the sum of digits in odd positions equals the sum of digits in even positions. Positions are counted from the left, starting at 1.</p>
+  <p>Constraint: <code>1 &lt;= low &lt;= high &lt;= 10^15</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The range is too large for enumeration. The useful reduction is to define <code>f(x)</code> as the number of balanced integers from <code>1</code> through <code>x</code>, then return <code>f(high) - f(low - 1)</code>. Computing <code>f(x)</code> is a digit DP over the decimal representation of <code>x</code>.</p>
+  <p>The DP only needs to know where it is in the digit string, whether the prefix is still tight to the upper bound, whether a real number has started, and the current difference between odd-position and even-position digit sums. At the end, count the number only if at least two digits were placed and the difference is zero.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>low = 120</code> and <code>high = 129</code>, scan the candidates:</p>
+  <ul>
+    <li><code>120</code>: odd positions are <code>1 + 0 = 1</code>, even positions are <code>2</code>, not balanced.</li>
+    <li><code>121</code>: odd positions are <code>1 + 1 = 2</code>, even positions are <code>2</code>, balanced.</li>
+    <li><code>122</code> through <code>129</code>: odd sums are greater than 2, so they are not balanced.</li>
+  </ul>
+  <p>The answer is <code>1</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>low = 1, high = 100</code></td><td><code>9</code></td><td>The balanced values are <code>11, 22, 33, 44, 55, 66, 77, 88, 99</code>.</td></tr>
+      <tr><td><code>low = 1234, high = 1234</code></td><td><code>0</code></td><td><code>1234</code> has odd-position sum <code>1 + 3 = 4</code> and even-position sum <code>2 + 4 = 6</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Implement <code>countUpTo(x)</code>; return 0 for <code>x &lt;= 0</code>.</li>
+    <li>Convert <code>x</code> to a digit array.</li>
+    <li>Run a digit DP from most significant digit to least significant digit.</li>
+    <li>Skip leading zeros without changing the placed length or digit-sum difference.</li>
+    <li>When placing the first nonzero digit, it becomes position 1, so add it to the odd-position side.</li>
+    <li>For each later digit, alternate signs by the real placed length: add for odd positions, subtract for even positions.</li>
+    <li>At the terminal state, return 1 only when real length is at least 2 and difference is 0.</li>
+    <li>Return <code>countUpTo(high) - countUpTo(low - 1)</code>.</li>
+  </ol>
+  <p>With at most 16 digits and difference bounded by about <code>[-144, 144]</code>, the state space is tiny.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>def countBalanced(low, high):
+    return count_up_to(high) - count_up_to(low - 1)
+
+def count_up_to(x):
+    if x &lt;= 0:
+        return 0
+    digits = decimal_digits(x)
+
+    memo = {}
+
+    def dfs(index, length, diff, tight):
+        if index == len(digits):
+            return 1 if length &gt;= 2 and diff == 0 else 0
+
+        key = (index, length, diff) if not tight else None
+        if key is not None and key in memo:
+            return memo[key]
+
+        limit = digits[index] if tight else 9
+        total = 0
+        for d in range(0, limit + 1):
+            next_tight = tight and d == limit
+            if length == 0 and d == 0:
+                total += dfs(index + 1, 0, diff, next_tight)
+            else:
+                next_len = length + 1
+                next_diff = diff + d if next_len % 2 == 1 else diff - d
+                total += dfs(index + 1, next_len, next_diff, next_tight)
+
+        if key is not None:
+            memo[key] = total
+        return total
+
+    return dfs(0, 0, 0, True)</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use a 64-bit return type in languages with fixed-width integers.</li>
+    <li>Subtract prefix counts: <code>f(high) - f(low - 1)</code>.</li>
+    <li>Do not count one-digit numbers, even though their alternating difference may look valid in a flawed state model.</li>
+    <li>Leading zeros must not consume a position. The leftmost real digit is position 1.</li>
+    <li>Memoize only states that are no longer tight, or include <code>tight</code> in the memo key.</li>
+    <li>Keep the difference offset large enough for 16 digits; <code>9 * len</code> or a constant near 160 is sufficient for this constraint.</li>
+    <li>Test the three official examples and boundary-style cases such as <code>[1, 9]</code>, <code>[10, 99]</code>, and single-point ranges.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Iterating every integer in <code>[low, high]</code>. The upper bound reaches <code>10^15</code>.</li>
+    <li>Treating leading zeros as actual positions. That changes parity and corrupts numbers with fewer digits than the upper bound.</li>
+    <li>Using zero-based parity from the array index after leading zeros. Parity must be based on the real digit length, not the bound string index.</li>
+    <li>Counting length-1 numbers when <code>diff == 0</code> or when no number has started.</li>
+    <li>Using <code>number</code> carelessly in JavaScript for totals beyond exact integer limits. The submitted JavaScript solutions passed here, but a conservative implementation should keep operations within known exact bounds or use <code>BigInt</code> if adapting the problem.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <ul>
+    <li><strong>Recursive digit DP with leading-zero state:</strong> Python and C++ examples use DFS over <code>pos</code>, <code>length</code> or <code>started</code>, <code>diff</code>, and <code>tight</code>. This is the clearest family and appears throughout the accepted corpus.</li>
+    <li><strong>Fixed-length DP plus bounded prefix:</strong> The fast Java solution counts all shorter lengths with free DP, then counts the exact upper-bound length with tight/free layers.</li>
+    <li><strong>Iterative table DP:</strong> Several Java, Go, Rust, and JavaScript submissions convert the same recurrence into arrays indexed by position and shifted difference.</li>
+    <li><strong>Alternative sign convention:</strong> Some solutions track <code>odd - even</code>; others track <code>even - odd</code>. Both are equivalent as long as the terminal check is zero and parity is consistent.</li>
+  </ul>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The notes below come directly from <code>stats.json.performance_by_language</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted Count</th><th>Fastest</th><th>Slowest</th><th>Memory Range</th><th>Practical Note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>cpp</td><td>1</td><td>800 ms (<code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code>)</td><td>800 ms</td><td>342.8 MB to 342.8 MB</td><td>The accepted C++ solution is recursive and simple, but its reported memory is high compared with Rust and Go; a compact array DP should reduce that.</td></tr>
+      <tr><td>golang</td><td>2</td><td>45 ms (<code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code>)</td><td>79 ms</td><td>10.3 MB to 11.7 MB</td><td>Go performed very well with explicit arrays and integer indexing.</td></tr>
+      <tr><td>java</td><td>6</td><td>46 ms (<code>accepted__codex-agent-gpt-5.5-high-java__java.java</code>)</td><td>1176 ms</td><td>46.3 MB to 91.7 MB</td><td>Java is fast when using iterative arrays and avoiding heavy boxed memo keys.</td></tr>
+      <tr><td>javascript</td><td>3</td><td>316 ms (<code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code>)</td><td>1969 ms</td><td>63.5 MB to 67.1 MB</td><td>JavaScript passes, but object-heavy recursion can be slower than array-backed DP.</td></tr>
+      <tr><td>python3</td><td>10</td><td>1764 ms (<code>accepted__qwen3.5-cloud-t1.0__python3.py</code>)</td><td>5608 ms</td><td>19.6 MB to 509.5 MB</td><td>Python is accepted with memoized DFS, but state representation matters; large cached states can push memory above 400 MB.</td></tr>
+      <tr><td>rust</td><td>3</td><td>308 ms (<code>accepted__glm-5-cloud-t0.0-rust__rust.rs</code>)</td><td>921 ms</td><td>2.6 MB to 3.7 MB</td><td>Rust had the lowest memory profile in the corpus, helped by compact vectors and fixed integer storage.</td></tr>
+      <tr><td>typescript</td><td>1</td><td>2876 ms (<code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code>)</td><td>2876 ms</td><td>74.2 MB to 74.2 MB</td><td>The single accepted TypeScript result is slower than JavaScript here, so keep memo keys compact.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports no failed submission status counts: <code>failed_submission_status_counts</code> is empty. The practical failure patterns must therefore be inferred from the accepted implementations and the problem constraints rather than from recorded wrong-answer or TLE submissions.</p>
+  <ul>
+    <li>Performance risk: Python submissions range from <code>1764 ms</code> to <code>5608 ms</code>, and memory ranges from <code>19.6 MB</code> to <code>509.5 MB</code>. Avoid unnecessarily large memo dimensions or string-heavy keys.</li>
+    <li>Parity risk: accepted implementations carefully ignore leading zeros or count fixed lengths separately. This is the main correctness trap.</li>
+    <li>Length risk: the definition requires at least two digits. A DP that only checks <code>diff == 0</code> at the end can overcount the empty construction or one-digit values.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Lang</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Lines</th>
+        <th>Bytes</th>
+        <th>Submission</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>claude-sonnet-4-6</td><td>python3</td><td><code>accepted__claude-sonnet-4-6__python3.py</code></td><td class="nowrap">3761 ms</td><td class="nowrap">21.6 MB</td><td>53</td><td>1639</td><td>2003532911</td></tr>
+      <tr><td>codex-agent-gpt-5.5-high-java</td><td>java</td><td><code>accepted__codex-agent-gpt-5.5-high-java__java.java</code></td><td class="nowrap">46 ms</td><td class="nowrap">46.3 MB</td><td>86</td><td>2799</td><td>2003965430</td></tr>
+      <tr><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td class="nowrap">5271 ms</td><td class="nowrap">486.4 MB</td><td>35</td><td>1409</td><td>2004494442</td></tr>
+      <tr><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td class="nowrap">95 ms</td><td class="nowrap">46.8 MB</td><td>45</td><td>1717</td><td>2004366430</td></tr>
+      <tr><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td class="nowrap">316 ms</td><td class="nowrap">63.8 MB</td><td>88</td><td>3061</td><td>2004351109</td></tr>
+      <tr><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td class="nowrap">1871 ms</td><td class="nowrap">174.3 MB</td><td>34</td><td>1299</td><td>2004085893</td></tr>
+      <tr><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td class="nowrap">570 ms</td><td class="nowrap">50.9 MB</td><td>56</td><td>2149</td><td>2004120640</td></tr>
+      <tr><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td class="nowrap">831 ms</td><td class="nowrap">67.1 MB</td><td>64</td><td>2194</td><td>2004126187</td></tr>
+      <tr><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td class="nowrap">5355 ms</td><td class="nowrap">19.6 MB</td><td>71</td><td>2675</td><td>2004091496</td></tr>
+      <tr><td>glm-5-cloud</td><td>python3</td><td><code>accepted__glm-5-cloud__python3.py</code></td><td class="nowrap">3689 ms</td><td class="nowrap">21.6 MB</td><td>57</td><td>1958</td><td>2003679215</td></tr>
+      <tr><td>glm-5-cloud-t0.0</td><td>python3</td><td><code>accepted__glm-5-cloud-t0.0__python3.py</code></td><td class="nowrap">4695 ms</td><td class="nowrap">406.6 MB</td><td>40</td><td>1412</td><td>2003670908</td></tr>
+      <tr><td>glm-5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__glm-5-cloud-t0.0-rust__rust.rs</code></td><td class="nowrap">308 ms</td><td class="nowrap">2.8 MB</td><td>97</td><td>2695</td><td>2004559592</td></tr>
+      <tr><td>glm-5-cloud-t0.8-java</td><td>java</td><td><code>accepted__glm-5-cloud-t0.8-java__java.java</code></td><td class="nowrap">345 ms</td><td class="nowrap">52.9 MB</td><td>63</td><td>1757</td><td>2004524788</td></tr>
+      <tr><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td class="nowrap">1969 ms</td><td class="nowrap">63.5 MB</td><td>77</td><td>2309</td><td>2004530179</td></tr>
+      <tr><td>glm-5-cloud-t1.0-rust</td><td>rust</td><td><code>accepted__glm-5-cloud-t1.0-rust__rust.rs</code></td><td class="nowrap">921 ms</td><td class="nowrap">2.6 MB</td><td>52</td><td>1501</td><td>2004606812</td></tr>
+      <tr><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td class="nowrap">2559 ms</td><td class="nowrap">60 MB</td><td>52</td><td>1729</td><td>2003723435</td></tr>
+      <tr><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td class="nowrap">800 ms</td><td class="nowrap">342.8 MB</td><td>50</td><td>1740</td><td>2003794058</td></tr>
+      <tr><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td class="nowrap">79 ms</td><td class="nowrap">10.3 MB</td><td>118</td><td>3005</td><td>2003816214</td></tr>
+      <tr><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td class="nowrap">1176 ms</td><td class="nowrap">87.6 MB</td><td>68</td><td>2078</td><td>2003736166</td></tr>
+      <tr><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td class="nowrap">430 ms</td><td class="nowrap">3.7 MB</td><td>49</td><td>1986</td><td>2003800278</td></tr>
+      <tr><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td class="nowrap">2876 ms</td><td class="nowrap">74.2 MB</td><td>44</td><td>1519</td><td>2003662123</td></tr>
+      <tr><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td class="nowrap">5608 ms</td><td class="nowrap">509.5 MB</td><td>44</td><td>1648</td><td>2003269543</td></tr>
+      <tr><td>qwen3.5-cloud</td><td>python3</td><td><code>accepted__qwen3.5-cloud__python3.py</code></td><td class="nowrap">4965 ms</td><td class="nowrap">145.3 MB</td><td>47</td><td>1675</td><td>2003504708</td></tr>
+      <tr><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td class="nowrap">1764 ms</td><td class="nowrap">174.4 MB</td><td>42</td><td>1655</td><td>2003515281</td></tr>
+      <tr><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td class="nowrap">45 ms</td><td class="nowrap">11.7 MB</td><td>105</td><td>2174</td><td>2003975255</td></tr>
+      <tr><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td class="nowrap">895 ms</td><td class="nowrap">91.7 MB</td><td>70</td><td>2171</td><td>2004007136</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0500-Q4 Maximize Fixed Points After Deletions Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2933;
+      --muted: #596575;
+      --line: #d8dee6;
+      --panel: #f7f9fb;
+      --accent: #0f766e;
+      --code: #eef3f7;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 21px;
+    }
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 17px;
+    }
+    p { margin: 8px 0; }
+    ul, ol { margin-top: 8px; }
+    code {
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: var(--code);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--code);
+    }
+    pre code {
+      padding: 0;
+      background: transparent;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 9px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--panel);
+      font-weight: 700;
+    }
+    .meta, .note {
+      color: var(--muted);
+    }
+    .box {
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--panel);
+      padding: 12px 14px;
+      margin: 12px 0;
+    }
+    .tag {
+      display: inline-block;
+      margin: 2px 5px 2px 0;
+      padding: 2px 7px;
+      border-radius: 999px;
+      background: #e7f5f2;
+      color: var(--accent);
+      font-size: 13px;
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Maximize Fixed Points After Deletions</h1>
+  <p class="meta">Problem id: <code>wc0500-Q4-maximize-fixed-points-after-deletions</code>. Difficulty: Hard. Function: <code>maxFixedPoints(nums)</code>.</p>
+
+  <h2>Provenance</h2>
+  <p>This manual was built from the local files <code>problem.md</code>, <code>stats.json</code>, and the 15 local <code>accepted__*</code> submissions. The source statement URL recorded in <code>problem.md</code> is LeetCode: <code>https://leetcode.com/problems/maximize-fixed-points-after-deletions/</code>.</p>
+  <div class="box">
+    <p><strong>Generated data source:</strong> <code>stats.json</code>, generated at <code>2026-05-16T22:53:04.925847+00:00</code> by <code>codex</code> using model <code>gpt-5.5</code>.</p>
+    <p><strong>Accepted files inspected:</strong> Java, JavaScript, Python 3, Rust, and TypeScript solutions using either patience-sorting style LIS/LNDS or Fenwick tree DP.</p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer array <code>nums</code>. A position <code>i</code> is a fixed point if <code>nums[i] == i</code>. You may delete any number of elements, including zero. After deletions, the remaining elements shift left and are reindexed from <code>0</code>. Return the maximum possible number of fixed points.</p>
+  <p><strong>Constraints:</strong> <code>1 &lt;= nums.length &lt;= 100000</code>, <code>0 &lt;= nums[i] &lt;= 100000</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>Deleting elements means choosing a subsequence of original indices to keep as fixed points. If original index <code>i</code> with value <code>v = nums[i]</code> becomes fixed, it must land at final index <code>v</code>. Therefore:</p>
+  <ul>
+    <li><code>i &gt;= v</code> is mandatory; otherwise the item would need to move right, but deletions only shift left.</li>
+    <li>For two kept fixed points with values <code>v1 &lt; v2</code>, their original indices must have enough room: <code>i2 - i1 &gt;= v2 - v1</code>.</li>
+    <li>Rearranging gives <code>i1 - v1 &lt;= i2 - v2</code>. The shift deficit <code>d = i - nums[i]</code> must be nondecreasing as the fixed values increase.</li>
+  </ul>
+  <p>The task is a two-dimensional subsequence problem over points <code>(value, deficit) = (nums[i], i - nums[i])</code>, keeping only points with nonnegative deficit. Find the longest sequence with strictly increasing <code>value</code> and nondecreasing <code>deficit</code>.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [1,0,1,2]</code>, eligible points are:</p>
+  <table>
+    <thead><tr><th>Original index i</th><th>nums[i]</th><th>deficit i - nums[i]</th><th>Eligible?</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td>1</td><td>-1</td><td>No</td></tr>
+      <tr><td>1</td><td>0</td><td>1</td><td>Yes: <code>(0,1)</code></td></tr>
+      <tr><td>2</td><td>1</td><td>1</td><td>Yes: <code>(1,1)</code></td></tr>
+      <tr><td>3</td><td>2</td><td>1</td><td>Yes: <code>(2,1)</code></td></tr>
+    </tbody>
+  </table>
+  <p>The values <code>0, 1, 2</code> are strictly increasing and the deficits <code>1, 1, 1</code> are nondecreasing, so all three can be kept. Delete the first element and the array becomes <code>[0,1,2]</code>, producing answer <code>3</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead><tr><th>Input</th><th>Output</th><th>Reason</th></tr></thead>
+    <tbody>
+      <tr><td><code>[0,2,1]</code></td><td><code>2</code></td><td>Delete <code>2</code>; remaining <code>[0,1]</code> has two fixed points.</td></tr>
+      <tr><td><code>[3,1,2]</code></td><td><code>2</code></td><td>Keep as is; indices <code>1</code> and <code>2</code> are fixed.</td></tr>
+      <tr><td><code>[1,0,1,2]</code></td><td><code>3</code></td><td>Delete the leading <code>1</code>; remaining <code>[0,1,2]</code> has three fixed points.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Build candidate points for each index <code>i</code>: if <code>nums[i] &lt;= i</code>, record <code>(x, y) = (nums[i], i - nums[i])</code>.</li>
+    <li>Require selected candidates to have strictly increasing <code>x</code> because two fixed points cannot occupy the same final index.</li>
+    <li>Require selected candidates to have nondecreasing <code>y</code> because later selected elements must have at least as many deletable elements before them.</li>
+    <li>Compute the longest such sequence in <code>O(n log n)</code>.</li>
+  </ol>
+  <p>The most direct LIS version sorts candidates by <code>x</code> ascending and, for equal <code>x</code>, by <code>y</code> descending. Then run longest nondecreasing subsequence on <code>y</code> using upper bound. The descending tie-break prevents two candidates with the same final value from both being counted.</p>
+  <p>An equivalent accepted variant sorts or groups by <code>x</code> and uses a Fenwick tree over compressed <code>y</code> to query the best length for all <code>y' &lt;= y</code>. Updates for the same <code>x</code> must be batched so equal values cannot extend each other.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code class="language-python">from bisect import bisect_right
+
+class Solution:
+    def maxFixedPoints(self, nums: list[int]) -&gt; int:
+        points = []
+        for i, v in enumerate(nums):
+            if v &lt;= i:
+                points.append((v, i - v))
+
+        points.sort(key=lambda p: (p[0], -p[1]))
+
+        tails = []
+        for _, deficit in points:
+            pos = bisect_right(tails, deficit)
+            if pos == len(tails):
+                tails.append(deficit)
+            else:
+                tails[pos] = deficit
+
+        return len(tails)</code></pre>
+  <p><strong>Complexity:</strong> <code>O(n log n)</code> time from sorting and binary searches, and <code>O(n)</code> extra space. This matches the accepted submissions and is necessary for <code>n = 100000</code>.</p>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Filter out every index with <code>nums[i] &gt; i</code>.</li>
+    <li>Use <code>deficit = i - nums[i]</code>, not <code>nums[i] - i</code>.</li>
+    <li>For the patience-sorting solution, sort by <code>(value asc, deficit desc)</code>.</li>
+    <li>Use upper bound / <code>bisect_right</code> for nondecreasing deficits.</li>
+    <li>If using Fenwick DP, batch all updates for the same <code>value</code>.</li>
+    <li>Return the sequence length, not the number of already-fixed positions in the original array.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li><strong>Count only current fixed points:</strong> misses cases like <code>[1,0,1,2]</code>, where deletion creates three fixed points.</li>
+    <li><strong>Keep all indices with <code>nums[i] &lt;= i</code>:</strong> not every eligible element is mutually compatible.</li>
+    <li><strong>Use strict LIS on deficit:</strong> equal deficits are allowed, as shown by <code>[1,0,1,2]</code>.</li>
+    <li><strong>Sort equal values by deficit ascending in the direct LIS approach:</strong> this can count two points with the same final index value.</li>
+    <li><strong>Update Fenwick immediately inside a same-value group:</strong> this also lets equal values extend each other incorrectly.</li>
+    <li><strong>Try quadratic DP:</strong> <code>n</code> can be <code>100000</code>, so <code>O(n^2)</code> will time out.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead><tr><th>Family</th><th>Observed files</th><th>Core idea</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Sort plus LNDS</td>
+        <td>Multiple Python, Java, and JavaScript submissions, including <code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code> and <code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td>
+        <td>Sort <code>(value, deficit)</code> by value ascending and deficit descending, then use upper bound on <code>deficit</code>.</td>
+        <td>Shortest and easiest to reimplement. Requires the correct tie-break and nondecreasing binary search.</td>
+      </tr>
+      <tr>
+        <td>Fenwick tree DP</td>
+        <td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code>, <code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code>, <code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code>, and others</td>
+        <td>Group by value. For each point, query best previous length among deficits <code>&lt;= current deficit</code>, then batch update after finishing the value group.</td>
+        <td>Useful when explicitly modeling the 2D DP. Coordinate compression is optional because <code>deficit &lt;= n</code>, but compression keeps arrays compact.</td>
+      </tr>
+      <tr>
+        <td>Symmetric sort plus LIS</td>
+        <td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td>
+        <td>Sort by deficit ascending and value ascending, then find strict LIS on value.</td>
+        <td>Equivalent view of the same partial order: nondecreasing deficit and strictly increasing value.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>Concrete performance data below comes from <code>stats.json.performance_by_language</code>.</p>
+  <table>
+    <thead><tr><th>Language</th><th>Accepted count</th><th>Runtime range</th><th>Memory range</th><th>Practical note</th></tr></thead>
+    <tbody>
+      <tr><td>Java</td><td>4</td><td>54 ms fastest to 66 ms slowest</td><td>135.5 MB lowest to 140.8 MB highest</td><td>Fastest observed overall. Use primitive arrays for <code>tails</code> or compressed Fenwick arrays where possible.</td></tr>
+      <tr><td>JavaScript</td><td>4</td><td>120 ms fastest to 201 ms slowest</td><td>87.1 MB lowest to 97.1 MB highest</td><td>Both array-based LNDS and Fenwick pass. Avoid comparator mistakes and keep binary search iterative.</td></tr>
+      <tr><td>Python 3</td><td>5</td><td>255 ms fastest to 983 ms slowest</td><td>41.4 MB lowest to 51.2 MB highest</td><td>The concise <code>bisect_right</code> LNDS version was much faster than some Fenwick/grouped variants in the accepted set.</td></tr>
+      <tr><td>Rust</td><td>1</td><td>57 ms</td><td>7.1 MB</td><td>Excellent memory profile in the observed Fenwick implementation. Watch unsigned index arithmetic in Fenwick updates.</td></tr>
+      <tr><td>TypeScript</td><td>1</td><td>146 ms</td><td>96.5 MB</td><td>The observed TypeScript solution used grouped Fenwick DP and passed within typical JavaScript-family memory usage.</td></tr>
+    </tbody>
+  </table>
+  <p>Fastest recorded submissions by language: Java <code>qwen3.5-cloud-t1.0-java</code> at <code>54 ms</code>, Rust <code>kimi-k2.5-cloud-t0.0-rust</code> at <code>57 ms</code>, JavaScript <code>deepseek-v4-flash-cloud-t0.0-javascript</code> at <code>120 ms</code>, TypeScript <code>kimi-k2.5-cloud-t0.0-typescript</code> at <code>146 ms</code>, and Python 3 <code>kimi-k2.5-cloud-t0.0</code> at <code>255 ms</code>.</p>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p>The failure counts in <code>stats.json</code> were: <span class="tag">Wrong Answer: 7</span> <span class="tag">Time Limit Exceeded: 1</span> <span class="tag">Compile Error: 1</span></p>
+  <ul>
+    <li>The dominant risk is logical: wrong inequality, wrong tie-break, or accidentally allowing equal values to chain.</li>
+    <li>The single TLE is consistent with quadratic DP being too slow for <code>100000</code> elements.</li>
+    <li>The compile error risk is low, but custom Fenwick code and hand-written binary search can introduce language-specific mistakes.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr><th>#</th><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Submission ID</th><th>Lines</th><th>Bytes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>65 ms</td><td>140.7 MB</td><td>2004372500</td><td>36</td><td>1115</td></tr>
+      <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td>120 ms</td><td>92.2 MB</td><td>2004356018</td><td>39</td><td>973</td></tr>
+      <tr><td>3</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>983 ms</td><td>44.4 MB</td><td>2004089595</td><td>35</td><td>1012</td></tr>
+      <tr><td>4</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>66 ms</td><td>140.8 MB</td><td>2004122875</td><td>41</td><td>1146</td></tr>
+      <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>201 ms</td><td>96.5 MB</td><td>2004128336</td><td>61</td><td>1626</td></tr>
+      <tr><td>6</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>917 ms</td><td>51.2 MB</td><td>2004095065</td><td>46</td><td>1312</td></tr>
+      <tr><td>7</td><td>glm-5-cloud-t0.8-javascript</td><td>javascript</td><td><code>accepted__glm-5-cloud-t0.8-javascript__javascript.js</code></td><td>141 ms</td><td>97.1 MB</td><td>2004549545</td><td>37</td><td>891</td></tr>
+      <tr><td>8</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>255 ms</td><td>49.2 MB</td><td>2003728434</td><td>22</td><td>658</td></tr>
+      <tr><td>9</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>55 ms</td><td>138.2 MB</td><td>2003741004</td><td>82</td><td>2138</td></tr>
+      <tr><td>10</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>190 ms</td><td>87.1 MB</td><td>2003592392</td><td>44</td><td>991</td></tr>
+      <tr><td>11</td><td>kimi-k2.5-cloud-t0.0-rust</td><td>rust</td><td><code>accepted__kimi-k2.5-cloud-t0.0-rust__rust.rs</code></td><td>57 ms</td><td>7.1 MB</td><td>2003815437</td><td>96</td><td>2291</td></tr>
+      <tr><td>12</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>146 ms</td><td>96.5 MB</td><td>2003667136</td><td>69</td><td>1575</td></tr>
+      <tr><td>13</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>979 ms</td><td>41.4 MB</td><td>2003304235</td><td>54</td><td>1653</td></tr>
+      <tr><td>14</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>266 ms</td><td>49.2 MB</td><td>2003604780</td><td>45</td><td>2172</td></tr>
+      <tr><td>15</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>54 ms</td><td>135.5 MB</td><td>2004054073</td><td>47</td><td>1230</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

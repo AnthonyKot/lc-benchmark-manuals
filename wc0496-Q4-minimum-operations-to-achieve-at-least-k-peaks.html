@@ -1,0 +1,323 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minimum Operations to Achieve At Least K Peaks - Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --ink: #1f2937;
+      --muted: #5b6472;
+      --line: #d8dee9;
+      --accent: #0f766e;
+      --code: #111827;
+      --code-bg: #eef2f7;
+    }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    header {
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 30px 0 10px;
+      color: var(--accent);
+      font-size: 21px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 5px;
+    }
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 17px;
+    }
+    .meta, .note {
+      color: var(--muted);
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px 20px;
+      margin: 16px 0;
+    }
+    code {
+      background: var(--code-bg);
+      color: var(--code);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      background: #111827;
+      color: #f9fafb;
+      padding: 14px;
+      border-radius: 7px;
+      line-height: 1.45;
+    }
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 7px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #eef7f6;
+    }
+    ul, ol {
+      padding-left: 22px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 12px;
+    }
+    .pill {
+      display: inline-block;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 9px;
+      margin: 2px 4px 2px 0;
+      background: #f9fafb;
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Minimum Operations to Achieve At Least K Peaks</h1>
+    <p class="meta">Problem id: <code>wc0496-Q4-minimum-operations-to-achieve-at-least-k-peaks</code>. Difficulty: Hard. Function: <code>minOperations(nums, k)</code>.</p>
+  </header>
+
+  <section>
+    <h2>Provenance</h2>
+    <p>This manual was built from the local files <code>problem.md</code>, <code>stats.json</code>, and 17 <code>accepted__*</code> submissions in the current workspace.</p>
+    <p>Source metadata reports generator <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-16T20:43:26.450855+00:00</code>. Topic tags: <span class="pill">array</span><span class="pill">dynamic-programming</span></p>
+  </section>
+
+  <section>
+    <h2>Problem Statement</h2>
+    <p>You are given a circular integer array <code>nums</code> of length <code>n</code>. Index <code>i</code> is a peak when <code>nums[i]</code> is strictly greater than both circular neighbors: <code>nums[(i - 1 + n) % n]</code> and <code>nums[(i + 1) % n]</code>.</p>
+    <p>One operation chooses any index and increases its value by 1. Return the minimum number of operations needed so that the array contains at least <code>k</code> peaks. Return <code>-1</code> if this is impossible.</p>
+    <p>Constraints: <code>2 &lt;= n == nums.length &lt;= 5000</code>, <code>-100000 &lt;= nums[i] &lt;= 100000</code>, and <code>0 &lt;= k &lt;= n</code>.</p>
+  </section>
+
+  <section>
+    <h2>Problem Essence</h2>
+    <p>Making a chosen index into a peak has an independent direct cost if its neighbors are not chosen as peaks:</p>
+    <pre><code>cost[i] = max(0, max(nums[(i-1+n)%n], nums[(i+1)%n]) + 1 - nums[i])</code></pre>
+    <p>Two adjacent indices cannot both be peaks, because each would need to be strictly greater than the other. The problem becomes: choose at least <code>k</code> non-adjacent indices on a cycle with minimum total <code>cost[i]</code>. Since costs are nonnegative, choosing exactly <code>k</code> is optimal whenever <code>k &gt; 0</code>.</p>
+    <p>A cycle of length <code>n</code> can contain at most <code>floor(n / 2)</code> non-adjacent chosen indices, so <code>k &gt; floor(n / 2)</code> is impossible.</p>
+  </section>
+
+  <section>
+    <h2>Worked Example</h2>
+    <h3>Example 1: <code>nums = [2,1,2], k = 1</code></h3>
+    <p>The independent peak costs are:</p>
+    <ul>
+      <li>Index 0: neighbors 2 and 1, needs value 3, cost 1.</li>
+      <li>Index 1: neighbors 2 and 2, needs value 3, cost 2.</li>
+      <li>Index 2: neighbors 1 and 2, needs value 3, cost 1.</li>
+    </ul>
+    <p>Choose either index 0 or 2 for cost 1. The official example increases <code>nums[2]</code> from 2 to 3, giving one peak. Answer: <code>1</code>.</p>
+  </section>
+
+  <section>
+    <h2>Other Official Examples</h2>
+    <table>
+      <thead><tr><th>Input</th><th>Output</th><th>Reason</th></tr></thead>
+      <tbody>
+        <tr><td><code>nums = [4,5,3,6], k = 2</code></td><td><code>0</code></td><td>Indices 1 and 3 are already circular peaks.</td></tr>
+        <tr><td><code>nums = [3,7,3], k = 2</code></td><td><code>-1</code></td><td>A 3-cycle can have at most one peak.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Decision Rule / Algorithm</h2>
+    <ol>
+      <li>If <code>k == 0</code>, return <code>0</code>.</li>
+      <li>If <code>k &gt; n // 2</code>, return <code>-1</code>.</li>
+      <li>Compute <code>cost[i]</code>, the operations required to make index <code>i</code> a peak while leaving neighbors unchanged.</li>
+      <li>Break the cycle into two cases:
+        <ul>
+          <li>Index 0 is not selected: solve a path-selection problem on indices <code>1..n-1</code>, choosing <code>k</code> non-adjacent items.</li>
+          <li>Index 0 is selected: pay <code>cost[0]</code>, exclude indices 1 and <code>n-1</code>, then solve on <code>2..n-2</code> for <code>k-1</code> more choices.</li>
+        </ul>
+      </li>
+      <li>For a path, use DP: <code>dp[i][j]</code> is the minimum cost to choose <code>j</code> non-adjacent items from the first <code>i</code> path positions. Transition: skip current or take current plus the best value through <code>i-2</code>.</li>
+      <li>Return the minimum of the two cycle cases, or <code>-1</code> if neither is feasible.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2>Implementation Skeleton</h2>
+    <pre><code>class Solution:
+    def minOperations(self, nums: list[int], k: int) -&gt; int:
+        n = len(nums)
+        if k == 0:
+            return 0
+        if k &gt; n // 2:
+            return -1
+
+        cost = []
+        for i in range(n):
+            need = max(nums[i - 1], nums[(i + 1) % n]) + 1
+            cost.append(max(0, need - nums[i]))
+
+        INF = 10**18
+
+        def solve_path(arr, t):
+            m = len(arr)
+            if t == 0:
+                return 0
+            if t &gt; (m + 1) // 2:
+                return INF
+
+            prev2 = [INF] * (t + 1)
+            prev1 = [INF] * (t + 1)
+            prev2[0] = 0
+            prev1[0] = 0
+            if m &gt; 0:
+                prev1[1] = arr[0]
+
+            for i in range(2, m + 1):
+                cur = [INF] * (t + 1)
+                cur[0] = 0
+                for j in range(1, min(t, (i + 1) // 2) + 1):
+                    cur[j] = min(prev1[j], prev2[j - 1] + arr[i - 1])
+                prev2, prev1 = prev1, cur
+            return prev1[t]
+
+        ans = solve_path(cost[1:], k)
+        ans = min(ans, cost[0] + solve_path(cost[2:n-1], k - 1))
+        return -1 if ans &gt;= INF else ans</code></pre>
+  </section>
+
+  <section>
+    <h2>Reimplementation Checklist</h2>
+    <ul>
+      <li>Use circular neighbor indices when computing <code>cost</code>.</li>
+      <li>Use <code>max(0, max(left, right) + 1 - nums[i])</code>, not just a comparison against one neighbor.</li>
+      <li>Reject <code>k &gt; n // 2</code> before running DP.</li>
+      <li>Split the cycle by whether index 0 is selected.</li>
+      <li>In the selected-index-0 case, remove both adjacent indices 1 and <code>n-1</code>.</li>
+      <li>Use a large sentinel such as <code>10**18</code> or <code>1LL &lt;&lt; 60</code> to avoid overflow in transitions.</li>
+      <li>For path DP, choosing current position must reference the state from two positions back.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Wrong But Tempting</h2>
+    <ul>
+      <li>Greedily choose the cheapest <code>k</code> costs without checking adjacency. Adjacent chosen indices cannot both be peaks.</li>
+      <li>Allow "at least k" to choose more than <code>k</code>. Since every added peak has nonnegative cost and can only add conflicts, exactly <code>k</code> is enough.</li>
+      <li>Treat the array as linear and forget the conflict between indices 0 and <code>n-1</code>.</li>
+      <li>Increase a neighbor to help another peak. Increasing neighbors only makes peak requirements harder, so accepted solutions compute each chosen peak against original neighbors.</li>
+      <li>Use <code>&gt;=</code> for peak checks. Peaks must be strictly greater than both neighbors.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Accepted Algorithm Families</h2>
+    <div class="grid">
+      <div>
+        <h3>Cycle split plus path DP</h3>
+        <p>Most accepted files use the official hint directly: compute costs, split on index 0, then solve a weighted independent set of fixed cardinality on a path. Time is <code>O(nk)</code>; rolling arrays use <code>O(k)</code> memory.</p>
+      </div>
+      <div>
+        <h3>Priority queue refund method</h3>
+        <p>The fastest Python accepted file uses a heap and linked-list merge trick for selecting minimum-weight non-adjacent items on a path. It still splits the circular case, but replaces the inner DP with repeated heap selections.</p>
+      </div>
+      <div>
+        <h3>Direct cycle heap variant</h3>
+        <p>One JavaScript submission models all positions in a circular linked structure and repeatedly merges neighbors. This is concise for the independent-set view, but the path-split DP is easier to audit.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Language and Performance Notes</h2>
+    <p>These notes come directly from <code>stats.json.performance_by_language</code>.</p>
+    <table>
+      <thead><tr><th>Language</th><th>Accepted Count</th><th>Fastest Runtime</th><th>Slowest Runtime</th><th>Memory Range</th><th>Practical Note</th></tr></thead>
+      <tbody>
+        <tr><td>cpp</td><td>1</td><td>327 ms</td><td>327 ms</td><td>44.2 MB to 44.2 MB</td><td>Rolling-array DP is straightforward and comfortably fast.</td></tr>
+        <tr><td>golang</td><td>2</td><td>183 ms</td><td>255 ms</td><td>8.8 MB to 69.5 MB</td><td>Both accepted Go solutions are fast; memory varied widely by implementation.</td></tr>
+        <tr><td>java</td><td>4</td><td>119 ms</td><td>264 ms</td><td>46.9 MB to 47.5 MB</td><td>Java DP submissions were consistently fast and memory-stable.</td></tr>
+        <tr><td>javascript</td><td>3</td><td>21 ms</td><td>583 ms</td><td>64.3 MB to 65.4 MB</td><td>The optimized linked-list/heap style can be very fast, but implementation details matter.</td></tr>
+        <tr><td>python3</td><td>6</td><td>56 ms</td><td>9142 ms</td><td>20.0 MB to 20.9 MB</td><td>Plain <code>O(nk)</code> Python may pass slowly; optimized heap or carefully bounded DP is preferable.</td></tr>
+        <tr><td>typescript</td><td>1</td><td>247 ms</td><td>247 ms</td><td>65.1 MB to 65.1 MB</td><td>TypeScript accepted with moderate runtime and JS-like memory use.</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Failure Patterns From Stats</h2>
+    <p>The failed submission counts in <code>stats.json</code> were: <code>Wrong Answer: 2</code>, <code>Time Limit Exceeded: 3</code>, and <code>Memory Limit Exceeded: 1</code>.</p>
+    <ul>
+      <li>Wrong answers usually come from mishandling the circular boundary, especially selecting both 0 and <code>n-1</code>, or forgetting that adjacent peaks are impossible.</li>
+      <li>Time limit failures point to overly large DP tables or cubic/backtracking approaches. The target should be <code>O(nk)</code> or better.</li>
+      <li>Memory limit failure is avoidable with rolling arrays. A full <code>n x k</code> table is unnecessary for the path DP transition.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Full Accepted Table</h2>
+    <table>
+      <thead>
+        <tr><th>#</th><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Submission ID</th><th>Lines</th><th>Bytes</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1</td><td>deepseek-v4-flash-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0__python3.py</code></td><td>8317 ms</td><td>20.2 MB</td><td>2004498956</td><td>63</td><td>2059</td></tr>
+        <tr><td>2</td><td>deepseek-v4-flash-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-java__java.java</code></td><td>159 ms</td><td>47.5 MB</td><td>2004370962</td><td>85</td><td>2776</td></tr>
+        <tr><td>3</td><td>deepseek-v4-flash-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-flash-cloud-t0.0-javascript__javascript.js</code></td><td>583 ms</td><td>65 MB</td><td>2004354919</td><td>51</td><td>1824</td></tr>
+        <tr><td>4</td><td>deepseek-v4-pro-cloud-t0.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0__python3.py</code></td><td>2821 ms</td><td>20.2 MB</td><td>2004088779</td><td>62</td><td>1937</td></tr>
+        <tr><td>5</td><td>deepseek-v4-pro-cloud-t0.0-java</td><td>java</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-java__java.java</code></td><td>119 ms</td><td>46.9 MB</td><td>2004122365</td><td>85</td><td>2418</td></tr>
+        <tr><td>6</td><td>deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>21 ms</td><td>65.4 MB</td><td>2004127866</td><td>129</td><td>3418</td></tr>
+        <tr><td>7</td><td>deepseek-v4-pro-cloud-t1.0</td><td>python3</td><td><code>accepted__deepseek-v4-pro-cloud-t1.0__python3.py</code></td><td>8725 ms</td><td>20.2 MB</td><td>2004094269</td><td>55</td><td>1871</td></tr>
+        <tr><td>8</td><td>kimi-k2.5-cloud-t0.0</td><td>python3</td><td><code>accepted__kimi-k2.5-cloud-t0.0__python3.py</code></td><td>8930 ms</td><td>20 MB</td><td>2003727117</td><td>56</td><td>2021</td></tr>
+        <tr><td>9</td><td>kimi-k2.5-cloud-t0.0-cpp</td><td>cpp</td><td><code>accepted__kimi-k2.5-cloud-t0.0-cpp__cpp.cpp</code></td><td>327 ms</td><td>44.2 MB</td><td>2003798404</td><td>71</td><td>2132</td></tr>
+        <tr><td>10</td><td>kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>255 ms</td><td>69.5 MB</td><td>2003819883</td><td>103</td><td>2326</td></tr>
+        <tr><td>11</td><td>kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>233 ms</td><td>47 MB</td><td>2003739866</td><td>101</td><td>2744</td></tr>
+        <tr><td>12</td><td>kimi-k2.5-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-javascript__javascript.js</code></td><td>292 ms</td><td>64.3 MB</td><td>2003591523</td><td>54</td><td>1362</td></tr>
+        <tr><td>13</td><td>kimi-k2.5-cloud-t0.0-typescript</td><td>typescript</td><td><code>accepted__kimi-k2.5-cloud-t0.0-typescript__typescript.ts</code></td><td>247 ms</td><td>65.1 MB</td><td>2003665996</td><td>66</td><td>1916</td></tr>
+        <tr><td>14</td><td>minimax-m2.7-cloud</td><td>python3</td><td><code>accepted__minimax-m2.7-cloud__python3.py</code></td><td>9142 ms</td><td>20.3 MB</td><td>2003272604</td><td>66</td><td>2504</td></tr>
+        <tr><td>15</td><td>qwen3.5-cloud-t1.0</td><td>python3</td><td><code>accepted__qwen3.5-cloud-t1.0__python3.py</code></td><td>56 ms</td><td>20.9 MB</td><td>2003603345</td><td>107</td><td>3705</td></tr>
+        <tr><td>16</td><td>qwen3.5-cloud-t1.0-golang</td><td>golang</td><td><code>accepted__qwen3.5-cloud-t1.0-golang__golang.go</code></td><td>183 ms</td><td>8.8 MB</td><td>2003979501</td><td>113</td><td>2773</td></tr>
+        <tr><td>17</td><td>qwen3.5-cloud-t1.0-java</td><td>java</td><td><code>accepted__qwen3.5-cloud-t1.0-java__java.java</code></td><td>264 ms</td><td>47.1 MB</td><td>2004011268</td><td>90</td><td>2898</td></tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>

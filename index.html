@@ -1,0 +1,347 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LeetCode Benchmark Manual Index</title>
+  <style>
+    :root {
+      --ink: #172033;
+      --muted: #627086;
+      --line: #d7dfeb;
+      --panel: #ffffff;
+      --bg: #f4f7fb;
+      --accent: #0c6b58;
+      --accent-soft: #e6f5f1;
+      --hard: #b54708;
+      --medium: #0b6bcb;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 15px/1.5 "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(135deg, rgba(12,107,88,.12), transparent 28rem),
+        linear-gradient(315deg, rgba(11,107,203,.10), transparent 30rem),
+        var(--bg);
+    }
+    main { max-width: 1180px; margin: 0 auto; padding: 34px 22px 56px; }
+    h1 { margin: 0; font-size: 34px; letter-spacing: 0; }
+    h2 { margin: 32px 0 12px; font-size: 20px; }
+    p { color: var(--muted); margin: 8px 0 0; }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin: 24px 0;
+    }
+    .metric {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px;
+    }
+    .metric b { display: block; font-size: 24px; }
+    .metric span { color: var(--muted); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 12px;
+    }
+    .manual-card {
+      display: block;
+      min-height: 150px;
+      padding: 15px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      color: inherit;
+      text-decoration: none;
+    }
+    .manual-card:hover { border-color: var(--accent); box-shadow: 0 8px 22px rgba(23,32,51,.08); }
+    .manual-card strong { display: block; font-size: 17px; line-height: 1.25; margin: 8px 0; }
+    .eyebrow { color: var(--accent); font-weight: 700; font-size: 12px; text-transform: uppercase; }
+    .meta, .stats { display: block; color: var(--muted); font-size: 13px; }
+    .stats { margin-top: 12px; }
+    table { width: 100%; border-collapse: collapse; background: var(--panel); border: 1px solid var(--line); }
+    th, td { padding: 9px 10px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    th { background: #edf3f8; }
+    a { color: #075e8f; }
+    code { background: #eef2f6; padding: 2px 5px; border-radius: 4px; }
+    @media (max-width: 760px) {
+      .summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      main { padding: 24px 14px 42px; }
+      h1 { font-size: 27px; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>LeetCode Benchmark Manual Index</h1>
+  <p>Navigation page for generated Codex manuals. Each page is self-contained and links to accepted solution evidence from this benchmark run.</p>
+
+  <section class="summary" aria-label="Summary">
+    <div class="metric"><b>40</b><span>manual pages</span></div>
+    <div class="metric"><b>19</b><span>medium problems</span></div>
+    <div class="metric"><b>21</b><span>hard problems</span></div>
+    <div class="metric"><b>784</b><span>accepted solutions referenced</span></div>
+  </section>
+
+  <h2>Browse</h2>
+  <section class="grid">
+
+      <a class="manual-card" href="wc0482-Q3-smallest-all-ones-multiple.html">
+        <span class="eyebrow">WC 0482 / Q3</span>
+        <strong>Smallest All-Ones Multiple</strong>
+        <span class="meta">Medium | minAllOneMultiple / arity 1</span>
+        <span class="stats">29 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0482-Q4-number-of-balanced-integers-in-a-range.html">
+        <span class="eyebrow">WC 0482 / Q4</span>
+        <strong>Number of Balanced Integers in a Range</strong>
+        <span class="meta">Hard | countBalanced / arity 2</span>
+        <span class="stats">26 accepted inputs | 18 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0483-Q3-minimum-cost-to-make-two-binary-strings-equal.html">
+        <span class="eyebrow">WC 0483 / Q3</span>
+        <strong>Minimum Cost to Make Two Binary Strings Equal</strong>
+        <span class="meta">Medium | minimumCost / arity 5</span>
+        <span class="stats">24 accepted inputs | 15 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0483-Q4-minimum-cost-to-merge-sorted-lists.html">
+        <span class="eyebrow">WC 0483 / Q4</span>
+        <strong>Minimum Cost to Merge Sorted Lists</strong>
+        <span class="meta">Hard | minMergeCost / arity 1</span>
+        <span class="stats">22 accepted inputs | 17 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0484-Q3-count-caesar-cipher-pairs.html">
+        <span class="eyebrow">WC 0484 / Q3</span>
+        <strong>Count Caesar Cipher Pairs</strong>
+        <span class="meta">Medium | countPairs / arity 1</span>
+        <span class="stats">26 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0484-Q4-maximum-bitwise-and-after-increment-operations.html">
+        <span class="eyebrow">WC 0484 / Q4</span>
+        <strong>Maximum Bitwise AND After Increment Operations</strong>
+        <span class="meta">Hard | maximumAND / arity 3</span>
+        <span class="stats">16 accepted inputs | 14 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0485-Q3-design-auction-system.html">
+        <span class="eyebrow">WC 0485 / Q3</span>
+        <strong>Design Auction System</strong>
+        <span class="meta">Medium | __init__ / arity 0</span>
+        <span class="stats">18 accepted inputs | 18 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0485-Q4-lexicographically-smallest-string-after-deleting-duplicate-characters.html">
+        <span class="eyebrow">WC 0485 / Q4</span>
+        <strong>Lexicographically Smallest String After Deleting Duplicate Characters</strong>
+        <span class="meta">Hard | lexSmallestAfterDeletion / arity 1</span>
+        <span class="stats">9 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0486-Q3-pythagorean-distance-nodes-in-a-tree.html">
+        <span class="eyebrow">WC 0486 / Q3</span>
+        <strong>Pythagorean Distance Nodes in a Tree</strong>
+        <span class="meta">Medium | specialNodes / arity 5</span>
+        <span class="stats">25 accepted inputs | 17 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0486-Q4-find-nth-smallest-integer-with-k-one-bits.html">
+        <span class="eyebrow">WC 0486 / Q4</span>
+        <strong>Find Nth Smallest Integer With K One Bits</strong>
+        <span class="meta">Hard | nthSmallest / arity 2</span>
+        <span class="stats">24 accepted inputs | 17 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0487-Q3-design-ride-sharing-system.html">
+        <span class="eyebrow">WC 0487 / Q3</span>
+        <strong>Design Ride Sharing System</strong>
+        <span class="meta">Medium | __init__ / arity 0</span>
+        <span class="stats">22 accepted inputs | 19 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0487-Q4-longest-alternating-subarray-after-removing-at-most-one-element.html">
+        <span class="eyebrow">WC 0487 / Q4</span>
+        <strong>Longest Alternating Subarray After Removing At Most One Element</strong>
+        <span class="meta">Hard | longestAlternating / arity 1</span>
+        <span class="stats">19 accepted inputs | 17 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0488-Q3-count-subarrays-with-cost-less-than-or-equal-to-k.html">
+        <span class="eyebrow">WC 0488 / Q3</span>
+        <strong>Count Subarrays With Cost Less Than or Equal to K</strong>
+        <span class="meta">Medium | countSubarrays / arity 2</span>
+        <span class="stats">24 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0488-Q4-maximum-score-using-exactly-k-pairs.html">
+        <span class="eyebrow">WC 0488 / Q4</span>
+        <strong>Maximum Score Using Exactly K Pairs</strong>
+        <span class="meta">Hard | maxScore / arity 3</span>
+        <span class="stats">23 accepted inputs | 17 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0489-Q3-longest-almost-palindromic-substring.html">
+        <span class="eyebrow">WC 0489 / Q3</span>
+        <strong>Longest Almost-Palindromic Substring</strong>
+        <span class="meta">Medium | almostPalindromic / arity 1</span>
+        <span class="stats">13 accepted inputs | 15 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0489-Q4-maximum-subarray-xor-with-bounded-range.html">
+        <span class="eyebrow">WC 0489 / Q4</span>
+        <strong>Maximum Subarray XOR with Bounded Range</strong>
+        <span class="meta">Hard | maxXor / arity 2</span>
+        <span class="stats">24 accepted inputs | 15 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0490-Q3-maximum-bitwise-xor-after-rearrangement.html">
+        <span class="eyebrow">WC 0490 / Q3</span>
+        <strong>Maximum Bitwise XOR After Rearrangement</strong>
+        <span class="meta">Medium | maximumXor / arity 2</span>
+        <span class="stats">24 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0490-Q4-count-sequences-to-k.html">
+        <span class="eyebrow">WC 0490 / Q4</span>
+        <strong>Count Sequences to K</strong>
+        <span class="meta">Hard | countSequences / arity 2</span>
+        <span class="stats">22 accepted inputs | 15 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0491-Q3-minimum-bitwise-or-from-grid.html">
+        <span class="eyebrow">WC 0491 / Q3</span>
+        <strong>Minimum Bitwise OR From Grid</strong>
+        <span class="meta">Medium | minimumOR / arity 1</span>
+        <span class="stats">19 accepted inputs | 17 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0491-Q4-count-subarrays-with-k-distinct-integers.html">
+        <span class="eyebrow">WC 0491 / Q4</span>
+        <strong>Count Subarrays With K Distinct Integers</strong>
+        <span class="meta">Hard | countSubarrays / arity 3</span>
+        <span class="stats">6 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0492-Q3-minimum-operations-to-sort-a-string.html">
+        <span class="eyebrow">WC 0492 / Q3</span>
+        <strong>Minimum Operations to Sort a String</strong>
+        <span class="meta">Medium | minOperations / arity 1</span>
+        <span class="stats">14 accepted inputs | 15 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0492-Q4-minimum-cost-to-partition-a-binary-string.html">
+        <span class="eyebrow">WC 0492 / Q4</span>
+        <strong>Minimum Cost to Partition a Binary String</strong>
+        <span class="meta">Hard | minCost / arity 3</span>
+        <span class="stats">18 accepted inputs | 17 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0493-Q3-longest-arithmetic-sequence-after-changing-at-most-one-element.html">
+        <span class="eyebrow">WC 0493 / Q3</span>
+        <strong>Longest Arithmetic Sequence After Changing At Most One Element</strong>
+        <span class="meta">Medium | longestArithmetic / arity 1</span>
+        <span class="stats">15 accepted inputs | 15 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0493-Q4-maximum-points-activated-with-one-addition.html">
+        <span class="eyebrow">WC 0493 / Q4</span>
+        <strong>Maximum Points Activated with One Addition</strong>
+        <span class="meta">Hard | maxActivated / arity 1</span>
+        <span class="stats">22 accepted inputs | 17 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0494-Q3-minimum-removals-to-achieve-target-xor.html">
+        <span class="eyebrow">WC 0494 / Q3</span>
+        <strong>Minimum Removals to Achieve Target XOR</strong>
+        <span class="meta">Medium | minRemovals / arity 2</span>
+        <span class="stats">24 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0494-Q4-count-good-subarrays.html">
+        <span class="eyebrow">WC 0494 / Q4</span>
+        <strong>Count Good Subarrays</strong>
+        <span class="meta">Hard | countGoodSubarrays / arity 1</span>
+        <span class="stats">21 accepted inputs | 18 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0495-Q3-sum-of-sortable-integers.html">
+        <span class="eyebrow">WC 0495 / Q3</span>
+        <strong>Sum of Sortable Integers</strong>
+        <span class="meta">Hard | sortableIntegers / arity 1</span>
+        <span class="stats">17 accepted inputs | 17 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0495-Q4-incremental-even-weighted-cycle-queries.html">
+        <span class="eyebrow">WC 0495 / Q4</span>
+        <strong>Incremental Even-Weighted Cycle Queries</strong>
+        <span class="meta">Hard | numberOfEdgesAdded / arity 2</span>
+        <span class="stats">23 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0496-Q3-minimum-increase-to-maximize-special-indices.html">
+        <span class="eyebrow">WC 0496 / Q3</span>
+        <strong>Minimum Increase to Maximize Special Indices</strong>
+        <span class="meta">Medium | minIncrease / arity 1</span>
+        <span class="stats">19 accepted inputs | 15 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0496-Q4-minimum-operations-to-achieve-at-least-k-peaks.html">
+        <span class="eyebrow">WC 0496 / Q4</span>
+        <strong>Minimum Operations to Achieve At Least K Peaks</strong>
+        <span class="meta">Hard | minOperations / arity 2</span>
+        <span class="stats">17 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0497-Q3-longest-balanced-substring-after-one-swap.html">
+        <span class="eyebrow">WC 0497 / Q3</span>
+        <strong>Longest Balanced Substring After One Swap</strong>
+        <span class="meta">Medium | longestBalanced / arity 1</span>
+        <span class="stats">16 accepted inputs | 15 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0497-Q4-good-subsequence-queries.html">
+        <span class="eyebrow">WC 0497 / Q4</span>
+        <strong>Good Subsequence Queries</strong>
+        <span class="meta">Hard | countGoodSubseq / arity 3</span>
+        <span class="stats">13 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0498-Q3-multi-source-flood-fill.html">
+        <span class="eyebrow">WC 0498 / Q3</span>
+        <strong>Multi Source Flood Fill</strong>
+        <span class="meta">Medium | colorGrid / arity 3</span>
+        <span class="stats">22 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0498-Q4-count-good-integers-on-a-grid-path.html">
+        <span class="eyebrow">WC 0498 / Q4</span>
+        <strong>Count Good Integers on a Grid Path</strong>
+        <span class="meta">Hard | countGoodIntegersOnPath / arity 3</span>
+        <span class="stats">17 accepted inputs | 14 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0499-Q3-minimum-operations-to-make-array-non-decreasing.html">
+        <span class="eyebrow">WC 0499 / Q3</span>
+        <strong>Minimum Operations to Make Array Non Decreasing</strong>
+        <span class="meta">Medium | minOperations / arity 1</span>
+        <span class="stats">23 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0499-Q4-maximum-sum-of-alternating-subsequence-with-distance-at-least-k.html">
+        <span class="eyebrow">WC 0499 / Q4</span>
+        <strong>Maximum Sum of Alternating Subsequence With Distance at Least K</strong>
+        <span class="meta">Hard | maxAlternatingSum / arity 2</span>
+        <span class="stats">18 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0500-Q3-minimum-cost-to-move-between-indices.html">
+        <span class="eyebrow">WC 0500 / Q3</span>
+        <strong>Minimum Cost to Move Between Indices</strong>
+        <span class="meta">Medium | minCost / arity 2</span>
+        <span class="stats">17 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0500-Q4-maximize-fixed-points-after-deletions.html">
+        <span class="eyebrow">WC 0500 / Q4</span>
+        <strong>Maximize Fixed Points After Deletions</strong>
+        <span class="meta">Hard | maxFixedPoints / arity 1</span>
+        <span class="stats">15 accepted inputs | 16 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0501-Q3-minimize-array-sum-using-divisible-replacements.html">
+        <span class="eyebrow">WC 0501 / Q3</span>
+        <strong>Minimize Array Sum Using Divisible Replacements</strong>
+        <span class="meta">Medium | minArraySum / arity 1</span>
+        <span class="stats">23 accepted inputs | 17 KB page</span>
+      </a>
+      <a class="manual-card" href="wc0501-Q4-minimum-cost-to-buy-apples-ii.html">
+        <span class="eyebrow">WC 0501 / Q4</span>
+        <strong>Minimum Cost to Buy Apples II</strong>
+        <span class="meta">Hard | minCost / arity 3</span>
+        <span class="stats">15 accepted inputs | 15 KB page</span>
+      </a>
+  </section>
+
+  <h2>All Pages</h2>
+  <table>
+    <thead>
+      <tr><th>Problem ID</th><th>Title</th><th>Difficulty</th><th>Function</th><th>Accepted</th><th>Generated</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><a href="wc0482-Q3-smallest-all-ones-multiple.html">wc0482-Q3-smallest-all-ones-multiple</a></td><td>Smallest All-Ones Multiple</td><td>Medium</td><td><code>minAllOneMultiple</code></td><td>29</td><td>157.49s</td></tr><tr><td><a href="wc0482-Q4-number-of-balanced-integers-in-a-range.html">wc0482-Q4-number-of-balanced-integers-in-a-range</a></td><td>Number of Balanced Integers in a Range</td><td>Hard</td><td><code>countBalanced</code></td><td>26</td><td>205.86s</td></tr><tr><td><a href="wc0483-Q3-minimum-cost-to-make-two-binary-strings-equal.html">wc0483-Q3-minimum-cost-to-make-two-binary-strings-equal</a></td><td>Minimum Cost to Make Two Binary Strings Equal</td><td>Medium</td><td><code>minimumCost</code></td><td>24</td><td>155.1s</td></tr><tr><td><a href="wc0483-Q4-minimum-cost-to-merge-sorted-lists.html">wc0483-Q4-minimum-cost-to-merge-sorted-lists</a></td><td>Minimum Cost to Merge Sorted Lists</td><td>Hard</td><td><code>minMergeCost</code></td><td>22</td><td>159.15s</td></tr><tr><td><a href="wc0484-Q3-count-caesar-cipher-pairs.html">wc0484-Q3-count-caesar-cipher-pairs</a></td><td>Count Caesar Cipher Pairs</td><td>Medium</td><td><code>countPairs</code></td><td>26</td><td>157.17s</td></tr><tr><td><a href="wc0484-Q4-maximum-bitwise-and-after-increment-operations.html">wc0484-Q4-maximum-bitwise-and-after-increment-operations</a></td><td>Maximum Bitwise AND After Increment Operations</td><td>Hard</td><td><code>maximumAND</code></td><td>16</td><td>153.82s</td></tr><tr><td><a href="wc0485-Q3-design-auction-system.html">wc0485-Q3-design-auction-system</a></td><td>Design Auction System</td><td>Medium</td><td><code>__init__</code></td><td>18</td><td>163.03s</td></tr><tr><td><a href="wc0485-Q4-lexicographically-smallest-string-after-deleting-duplicate-characters.html">wc0485-Q4-lexicographically-smallest-string-after-deleting-duplicate-characters</a></td><td>Lexicographically Smallest String After Deleting Duplicate Characters</td><td>Hard</td><td><code>lexSmallestAfterDeletion</code></td><td>9</td><td>140.22s</td></tr><tr><td><a href="wc0486-Q3-pythagorean-distance-nodes-in-a-tree.html">wc0486-Q3-pythagorean-distance-nodes-in-a-tree</a></td><td>Pythagorean Distance Nodes in a Tree</td><td>Medium</td><td><code>specialNodes</code></td><td>25</td><td>160.34s</td></tr><tr><td><a href="wc0486-Q4-find-nth-smallest-integer-with-k-one-bits.html">wc0486-Q4-find-nth-smallest-integer-with-k-one-bits</a></td><td>Find Nth Smallest Integer With K One Bits</td><td>Hard</td><td><code>nthSmallest</code></td><td>24</td><td>158.61s</td></tr><tr><td><a href="wc0487-Q3-design-ride-sharing-system.html">wc0487-Q3-design-ride-sharing-system</a></td><td>Design Ride Sharing System</td><td>Medium</td><td><code>__init__</code></td><td>22</td><td>164.72s</td></tr><tr><td><a href="wc0487-Q4-longest-alternating-subarray-after-removing-at-most-one-element.html">wc0487-Q4-longest-alternating-subarray-after-removing-at-most-one-element</a></td><td>Longest Alternating Subarray After Removing At Most One Element</td><td>Hard</td><td><code>longestAlternating</code></td><td>19</td><td>159.42s</td></tr><tr><td><a href="wc0488-Q3-count-subarrays-with-cost-less-than-or-equal-to-k.html">wc0488-Q3-count-subarrays-with-cost-less-than-or-equal-to-k</a></td><td>Count Subarrays With Cost Less Than or Equal to K</td><td>Medium</td><td><code>countSubarrays</code></td><td>24</td><td>154.18s</td></tr><tr><td><a href="wc0488-Q4-maximum-score-using-exactly-k-pairs.html">wc0488-Q4-maximum-score-using-exactly-k-pairs</a></td><td>Maximum Score Using Exactly K Pairs</td><td>Hard</td><td><code>maxScore</code></td><td>23</td><td>163.5s</td></tr><tr><td><a href="wc0489-Q3-longest-almost-palindromic-substring.html">wc0489-Q3-longest-almost-palindromic-substring</a></td><td>Longest Almost-Palindromic Substring</td><td>Medium</td><td><code>almostPalindromic</code></td><td>13</td><td>149.67s</td></tr><tr><td><a href="wc0489-Q4-maximum-subarray-xor-with-bounded-range.html">wc0489-Q4-maximum-subarray-xor-with-bounded-range</a></td><td>Maximum Subarray XOR with Bounded Range</td><td>Hard</td><td><code>maxXor</code></td><td>24</td><td>144.39s</td></tr><tr><td><a href="wc0490-Q3-maximum-bitwise-xor-after-rearrangement.html">wc0490-Q3-maximum-bitwise-xor-after-rearrangement</a></td><td>Maximum Bitwise XOR After Rearrangement</td><td>Medium</td><td><code>maximumXor</code></td><td>24</td><td>186.02s</td></tr><tr><td><a href="wc0490-Q4-count-sequences-to-k.html">wc0490-Q4-count-sequences-to-k</a></td><td>Count Sequences to K</td><td>Hard</td><td><code>countSequences</code></td><td>22</td><td>143.93s</td></tr><tr><td><a href="wc0491-Q3-minimum-bitwise-or-from-grid.html">wc0491-Q3-minimum-bitwise-or-from-grid</a></td><td>Minimum Bitwise OR From Grid</td><td>Medium</td><td><code>minimumOR</code></td><td>19</td><td>177.73s</td></tr><tr><td><a href="wc0491-Q4-count-subarrays-with-k-distinct-integers.html">wc0491-Q4-count-subarrays-with-k-distinct-integers</a></td><td>Count Subarrays With K Distinct Integers</td><td>Hard</td><td><code>countSubarrays</code></td><td>6</td><td>150.53s</td></tr><tr><td><a href="wc0492-Q3-minimum-operations-to-sort-a-string.html">wc0492-Q3-minimum-operations-to-sort-a-string</a></td><td>Minimum Operations to Sort a String</td><td>Medium</td><td><code>minOperations</code></td><td>14</td><td>133.82s</td></tr><tr><td><a href="wc0492-Q4-minimum-cost-to-partition-a-binary-string.html">wc0492-Q4-minimum-cost-to-partition-a-binary-string</a></td><td>Minimum Cost to Partition a Binary String</td><td>Hard</td><td><code>minCost</code></td><td>18</td><td>155.45s</td></tr><tr><td><a href="wc0493-Q3-longest-arithmetic-sequence-after-changing-at-most-one-element.html">wc0493-Q3-longest-arithmetic-sequence-after-changing-at-most-one-element</a></td><td>Longest Arithmetic Sequence After Changing At Most One Element</td><td>Medium</td><td><code>longestArithmetic</code></td><td>15</td><td>130.47s</td></tr><tr><td><a href="wc0493-Q4-maximum-points-activated-with-one-addition.html">wc0493-Q4-maximum-points-activated-with-one-addition</a></td><td>Maximum Points Activated with One Addition</td><td>Hard</td><td><code>maxActivated</code></td><td>22</td><td>148.22s</td></tr><tr><td><a href="wc0494-Q3-minimum-removals-to-achieve-target-xor.html">wc0494-Q3-minimum-removals-to-achieve-target-xor</a></td><td>Minimum Removals to Achieve Target XOR</td><td>Medium</td><td><code>minRemovals</code></td><td>24</td><td>163.75s</td></tr><tr><td><a href="wc0494-Q4-count-good-subarrays.html">wc0494-Q4-count-good-subarrays</a></td><td>Count Good Subarrays</td><td>Hard</td><td><code>countGoodSubarrays</code></td><td>21</td><td>166.67s</td></tr><tr><td><a href="wc0495-Q3-sum-of-sortable-integers.html">wc0495-Q3-sum-of-sortable-integers</a></td><td>Sum of Sortable Integers</td><td>Hard</td><td><code>sortableIntegers</code></td><td>17</td><td>155.95s</td></tr><tr><td><a href="wc0495-Q4-incremental-even-weighted-cycle-queries.html">wc0495-Q4-incremental-even-weighted-cycle-queries</a></td><td>Incremental Even-Weighted Cycle Queries</td><td>Hard</td><td><code>numberOfEdgesAdded</code></td><td>23</td><td>171.98s</td></tr><tr><td><a href="wc0496-Q3-minimum-increase-to-maximize-special-indices.html">wc0496-Q3-minimum-increase-to-maximize-special-indices</a></td><td>Minimum Increase to Maximize Special Indices</td><td>Medium</td><td><code>minIncrease</code></td><td>19</td><td>212.87s</td></tr><tr><td><a href="wc0496-Q4-minimum-operations-to-achieve-at-least-k-peaks.html">wc0496-Q4-minimum-operations-to-achieve-at-least-k-peaks</a></td><td>Minimum Operations to Achieve At Least K Peaks</td><td>Hard</td><td><code>minOperations</code></td><td>17</td><td>149.56s</td></tr><tr><td><a href="wc0497-Q3-longest-balanced-substring-after-one-swap.html">wc0497-Q3-longest-balanced-substring-after-one-swap</a></td><td>Longest Balanced Substring After One Swap</td><td>Medium</td><td><code>longestBalanced</code></td><td>16</td><td>144.04s</td></tr><tr><td><a href="wc0497-Q4-good-subsequence-queries.html">wc0497-Q4-good-subsequence-queries</a></td><td>Good Subsequence Queries</td><td>Hard</td><td><code>countGoodSubseq</code></td><td>13</td><td>168.2s</td></tr><tr><td><a href="wc0498-Q3-multi-source-flood-fill.html">wc0498-Q3-multi-source-flood-fill</a></td><td>Multi Source Flood Fill</td><td>Medium</td><td><code>colorGrid</code></td><td>22</td><td>144.01s</td></tr><tr><td><a href="wc0498-Q4-count-good-integers-on-a-grid-path.html">wc0498-Q4-count-good-integers-on-a-grid-path</a></td><td>Count Good Integers on a Grid Path</td><td>Hard</td><td><code>countGoodIntegersOnPath</code></td><td>17</td><td>132.21s</td></tr><tr><td><a href="wc0499-Q3-minimum-operations-to-make-array-non-decreasing.html">wc0499-Q3-minimum-operations-to-make-array-non-decreasing</a></td><td>Minimum Operations to Make Array Non Decreasing</td><td>Medium</td><td><code>minOperations</code></td><td>23</td><td>244.21s</td></tr><tr><td><a href="wc0499-Q4-maximum-sum-of-alternating-subsequence-with-distance-at-least-k.html">wc0499-Q4-maximum-sum-of-alternating-subsequence-with-distance-at-least-k</a></td><td>Maximum Sum of Alternating Subsequence With Distance at Least K</td><td>Hard</td><td><code>maxAlternatingSum</code></td><td>18</td><td>140.45s</td></tr><tr><td><a href="wc0500-Q3-minimum-cost-to-move-between-indices.html">wc0500-Q3-minimum-cost-to-move-between-indices</a></td><td>Minimum Cost to Move Between Indices</td><td>Medium</td><td><code>minCost</code></td><td>17</td><td>145.96s</td></tr><tr><td><a href="wc0500-Q4-maximize-fixed-points-after-deletions.html">wc0500-Q4-maximize-fixed-points-after-deletions</a></td><td>Maximize Fixed Points After Deletions</td><td>Hard</td><td><code>maxFixedPoints</code></td><td>15</td><td>166.0s</td></tr><tr><td><a href="wc0501-Q3-minimize-array-sum-using-divisible-replacements.html">wc0501-Q3-minimize-array-sum-using-divisible-replacements</a></td><td>Minimize Array Sum Using Divisible Replacements</td><td>Medium</td><td><code>minArraySum</code></td><td>23</td><td>160.27s</td></tr><tr><td><a href="wc0501-Q4-minimum-cost-to-buy-apples-ii.html">wc0501-Q4-minimum-cost-to-buy-apples-ii</a></td><td>Minimum Cost to Buy Apples II</td><td>Hard</td><td><code>minCost</code></td><td>15</td><td>141.07s</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>
