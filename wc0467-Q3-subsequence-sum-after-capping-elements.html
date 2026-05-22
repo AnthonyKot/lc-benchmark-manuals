@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0467-Q3 - Subsequence Sum After Capping Elements Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #5b6472;
+      --line: #d9dee7;
+      --panel: #f6f8fb;
+      --accent: #0f766e;
+      --warn: #9a3412;
+      --code: #102030;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--line);
+      font-size: 22px;
+    }
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 17px;
+    }
+    p {
+      margin: 8px 0;
+    }
+    ul, ol {
+      margin-top: 8px;
+      padding-left: 24px;
+    }
+    code, pre {
+      font-family: Consolas, "Courier New", monospace;
+    }
+    code {
+      color: var(--code);
+      background: #edf2f7;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #0f172a;
+      color: #e5e7eb;
+      line-height: 1.45;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--panel);
+      font-weight: 700;
+    }
+    .meta, .note {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      padding: 12px 14px;
+    }
+    .tag {
+      display: inline-block;
+      margin: 2px 4px 2px 0;
+      padding: 2px 7px;
+      border: 1px solid #bfd7d4;
+      border-radius: 999px;
+      color: var(--accent);
+      background: #ecfdf5;
+      font-size: 13px;
+    }
+    .bad {
+      color: var(--warn);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Subsequence Sum After Capping Elements</h1>
+  <p class="meta">
+    Manual for problem id <code>wc0467-Q3-subsequence-sum-after-capping-elements</code>.
+    Source files used: <code>problem.md</code>, <code>stats.json</code>, and the local <code>accepted__*</code> submissions.
+  </p>
+
+  <h2>Provenance</h2>
+  <ul>
+    <li>Title: Subsequence Sum After Capping Elements</li>
+    <li>Difficulty: Medium</li>
+    <li>Function: <code>subsequenceSumAfterCapping(nums, k)</code></li>
+    <li>Constraints: <code>1 &lt;= n == nums.length &lt;= 4000</code>, <code>1 &lt;= nums[i] &lt;= n</code>, <code>1 &lt;= k &lt;= 4000</code></li>
+    <li>Tags from stats: <span class="tag">array</span><span class="tag">two-pointers</span><span class="tag">dynamic-programming</span><span class="tag">sorting</span></li>
+    <li>Accepted submissions inspected: 8</li>
+  </ul>
+
+  <h2>Problem Statement</h2>
+  <p>
+    Given an integer array <code>nums</code> of size <code>n</code> and a positive integer <code>k</code>,
+    define the array capped by value <code>x</code> as replacing every element <code>nums[i]</code> with
+    <code>min(nums[i], x)</code>. For every integer <code>x</code> from <code>1</code> to <code>n</code>, decide
+    whether some nonempty subsequence of the capped array has sum exactly <code>k</code>. Return a
+    zero-indexed boolean array <code>answer</code> where <code>answer[x - 1]</code> stores that decision.
+  </p>
+
+  <h2>Problem Essence</h2>
+  <p>
+    For a fixed cap <code>x</code>, every original value less than or equal to <code>x</code> keeps its real value,
+    while every original value greater than <code>x</code> becomes another copy of value <code>x</code>. Therefore
+    the question is whether
+  </p>
+  <pre><code>sum_from_original_values_&lt;=_x + t * x == k</code></pre>
+  <p>
+    for some subset sum formed from values already exposed up to <code>x</code>, and some count <code>t</code>
+    of capped larger elements. Since <code>n</code> and <code>k</code> are at most 4000, a one-dimensional
+    subset-sum DP over sums up to <code>k</code> is enough.
+  </p>
+
+  <h2>Worked Example</h2>
+  <p>Example 1: <code>nums = [4,3,2,4]</code>, <code>k = 5</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Cap x</th><th>Capped array</th><th>Decision</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td><code>[1,1,1,1]</code></td><td>false</td><td>Selectable sums are 1 through 4, not 5.</td></tr>
+      <tr><td>2</td><td><code>[2,2,2,2]</code></td><td>false</td><td>Only even sums can be made.</td></tr>
+      <tr><td>3</td><td><code>[3,3,2,3]</code></td><td>true</td><td>Choose <code>2 + 3</code>.</td></tr>
+      <tr><td>4</td><td><code>[4,3,2,4]</code></td><td>true</td><td>Choose <code>3 + 2</code>.</td></tr>
+    </tbody>
+  </table>
+  <p>Output: <code>[false,false,true,true]</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <p>
+    Example 2: <code>nums = [1,2,3,4,5]</code>, <code>k = 3</code>. The expected output is
+    <code>[true,true,true,true,true]</code>, because every cap still leaves a way to make sum 3.
+  </p>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Count frequencies: <code>freq[v]</code> is the number of elements equal to <code>v</code>.</li>
+    <li>Maintain <code>dp[s]</code>: whether a subset of the already processed uncapped values can make sum <code>s</code>.</li>
+    <li>For each cap <code>x = 1..n</code>, add all copies of value <code>x</code> to <code>dp</code> with reverse subset-sum loops.</li>
+    <li>Let <code>largeCount</code> be the number of original values strictly greater than <code>x</code>.</li>
+    <li>Try <code>t = 0..min(largeCount, floor(k / x))</code>. If <code>dp[k - t*x]</code> is true, then <code>answer[x - 1] = true</code>.</li>
+  </ol>
+  <p>
+    Equivalent accepted variants check before adding <code>freq[x]</code> if their suffix count treats values
+    greater than or equal to <code>x</code> as capped copies. The invariant must be consistent: do not count
+    value <code>x</code> both inside <code>dp</code> and inside the capped-copy pool.
+  </p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>n = len(nums)
+freq = counts of values 1..n
+dp = boolean array of length k + 1
+dp[0] = true
+answer = [false] * n
+largeCount = n
+
+for x in 1..n:
+    largeCount -= freq[x]
+
+    repeat freq[x] times:
+        for s from k down to x:
+            dp[s] |= dp[s - x]
+
+    maxCopies = min(largeCount, k // x)
+    for t in 0..maxCopies:
+        if dp[k - t * x]:
+            answer[x - 1] = true
+            break
+
+return answer</code></pre>
+  <p>
+    Complexity for the simple boolean-DP version is <code>O(n*k + n*(k/x averaged))</code>, usually described
+    as <code>O(n*k + n*k)</code> within the 4000 limits. Memory is <code>O(k)</code> plus frequency and answer arrays.
+  </p>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use <code>freq</code>; do not rebuild the capped array for every <code>x</code>.</li>
+    <li>Initialize <code>dp[0] = true</code>.</li>
+    <li>When adding real elements to subset-sum DP, iterate sums downward to avoid reusing the same element more than once.</li>
+    <li>Keep the boundary clear: either <code>dp</code> has values <code>&lt;= x</code> and capped pool is <code>&gt; x</code>, or <code>dp</code> has values <code>&lt; x</code> and capped pool is <code>&gt;= x</code>.</li>
+    <li>Only test sums up to <code>k</code>; larger sums cannot help.</li>
+    <li>Return exactly <code>n</code> booleans, where index <code>x - 1</code> represents cap <code>x</code>.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li><span class="bad">Recomputing subset sums from scratch for each cap.</span> This is easy to write but risks roughly <code>O(n^2*k)</code>.</li>
+    <li><span class="bad">Forward DP updates for individual copies.</span> Forward loops turn 0/1 knapsack into unbounded knapsack and can use the same element repeatedly.</li>
+    <li><span class="bad">Counting elements equal to x twice.</span> If <code>freq[x]</code> is already added to <code>dp</code>, the capped-copy count must be only original values <code>&gt; x</code>.</li>
+    <li><span class="bad">Forgetting the zero subset.</span> <code>dp[0]</code> allows answers made only from capped large elements, such as <code>t*x = k</code>.</li>
+    <li><span class="bad">Assuming the chosen subsequence has to be contiguous.</span> It is a subsequence, so any subset of positions is allowed.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead>
+      <tr><th>Family</th><th>Observed files</th><th>Core idea</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Frequency plus 1D boolean subset DP</td>
+        <td>Most Java files, JavaScript file, Go file</td>
+        <td>Add values by increasing <code>x</code>, then combine <code>dp[remaining]</code> with some number of capped copies.</td>
+        <td>Straightforward and portable. Java solutions ranged from 45 ms to 82 ms.</td>
+      </tr>
+      <tr>
+        <td>Bitset DP</td>
+        <td>Python file</td>
+        <td>Represent subset sums as bits in one integer and shift-or by bundled copies of the current value.</td>
+        <td>Fast in Python because big-integer bit operations run in optimized native code.</td>
+      </tr>
+      <tr>
+        <td>Large-cap shortcut</td>
+        <td>Go file</td>
+        <td>For <code>x &gt; k</code>, capped copies cannot be selected, so the answer depends only on whether ordinary subset DP can make <code>k</code>.</td>
+        <td>Useful micro-optimization when <code>n</code> is much larger than <code>k</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>Concrete numbers from <code>stats.json.performance_by_language</code>:</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted count</th><th>Fastest runtime</th><th>Slowest runtime</th><th>Memory range</th><th>Practical note</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>python3</td><td>1</td><td>31 ms</td><td>31 ms</td><td>19.7 MB</td>
+        <td>The accepted Python uses an integer bitset; this is the fastest recorded submission in the local stats.</td>
+      </tr>
+      <tr>
+        <td>golang</td><td>1</td><td>49 ms</td><td>49 ms</td><td>8.6 MB</td>
+        <td>Lowest memory in the table; plain boolean slices are enough within the constraints.</td>
+      </tr>
+      <tr>
+        <td>java</td><td>5</td><td>45 ms</td><td>82 ms</td><td>47.2 MB to 47.7 MB</td>
+        <td>Several accepted Java versions use the same 1D DP. Tracking a current max sum can trim inner-loop work.</td>
+      </tr>
+      <tr>
+        <td>javascript</td><td>1</td><td>80 ms</td><td>80 ms</td><td>59.3 MB</td>
+        <td>The accepted JavaScript uses <code>Uint8Array</code> for compact DP state and predictable numeric storage.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p>
+    <code>stats.json</code> reports no failed submission status counts: <code>failed_submission_status_counts</code>
+    is empty. That means this local corpus does not provide measured wrong-answer, TLE, or runtime-error categories.
+    The main risks still visible from the accepted-code structure are DP boundary mistakes, forward knapsack updates,
+    and implementations that rebuild work per cap.
+  </p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Submission ID</th>
+        <th>Lines</th>
+        <th>Bytes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>set2-codex-agent-gpt-5.5-codex-java</td><td>java</td><td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td><td>82 ms</td><td>47.4 MB</td><td>2005572077</td><td>37</td><td>1022</td></tr>
+      <tr><td>set2-deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>80 ms</td><td>59.3 MB</td><td>2005463526</td><td>42</td><td>1086</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>49 ms</td><td>8.6 MB</td><td>2005503580</td><td>67</td><td>1518</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>63 ms</td><td>47.7 MB</td><td>2005429632</td><td>41</td><td>1120</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.8-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td><td>65 ms</td><td>47.2 MB</td><td>2005877586</td><td>41</td><td>1178</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.9-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td><td>59 ms</td><td>47.3 MB</td><td>2005883714</td><td>36</td><td>981</td></tr>
+      <tr><td>set2-qwen3.5-cloud-t0.0</td><td>python3</td><td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td><td>31 ms</td><td>19.7 MB</td><td>2005494830</td><td>40</td><td>1079</td></tr>
+      <tr><td>set2-qwen3.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td><td>45 ms</td><td>47.3 MB</td><td>2005889464</td><td>51</td><td>1671</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

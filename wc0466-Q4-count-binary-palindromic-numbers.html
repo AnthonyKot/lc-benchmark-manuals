@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0466-Q4-count-binary-palindromic-numbers Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172026;
+      --muted: #5d6973;
+      --line: #d8dee4;
+      --panel: #f7f9fb;
+      --accent: #0f6b7a;
+      --code: #f1f4f7;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.5;
+    }
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 21px;
+      color: var(--accent);
+    }
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 16px;
+    }
+    p, li {
+      font-size: 15px;
+    }
+    .meta, .note {
+      color: var(--muted);
+    }
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    code {
+      background: var(--code);
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      overflow-x: auto;
+      background: var(--code);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 13px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--panel);
+    }
+    .wide {
+      overflow-x: auto;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Count Binary Palindromic Numbers</h1>
+  <p class="meta">Problem id: <code>wc0466-Q4-count-binary-palindromic-numbers</code>. Difficulty: Hard. Function: <code>countBinaryPalindromes(n)</code>.</p>
+
+  <h2>Provenance</h2>
+  <div class="box">
+    <p>This manual was assembled from the local files <code>problem.md</code>, <code>stats.json</code>, and the seven local <code>accepted__*</code> submissions.</p>
+    <p>Source metadata: generator <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-17T21:52:31.182132+00:00</code>. Topic tags: math, bit-manipulation.</p>
+    <p>Original URL recorded in the problem statement: <code>https://leetcode.com/problems/count-binary-palindromic-numbers/</code>.</p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given a non-negative integer <code>n</code>. A non-negative integer is binary-palindromic if its binary representation, written without leading zeros, reads the same forward and backward.</p>
+  <p>Return the number of integers <code>k</code> such that <code>0 &lt;= k &lt;= n</code> and the binary representation of <code>k</code> is a palindrome.</p>
+  <p>The number <code>0</code> is considered binary-palindromic, with representation <code>"0"</code>. Constraint: <code>0 &lt;= n &lt;= 10^15</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>Do not iterate over every integer up to <code>n</code>. The value <code>10^15</code> has only 50 binary bits, so the count can be computed by binary length.</p>
+  <p>For any positive binary palindrome of length <code>L</code>, the first bit must be <code>1</code>, and the first <code>ceil(L / 2)</code> bits determine the entire number. Therefore, the number of positive palindromes of exact length <code>L</code> is:</p>
+  <pre><code>2^(ceil(L / 2) - 1)</code></pre>
+  <p>The only special case outside that formula is <code>0</code>, which is counted once.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>n = 9</code>, binary <code>n</code> is <code>1001</code>, so <code>L = 4</code>.</p>
+  <ol>
+    <li>Start with <code>1</code> for <code>0</code>.</li>
+    <li>Lengths below 4 contribute: length 1 has <code>1</code> value (<code>1</code>), length 2 has <code>1</code> value (<code>11</code>), length 3 has <code>2</code> values (<code>101</code>, <code>111</code>).</li>
+    <li>Subtotal before length 4 is <code>1 + 1 + 1 + 2 = 5</code>.</li>
+    <li>For length 4, take the first <code>ceil(4 / 2) = 2</code> bits of <code>1001</code>: prefix <code>10</code>. Mirroring it gives <code>1001</code>, which is exactly <code>9</code>, so include it.</li>
+  </ol>
+  <p>Answer: <code>6</code>. The values are <code>0</code>, <code>1</code>, <code>3</code>, <code>5</code>, <code>7</code>, and <code>9</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>n = 0</code></td><td><code>1</code></td><td><code>"0"</code> is explicitly considered a binary palindrome.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>If <code>n == 0</code>, return <code>1</code>.</li>
+    <li>Let <code>s = binary(n)</code> and <code>L = len(s)</code>.</li>
+    <li>Initialize <code>answer = 1</code> for the number <code>0</code>.</li>
+    <li>For each positive length <code>len</code> from <code>1</code> through <code>L - 1</code>, add <code>2^((len - 1) / 2 floor)</code>. This is the same as <code>2^(ceil(len / 2) - 1)</code>.</li>
+    <li>For length <code>L</code>, let <code>half = ceil(L / 2)</code>, <code>prefix = first half bits of n</code>, and <code>minPrefix = 1 &lt;&lt; (half - 1)</code>.</li>
+    <li>All prefixes from <code>minPrefix</code> up to <code>prefix - 1</code> produce length-<code>L</code> palindromes smaller than <code>n</code>, so add <code>prefix - minPrefix</code>.</li>
+    <li>Mirror <code>prefix</code> into a full length-<code>L</code> palindrome. If that value is <code>&lt;= n</code>, add one more.</li>
+  </ol>
+  <p>Equivalent accepted implementations binary-search the largest valid prefix whose constructed palindrome is <code>&lt;= n</code>. That is also correct because palindrome values increase monotonically with the chosen prefix for a fixed length.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>function countBinaryPalindromes(n):
+    if n == 0:
+        return 1
+
+    s = binary representation of n without leading zeros
+    L = length(s)
+    ans = 1
+
+    for len in 1 .. L - 1:
+        ans += 1 &lt;&lt; ((len - 1) // 2)
+
+    half = (L + 1) // 2
+    prefix = integer value of s[0:half]
+    minPrefix = 1 &lt;&lt; (half - 1)
+
+    ans += prefix - minPrefix
+
+    if L is even:
+        palBits = prefixBits + reverse(prefixBits)
+    else:
+        palBits = prefixBits + reverse(prefixBits without last bit)
+
+    if integer value of palBits &lt;= n:
+        ans += 1
+
+    return ans</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Count <code>0</code> exactly once.</li>
+    <li>Do not allow leading-zero prefixes for positive numbers; <code>minPrefix = 1 &lt;&lt; (half - 1)</code>.</li>
+    <li>Use <code>half = (L + 1) // 2</code>, not <code>L // 2</code>, when extracting the controlling prefix.</li>
+    <li>For odd length, do not duplicate the middle bit when mirroring.</li>
+    <li>Use 64-bit integer arithmetic in fixed-width languages. <code>n &lt;= 10^15</code>, but intermediate shifts still need more than 32 bits.</li>
+    <li>Return type can be <code>int</code> because the total count up to <code>10^15</code> is small, but internal arithmetic should be <code>long</code>, <code>long long</code>, or equivalent.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Brute-forcing every <code>k</code> from <code>0</code> to <code>n</code>. This is impossible at <code>10^15</code>.</li>
+    <li>Using decimal palindromes or stringifying the decimal value. The palindrome property is about binary representation only.</li>
+    <li>Counting <code>2^ceil(L / 2)</code> for a length. The leading bit is fixed to <code>1</code>, so there is one fewer free bit.</li>
+    <li>Forgetting <code>0</code>, or accidentally counting <code>0</code> again as a length-1 positive palindrome.</li>
+    <li>Mirroring the whole prefix for odd lengths, which duplicates the center bit and creates a number with too many bits.</li>
+    <li>Comparing only suffix strings without respecting exact construction. It can work, as in one accepted JavaScript file, but constructing and comparing the full palindrome is less fragile.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <h3>Prefix mirror and boundary check</h3>
+  <p>Used by the JavaScript, Python, and several Java accepted submissions. These directly count shorter lengths, extract the top <code>ceil(L / 2)</code> bits of <code>n</code>, add the smaller prefixes, then mirror the boundary prefix once to decide whether to include it.</p>
+  <p>Representative files: <code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code>, <code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code>, <code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code>, <code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code>.</p>
+  <h3>Binary search over prefixes</h3>
+  <p>Used by the Go and two Java submissions. For the current bit length, choose the range of valid leading prefixes and binary-search for the largest prefix whose constructed palindrome is no greater than <code>n</code>. This is slightly more code, but still constant time for this constraint because there are at most about 50 bits.</p>
+  <p>Representative files: <code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code>, <code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code>, <code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code>.</p>
+
+  <h2>Language and Performance Notes</h2>
+  <p>All accepted submissions are effectively <code>O(log n)</code> or <code>O((log n)^2)</code> with a tiny constant, because <code>n &lt;= 10^15</code> means at most 50 binary bits. The recorded performance by language in <code>stats.json.performance_by_language</code> is:</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted Count</th><th>Runtime Range</th><th>Memory Range</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>golang</td><td>1</td><td>0 ms to 0 ms</td><td>4 MB to 4 MB</td><td>Lowest recorded memory; uses bit operations and <code>math/bits</code>.</td></tr>
+      <tr><td>java</td><td>4</td><td>1 ms to 4 ms</td><td>42.4 MB to 43 MB</td><td>Use <code>long</code>, <code>Long.numberOfLeadingZeros</code>, and avoid 32-bit shifts.</td></tr>
+      <tr><td>javascript</td><td>1</td><td>0 ms to 0 ms</td><td>56 MB to 56 MB</td><td>Safe with <code>Number</code> for this constraint because <code>10^15</code> is below <code>2^53</code>.</td></tr>
+      <tr><td>python3</td><td>1</td><td>3 ms to 3 ms</td><td>19.5 MB to 19.5 MB</td><td>String-based binary handling is concise and fast enough.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> records no failed submission status counts: <code>failed_submission_status_counts</code> is empty. The practical failure patterns therefore come from the solution shape rather than observed rejected submissions:</p>
+  <ul>
+    <li>Off-by-one errors around whether the mirrored boundary prefix is included.</li>
+    <li>Incorrect length counting for <code>L = 1</code>, especially mixing <code>0</code> and <code>1</code>.</li>
+    <li>Using 32-bit shifts in Java/C++/Go variants.</li>
+    <li>Duplicating the center bit for odd-length palindromes.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <div class="wide">
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Language</th>
+          <th>File</th>
+          <th>Runtime</th>
+          <th>Memory</th>
+          <th>Submission ID</th>
+          <th>Lines</th>
+          <th>Bytes</th>
+          <th>Algorithm Family</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>set2-deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>0 ms</td><td>56 MB</td><td>2005463352</td><td>33</td><td>900</td><td>Prefix mirror and boundary check</td></tr>
+        <tr><td>set2-kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>0 ms</td><td>4 MB</td><td>2005503431</td><td>84</td><td>1530</td><td>Binary search over prefixes</td></tr>
+        <tr><td>set2-kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>1 ms</td><td>42.4 MB</td><td>2005429490</td><td>68</td><td>1800</td><td>Binary search over prefixes</td></tr>
+        <tr><td>set2-kimi-k2.5-cloud-t0.8-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td><td>1 ms</td><td>42.8 MB</td><td>2005877482</td><td>43</td><td>1140</td><td>Prefix mirror and boundary check</td></tr>
+        <tr><td>set2-kimi-k2.5-cloud-t0.9-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td><td>2 ms</td><td>42.6 MB</td><td>2005883625</td><td>62</td><td>1701</td><td>Binary search over prefixes</td></tr>
+        <tr><td>set2-qwen3.5-cloud-t0.0</td><td>python3</td><td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td><td>3 ms</td><td>19.5 MB</td><td>2005494657</td><td>45</td><td>1677</td><td>Prefix mirror and boundary check</td></tr>
+        <tr><td>set2-qwen3.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td><td>4 ms</td><td>43 MB</td><td>2005889382</td><td>36</td><td>1005</td><td>Prefix mirror and boundary check</td></tr>
+      </tbody>
+    </table>
+  </div>
+</main>
+</body>
+</html>

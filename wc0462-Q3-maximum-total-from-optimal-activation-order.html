@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0462-Q3 Maximum Total from Optimal Activation Order Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f8fb;
+      --panel: #ffffff;
+      --ink: #172033;
+      --muted: #5d667a;
+      --line: #d9deea;
+      --accent: #1d6f7a;
+      --code: #f0f3f8;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      background: var(--bg);
+      color: var(--ink);
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    header {
+      border-bottom: 3px solid var(--accent);
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 28px 0 12px;
+      padding-top: 8px;
+      font-size: 1.25rem;
+      color: #123f46;
+      border-top: 1px solid var(--line);
+    }
+    h3 { margin: 18px 0 8px; font-size: 1.05rem; }
+    p { margin: 8px 0; }
+    ul, ol { margin-top: 8px; }
+    li { margin: 4px 0; }
+    code, pre {
+      font-family: Consolas, "Courier New", monospace;
+      background: var(--code);
+    }
+    code { padding: 1px 4px; border-radius: 4px; }
+    pre {
+      overflow-x: auto;
+      padding: 14px;
+      border-radius: 6px;
+      border: 1px solid var(--line);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      background: var(--panel);
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #eaf3f4;
+      color: #143b41;
+    }
+    .meta, .note {
+      color: var(--muted);
+    }
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Maximum Total from Optimal Activation Order</h1>
+    <p class="meta">Problem id: <code>wc0462-Q3-maximum-total-from-optimal-activation-order</code></p>
+  </header>
+
+  <section>
+    <h2>Provenance</h2>
+    <table>
+      <tbody>
+        <tr><th>Source</th><td>Local files: <code>problem.md</code>, <code>stats.json</code>, and three <code>accepted__*</code> Java submissions.</td></tr>
+        <tr><th>Difficulty</th><td>Medium</td></tr>
+        <tr><th>Function</th><td><code>maxTotal(value, limit)</code>, arity 2</td></tr>
+        <tr><th>Topic tags</th><td>Array, greedy, sorting, heap / priority queue, two pointers</td></tr>
+        <tr><th>Generated stats timestamp</th><td><code>2026-05-17T21:36:53.972487+00:00</code></td></tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Problem Statement</h2>
+    <p>You are given two integer arrays <code>value</code> and <code>limit</code>, both of length <code>n</code>. Initially every element is inactive. You may activate inactive elements in any order.</p>
+    <ul>
+      <li>Index <code>i</code> may be activated only when the number of currently active elements is strictly less than <code>limit[i]</code>.</li>
+      <li>Activating <code>i</code> adds <code>value[i]</code> to the total. The value is kept even if that element later becomes inactive.</li>
+      <li>After each activation, if the current active count becomes <code>x</code>, every element <code>j</code> with <code>limit[j] &lt;= x</code> becomes permanently inactive.</li>
+    </ul>
+    <p>Return the maximum total activation value.</p>
+    <p>Constraints: <code>1 &lt;= n == value.length == limit.length &lt;= 100000</code>, <code>1 &lt;= value[i] &lt;= 100000</code>, and <code>1 &lt;= limit[i] &lt;= n</code>.</p>
+  </section>
+
+  <section>
+    <h2>Problem Essence</h2>
+    <p>The activation/deactivation story collapses to an independent top-k choice per limit value. For all elements with the same limit <code>L</code>, at most <code>L</code> of them can ever contribute before the active count reaches a threshold that permanently disables that group. Because all values are positive, the best contribution from that group is the sum of its largest <code>min(L, groupSize)</code> values.</p>
+    <p>Groups with different limits do not compete for a shared quota in the optimal formula. The total answer is the sum of each group's best local contribution.</p>
+  </section>
+
+  <section>
+    <h2>Worked Example</h2>
+    <div class="box">
+      <p><strong>Input:</strong> <code>value = [3,5,8]</code>, <code>limit = [2,1,3]</code></p>
+      <p>Group by limit:</p>
+      <ul>
+        <li><code>limit = 1</code>: values <code>[5]</code>, take top 1 =&gt; <code>5</code></li>
+        <li><code>limit = 2</code>: values <code>[3]</code>, take top 1 of capacity 2 =&gt; <code>3</code></li>
+        <li><code>limit = 3</code>: values <code>[8]</code>, take top 1 of capacity 3 =&gt; <code>8</code></li>
+      </ul>
+      <p><strong>Total:</strong> <code>5 + 3 + 8 = 16</code></p>
+    </div>
+    <p>This matches the official activation order that activates indices <code>1</code>, <code>0</code>, then <code>2</code>.</p>
+  </section>
+
+  <section>
+    <h2>Other Official Examples</h2>
+    <table>
+      <thead>
+        <tr><th>Input value</th><th>Input limit</th><th>Expected</th><th>Reason</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>[4,2,6]</code></td>
+          <td><code>[1,1,1]</code></td>
+          <td><code>6</code></td>
+          <td>All items are in the <code>limit = 1</code> group, so take only the largest value.</td>
+        </tr>
+        <tr>
+          <td><code>[4,1,5,2]</code></td>
+          <td><code>[3,3,2,3]</code></td>
+          <td><code>12</code></td>
+          <td>For <code>limit = 2</code>, take <code>5</code>. For <code>limit = 3</code>, take all three values <code>4,2,1</code>. Total is <code>12</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Decision Rule / Algorithm</h2>
+    <ol>
+      <li>Partition indices by their <code>limit[i]</code>.</li>
+      <li>For each group with limit <code>L</code>, keep only the largest <code>L</code> values from that group.</li>
+      <li>Add those kept values to the answer.</li>
+    </ol>
+    <p>A bounded min-heap is the most direct streaming implementation: push each value into the heap for its limit, and when the heap size exceeds that limit, remove the smallest. The remaining heap entries are exactly the values that group contributes.</p>
+    <p>Equivalent sorting version: store all values per limit, sort each group descending, and sum the first <code>min(L, size)</code> values.</p>
+  </section>
+
+  <section>
+    <h2>Implementation Skeleton</h2>
+    <pre><code>class Solution {
+    public long maxTotal(int[] value, int[] limit) {
+        Map&lt;Integer, PriorityQueue&lt;Integer&gt;&gt; groups = new HashMap&lt;&gt;();
+        long answer = 0L;
+
+        for (int i = 0; i &lt; value.length; i++) {
+            int cap = limit[i];
+            PriorityQueue&lt;Integer&gt; heap =
+                groups.computeIfAbsent(cap, k -&gt; new PriorityQueue&lt;&gt;());
+
+            heap.offer(value[i]);
+            answer += value[i];
+
+            if (heap.size() &gt; cap) {
+                answer -= heap.poll();
+            }
+        }
+
+        return answer;
+    }
+}</code></pre>
+    <p>The maintained <code>answer</code> is a running sum of all values currently retained across the per-limit heaps, so there is no second pass over the heaps.</p>
+  </section>
+
+  <section>
+    <h2>Reimplementation Checklist</h2>
+    <ul>
+      <li>Use a 64-bit integer for the total: maximum sum can reach <code>100000 * 100000 = 10000000000</code>.</li>
+      <li>Key groups by the exact value of <code>limit[i]</code>.</li>
+      <li>For a group with limit <code>L</code>, retain at most <code>L</code> values, not <code>L - 1</code>.</li>
+      <li>Use a min-heap when pruning top values; pop the smallest after the heap grows beyond capacity.</li>
+      <li>Do not simulate every activation unless the simulation is carefully proven equivalent; the grouped top-k rule is simpler and less error-prone.</li>
+      <li>Because values are positive under the constraints, always take as many values as the group capacity allows.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Wrong But Tempting</h2>
+    <ul>
+      <li><strong>Global top values:</strong> Taking the largest values overall ignores that each limit value has its own independent capacity.</li>
+      <li><strong>Sort by limit and greedily activate:</strong> A literal activation simulation is easy to get wrong because active elements can be deactivated immediately after a step.</li>
+      <li><strong>Take only one item from low limits:</strong> This is true only for <code>limit = 1</code>. A group with <code>limit = L</code> can contribute up to <code>L</code> items.</li>
+      <li><strong>Use <code>int</code> for the answer:</strong> The answer can exceed 32-bit signed range.</li>
+      <li><strong>Make groups compete:</strong> The official hints and accepted submissions rely on independent per-limit group decisions.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Accepted Algorithm Families</h2>
+    <table>
+      <thead>
+        <tr><th>Family</th><th>Accepted files</th><th>Approach</th><th>Complexity</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Bounded min-heap per limit</td>
+          <td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td>
+          <td>Map each limit to a min-heap. Add every value, and whenever heap size exceeds that limit, remove the smallest while subtracting it from the running total.</td>
+          <td><code>O(n log n)</code> worst case, usually <code>O(sum log limit)</code>; <code>O(n)</code> memory.</td>
+        </tr>
+        <tr>
+          <td>Sort each limit group</td>
+          <td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td>
+          <td>Collect values by limit, sort each list descending, and sum the first <code>min(L, size)</code> entries.</td>
+          <td><code>O(n log n)</code> worst case; <code>O(n)</code> memory.</td>
+        </tr>
+        <tr>
+          <td>Priority-queue simulation</td>
+          <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td>
+          <td>Groups by limit and uses candidate and active priority queues to simulate admissible activations. Accepted, but more complex than the top-k group rule.</td>
+          <td><code>O(n log n)</code>; <code>O(n)</code> memory.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section>
+    <h2>Language and Performance Notes</h2>
+    <p>The available accepted submissions are all Java, so the concrete language performance data from <code>stats.json.performance_by_language</code> covers Java only.</p>
+    <table>
+      <thead>
+        <tr><th>Language</th><th>Accepted count</th><th>Fastest</th><th>Slowest</th><th>Lowest memory</th><th>Highest memory</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Java</td>
+          <td>3</td>
+          <td>55 ms, <code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td>
+          <td>205 ms, <code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td>
+          <td>197.1 MB, <code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td>
+          <td>211.9 MB, <code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td>
+        </tr>
+      </tbody>
+    </table>
+    <p>The fastest and lowest-memory Java submission is the bounded min-heap implementation at 55 ms and 197.1 MB. The more literal simulation style is accepted but slower in this data set at 205 ms and 211.9 MB.</p>
+  </section>
+
+  <section>
+    <h2>Failure Patterns From Stats</h2>
+    <p><code>stats.json</code> reports an empty <code>failed_submission_status_counts</code> object, so there are no recorded wrong-answer, TLE, runtime-error, or compilation-error categories to quantify for this problem bundle.</p>
+    <p>Based on the accepted code and problem shape, the main likely failure modes are using a 32-bit total, treating the activation process as one global quota, or applying an off-by-one capacity such as keeping only <code>L - 1</code> values for limit <code>L</code>.</p>
+  </section>
+
+  <section>
+    <h2>Full Accepted Table</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th>Language</th>
+          <th>File</th>
+          <th>Runtime</th>
+          <th>Memory</th>
+          <th>Submission ID</th>
+          <th>Lines</th>
+          <th>Bytes</th>
+          <th>Algorithm family</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>set2-codex-agent-gpt-5.5-codex-java</td>
+          <td>java</td>
+          <td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td>
+          <td>55 ms</td>
+          <td>197.1 MB</td>
+          <td>2005570932</td>
+          <td>27</td>
+          <td>707</td>
+          <td>Bounded min-heap per limit</td>
+        </tr>
+        <tr>
+          <td>set2-kimi-k2.5-cloud-t0.0-java</td>
+          <td>java</td>
+          <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td>
+          <td>205 ms</td>
+          <td>211.9 MB</td>
+          <td>2005428135</td>
+          <td>45</td>
+          <td>1292</td>
+          <td>Priority-queue simulation</td>
+        </tr>
+        <tr>
+          <td>set2-qwen3.5-cloud-t0.0-java</td>
+          <td>java</td>
+          <td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td>
+          <td>67 ms</td>
+          <td>197.4 MB</td>
+          <td>2005888727</td>
+          <td>29</td>
+          <td>1030</td>
+          <td>Sort each limit group</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</main>
+</body>
+</html>

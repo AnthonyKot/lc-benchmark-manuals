@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual - Concatenate Non-Zero Digits and Multiply by Sum II</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17212b;
+      --muted: #56636f;
+      --line: #d9e0e7;
+      --soft: #f6f8fa;
+      --accent: #0f766e;
+      --code: #102a43;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px 22px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 34px 0 10px;
+      padding-bottom: 5px;
+      border-bottom: 1px solid var(--line);
+      font-size: 22px;
+    }
+    h3 {
+      margin: 22px 0 8px;
+      font-size: 17px;
+    }
+    p {
+      margin: 8px 0;
+    }
+    ul, ol {
+      margin-top: 8px;
+      padding-left: 24px;
+    }
+    li {
+      margin: 5px 0;
+    }
+    code, pre {
+      font-family: Consolas, "Liberation Mono", Menlo, monospace;
+    }
+    code {
+      color: var(--code);
+      background: #eef3f7;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--soft);
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #eef3f7;
+      font-weight: 700;
+    }
+    .meta {
+      color: var(--muted);
+      margin-bottom: 22px;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: #edf7f5;
+      padding: 10px 14px;
+      margin: 14px 0;
+    }
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Concatenate Non-Zero Digits and Multiply by Sum II</h1>
+  <p class="meta">Problem id: <code>wc0477-Q3-concatenate-non-zero-digits-and-multiply-by-sum-ii</code></p>
+
+  <h2>Provenance</h2>
+  <p>This manual was built from the local <code>problem.md</code>, <code>stats.json</code>, and six local <code>accepted__*</code> submissions.</p>
+  <table>
+    <tr><th>Field</th><th>Value</th></tr>
+    <tr><td>Title</td><td>Concatenate Non-Zero Digits and Multiply by Sum II</td></tr>
+    <tr><td>Difficulty</td><td>Medium</td></tr>
+    <tr><td>Function</td><td><code>sumAndMultiply(s, queries)</code></td></tr>
+    <tr><td>Tags</td><td>math, string, prefix-sum</td></tr>
+    <tr><td>Generated stats timestamp</td><td><code>2026-05-18T16:17:49.898413+00:00</code></td></tr>
+    <tr><td>Accepted submissions inspected</td><td>6</td></tr>
+  </table>
+
+  <h2>Problem Statement</h2>
+  <p>You are given a digit string <code>s</code> of length <code>m</code> and queries <code>[l, r]</code>. For each query, take the substring <code>s[l..r]</code>, remove every zero, concatenate the remaining digits in their original order into an integer <code>x</code>, compute the sum of those non-zero digits, and return <code>x * sum</code> modulo <code>1_000_000_007</code>. If the substring has no non-zero digits, <code>x = 0</code> and the answer is <code>0</code>.</p>
+  <p>Constraints are <code>1 &lt;= s.length &lt;= 100000</code> and <code>1 &lt;= queries.length &lt;= 100000</code>, so building the concatenated number per query is too slow.</p>
+
+  <h2>Problem Essence</h2>
+  <p>Zeros only affect which original positions are inside a query; they do not contribute to the compressed number or its digit sum. The problem becomes range extraction over the sequence of non-zero digits, while still mapping each original query boundary into that compressed sequence.</p>
+  <div class="callout">
+    For compressed non-zero digits <code>d[0..k-1]</code>, maintain prefix number
+    <code>P[i+1] = P[i] * 10 + d[i]</code> modulo <code>MOD</code>. Then the concatenated number for compressed interval <code>[a, b]</code> is
+    <code>(P[b+1] - P[a] * 10^(b-a+1)) mod MOD</code>.
+  </div>
+
+  <h2>Worked Example</h2>
+  <p>For <code>s = "10203004"</code>, the non-zero positions and digits are:</p>
+  <table>
+    <tr><th>Compressed index</th><th>Original position</th><th>Digit</th></tr>
+    <tr><td>0</td><td>0</td><td>1</td></tr>
+    <tr><td>1</td><td>2</td><td>2</td></tr>
+    <tr><td>2</td><td>4</td><td>3</td></tr>
+    <tr><td>3</td><td>7</td><td>4</td></tr>
+  </table>
+  <p>Query <code>[0, 7]</code> maps to compressed interval <code>[0, 3]</code>. The number is <code>1234</code>, the sum is <code>1 + 2 + 3 + 4 = 10</code>, and the answer is <code>12340</code>.</p>
+  <p>Query <code>[1, 3]</code> maps to compressed interval <code>[1, 1]</code>. The number is <code>2</code>, the sum is <code>2</code>, and the answer is <code>4</code>.</p>
+  <p>Query <code>[4, 6]</code> maps to compressed interval <code>[2, 2]</code>. The number is <code>3</code>, the sum is <code>3</code>, and the answer is <code>9</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+    <tr>
+      <td><code>s = "1000"</code>, <code>queries = [[0,3],[1,1]]</code></td>
+      <td><code>[1, 0]</code></td>
+      <td>The full range compresses to <code>1</code>; the single zero range has no non-zero digits.</td>
+    </tr>
+    <tr>
+      <td><code>s = "9876543210"</code>, <code>queries = [[0,9]]</code></td>
+      <td><code>[444444137]</code></td>
+      <td>The compressed number is <code>987654321</code>, digit sum is <code>45</code>, and <code>987654321 * 45 mod 1_000_000_007 = 444444137</code>.</td>
+    </tr>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Scan <code>s</code>. Store each non-zero digit's original position in <code>pos</code> and digit value in <code>digits</code>.</li>
+    <li>Precompute <code>pow10[i] = 10^i mod MOD</code> up to the number of non-zero digits.</li>
+    <li>Build <code>prefNum</code>, where <code>prefNum[i+1]</code> is the modulo value of concatenating <code>digits[0..i]</code>.</li>
+    <li>Build <code>prefSum</code>, where <code>prefSum[i+1]</code> is the sum of <code>digits[0..i]</code>.</li>
+    <li>For a query <code>[l, r]</code>, find <code>a = lower_bound(pos, l)</code> and <code>b = upper_bound(pos, r) - 1</code>.</li>
+    <li>If <code>a &gt; b</code>, return <code>0</code>.</li>
+    <li>Let <code>len = b - a + 1</code>. Compute <code>x = (prefNum[b+1] - prefNum[a] * pow10[len]) mod MOD</code>.</li>
+    <li>Compute <code>sum = prefSum[b+1] - prefSum[a]</code> and return <code>x * (sum mod MOD) mod MOD</code>.</li>
+  </ol>
+  <p>This gives <code>O(n + q log n)</code> time with binary searches and <code>O(n)</code> memory. A variant using original-index prefix counts gives <code>O(n + q)</code> time.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>MOD = 1_000_000_007
+
+pos = []
+digits = []
+for i, ch in enumerate(s):
+    if ch != '0':
+        pos.append(i)
+        digits.append(int(ch))
+
+k = len(digits)
+pow10 = [1] * (k + 1)
+prefNum = [0] * (k + 1)
+prefSum = [0] * (k + 1)
+
+for i in range(k):
+    pow10[i + 1] = pow10[i] * 10 % MOD
+    prefNum[i + 1] = (prefNum[i] * 10 + digits[i]) % MOD
+    prefSum[i + 1] = prefSum[i] + digits[i]
+
+ans = []
+for l, r in queries:
+    a = lower_bound(pos, l)
+    b = upper_bound(pos, r) - 1
+    if a &gt; b:
+        ans.append(0)
+    else:
+        length = b - a + 1
+        x = (prefNum[b + 1] - prefNum[a] * pow10[length]) % MOD
+        total = prefSum[b + 1] - prefSum[a]
+        ans.append(x * (total % MOD) % MOD)</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use only non-zero digits in the concatenated-number prefix.</li>
+    <li>Map query boundaries from original positions to compressed positions with lower/upper bound, or with prefix counts over original indices.</li>
+    <li>Precompute powers of ten by compressed length, not original substring length.</li>
+    <li>Use 64-bit arithmetic for multiplication before taking modulo in Java, Go, C++, and similar languages.</li>
+    <li>Normalize subtraction with <code>+ MOD</code> before the final modulo.</li>
+    <li>Return <code>0</code> for a query whose compressed interval is empty.</li>
+    <li>Keep digit sums exact or modulo <code>MOD</code>; both work because the final product is modulo <code>MOD</code>.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Using the original substring length in <code>pow10</code>. Zeros are removed, so only the count of non-zero digits in the query matters.</li>
+    <li>Summing all digits in the substring and then trying to separately adjust the number. The sum is harmless because zeros add nothing, but the number must be built from only non-zero digits.</li>
+    <li>Parsing <code>x</code> as an integer or string per query. With <code>100000</code> queries and long substrings, this becomes quadratic and can overflow.</li>
+    <li>Forgetting to handle all-zero ranges. Prefix subtraction may produce <code>0</code>, but bounds like <code>b = a - 1</code> must be detected before indexing.</li>
+    <li>Using floating-point powers. Modular powers of ten must be integer recurrence values.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <tr><th>Family</th><th>Files</th><th>Idea</th><th>Complexity</th></tr>
+    <tr>
+      <td>Original-index prefix count</td>
+      <td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td>
+      <td>Stores <code>nonZero[i]</code>, <code>value[i]</code>, and <code>digitSum[i]</code> by original position. A query gets its compressed digit count directly from prefix counts.</td>
+      <td><code>O(n + q)</code> time, <code>O(n)</code> memory</td>
+    </tr>
+    <tr>
+      <td>Compressed positions plus binary search</td>
+      <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code>, <code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code>, <code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td>
+      <td>Stores only non-zero positions and digits, then uses lower/upper bound per query to choose a compressed interval.</td>
+      <td><code>O(n + q log n)</code> time, <code>O(n)</code> memory</td>
+    </tr>
+    <tr>
+      <td>Segment tree over mergeable nodes</td>
+      <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td>
+      <td>Each node stores compressed value, digit sum, and compressed length. Merging appends the right value to the left value.</td>
+      <td><code>O(n + q log n)</code> time, higher constants and memory</td>
+    </tr>
+    <tr>
+      <td>Inverse-power range formula</td>
+      <td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td>
+      <td>Stores weighted prefixes with inverse powers of ten, then rescales a query range to recover the concatenated number.</td>
+      <td><code>O(n + q log n)</code> time, <code>O(n)</code> memory</td>
+    </tr>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>Concrete data from <code>stats.json.performance_by_language</code>:</p>
+  <table>
+    <tr><th>Language</th><th>Accepted count</th><th>Runtime range</th><th>Memory range</th><th>Notes</th></tr>
+    <tr>
+      <td>Java</td>
+      <td>4</td>
+      <td>fastest <code>14 ms</code>, slowest <code>148 ms</code></td>
+      <td>lowest <code>131.4 MB</code>, highest <code>158 MB</code></td>
+      <td>The fastest Java submission uses original-index prefix arrays and avoids per-query binary search. Segment tree and binary-search variants are accepted but have larger constants.</td>
+    </tr>
+    <tr>
+      <td>Go</td>
+      <td>1</td>
+      <td><code>100 ms</code></td>
+      <td><code>20.1 MB</code></td>
+      <td>The accepted Go solution uses compressed positions with <code>sort.Search</code>. Memory is much lower than the Java runs in the local stats.</td>
+    </tr>
+    <tr>
+      <td>Python 3</td>
+      <td>1</td>
+      <td><code>654 ms</code></td>
+      <td><code>59.5 MB</code></td>
+      <td>Python passes with precomputation and <code>bisect</code>, but it is substantially slower. Keep loops tight, localize <code>bisect_left</code>/<code>bisect_right</code>, and avoid building per-query strings.</td>
+    </tr>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p>The stats record one failed submission status: <code>Wrong Answer</code>. The available accepted files point to the most likely wrong-answer risks:</p>
+  <ul>
+    <li>Using the wrong exponent when cutting a prefix number. The exponent must be the compressed interval length, not <code>r - l + 1</code>.</li>
+    <li>Getting inclusive/exclusive query bounds wrong when converting from original positions to compressed indices.</li>
+    <li>Missing modulo normalization after subtracting prefix contributions.</li>
+    <li>Returning a non-zero value for all-zero substrings because the empty compressed interval was not checked.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <tr>
+      <th>Model</th>
+      <th>Language</th>
+      <th>File</th>
+      <th>Runtime</th>
+      <th>Memory</th>
+      <th>Submission</th>
+      <th>Lines</th>
+      <th>Bytes</th>
+    </tr>
+    <tr>
+      <td>set2-codex-agent-gpt-5.5-codex-java</td>
+      <td>java</td>
+      <td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td>
+      <td>14 ms</td>
+      <td>131.4 MB</td>
+      <td>2005739965</td>
+      <td>44</td>
+      <td>1357</td>
+    </tr>
+    <tr>
+      <td>set2-kimi-k2.5-cloud-t0.0-golang</td>
+      <td>golang</td>
+      <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code></td>
+      <td>100 ms</td>
+      <td>20.1 MB</td>
+      <td>2005506562</td>
+      <td>55</td>
+      <td>1314</td>
+    </tr>
+    <tr>
+      <td>set2-kimi-k2.5-cloud-t0.0-java</td>
+      <td>java</td>
+      <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td>
+      <td>148 ms</td>
+      <td>158 MB</td>
+      <td>2005432772</td>
+      <td>88</td>
+      <td>2435</td>
+    </tr>
+    <tr>
+      <td>set2-kimi-k2.5-cloud-t0.8-java</td>
+      <td>java</td>
+      <td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td>
+      <td>49 ms</td>
+      <td>132.6 MB</td>
+      <td>2005879252</td>
+      <td>102</td>
+      <td>2730</td>
+    </tr>
+    <tr>
+      <td>set2-qwen3.5-cloud-t0.0</td>
+      <td>python3</td>
+      <td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td>
+      <td>654 ms</td>
+      <td>59.5 MB</td>
+      <td>2005497803</td>
+      <td>85</td>
+      <td>3023</td>
+    </tr>
+    <tr>
+      <td>set2-qwen3.5-cloud-t0.0-java</td>
+      <td>java</td>
+      <td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td>
+      <td>62 ms</td>
+      <td>132.5 MB</td>
+      <td>2005890888</td>
+      <td>88</td>
+      <td>2588</td>
+    </tr>
+  </table>
+
+  <p class="small">Manual source files: <code>problem.md</code>, <code>stats.json</code>, and <code>accepted__*</code> in the current directory.</p>
+</main>
+</body>
+</html>

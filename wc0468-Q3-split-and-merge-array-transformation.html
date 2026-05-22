@@ -1,0 +1,346 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Split and Merge Array Transformation Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --ink: #17202a;
+      --muted: #5d6977;
+      --line: #d8dee8;
+      --accent: #2767b1;
+      --code: #eef2f7;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+    }
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    header {
+      border-bottom: 3px solid var(--accent);
+      margin-bottom: 22px;
+      padding-bottom: 16px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      line-height: 1.15;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 26px 0 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+      font-size: 1.25rem;
+      color: #123b66;
+      letter-spacing: 0;
+    }
+    p { margin: 8px 0; }
+    ul, ol { margin: 8px 0 8px 24px; padding: 0; }
+    li { margin: 4px 0; }
+    code, pre {
+      font-family: Consolas, "Courier New", monospace;
+      background: var(--code);
+    }
+    code {
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      line-height: 1.45;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 18px;
+      background: var(--panel);
+      font-size: 0.94rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #e8eef6;
+      color: #102f4f;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    .muted { color: var(--muted); }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Split and Merge Array Transformation</h1>
+    <p class="muted">Problem id: <code>wc0468-Q3-split-and-merge-array-transformation</code></p>
+  </header>
+
+  <h2>Provenance</h2>
+  <div class="card">
+    <p>This manual was generated from the local workspace files <code>problem.md</code>, <code>stats.json</code>, and the accepted submission files named <code>accepted__*</code>.</p>
+    <p>Metadata: difficulty <strong>Medium</strong>, function <code>minSplitMerge(nums1, nums2)</code>, tags <code>array</code>, <code>hash-table</code>, and <code>breadth-first-search</code>.</p>
+    <p>The official constraints cap <code>n</code> at 6, which is the central reason exhaustive shortest-path search is practical.</p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given two integer arrays <code>nums1</code> and <code>nums2</code>, each of length <code>n</code>. In one operation, choose a contiguous subarray <code>nums1[L..R]</code>, remove it while preserving the remaining prefix and suffix, then reinsert the removed block, still in its original order, at any position in the remaining array.</p>
+  <p>Return the minimum number of such split-and-merge operations required to transform <code>nums1</code> into <code>nums2</code>. The target array is guaranteed to be a permutation of the start array.</p>
+  <p>Constraints: <code>2 &lt;= n == nums1.length == nums2.length &lt;= 6</code>, values are between <code>-100000</code> and <code>100000</code>, and <code>nums2</code> is a permutation of <code>nums1</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The operation moves one contiguous block to a new insertion point. Since every operation has equal cost, the task is a shortest-path problem over array permutations reachable by this move. With at most six positions, the number of distinct states is tiny enough for breadth-first search.</p>
+  <p>Duplicates can appear, so states must be compared by their full value sequence, not by a permutation of indices unless duplicate handling is designed carefully.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums1 = [3,1,2]</code> and <code>nums2 = [1,2,3]</code>, remove the block <code>[3]</code> from the front. The remaining array is <code>[1,2]</code>. Insert the removed block at the end to get <code>[1,2,3]</code>. The answer is <code>1</code>.</p>
+  <p>BFS sees this as one generated neighbor of the start state and returns immediately when that neighbor equals the target.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>nums1</th><th>nums2</th><th>Output</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>[1,1,2,3,4,5]</code></td>
+        <td><code>[5,4,3,2,1,1]</code></td>
+        <td><code>3</code></td>
+        <td>One optimal sequence moves <code>[1,1,2]</code>, then <code>[4,1,1]</code>, then <code>[3,2]</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Encode <code>nums1</code> as the start state and <code>nums2</code> as the target state.</li>
+    <li>If start equals target, return <code>0</code>.</li>
+    <li>Run BFS from the start state. Keep a queue of states and either a distance map or level counter.</li>
+    <li>For each state, enumerate every <code>L</code> and <code>R</code>, remove <code>state[L..R]</code>, then insert that block at every position in the shortened array.</li>
+    <li>If a generated state is the target, return current distance plus one.</li>
+    <li>Only enqueue states not already present in <code>visited</code>.</li>
+  </ol>
+  <p>The first time BFS reaches the target is optimal because all generated edges cost exactly one operation.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>function minSplitMerge(nums1, nums2):
+    start = encode(nums1)
+    target = encode(nums2)
+    if start == target:
+        return 0
+
+    queue = [(nums1, 0)]
+    visited = {start}
+
+    while queue is not empty:
+        state, dist = pop_front(queue)
+        for L in 0 .. n - 1:
+            for R in L .. n - 1:
+                block = state[L .. R]
+                rest = state[0 .. L-1] + state[R+1 .. n-1]
+                for pos in 0 .. len(rest):
+                    next = rest[0 .. pos-1] + block + rest[pos .. end]
+                    key = encode(next)
+                    if key == target:
+                        return dist + 1
+                    if key not in visited:
+                        visited.add(key)
+                        push_back(queue, (next, dist + 1))
+
+    return -1</code></pre>
+  <p>Returning <code>-1</code> is defensive; under the stated permutation guarantee, BFS should find the target.</p>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use a collision-safe state key. Tuples are natural in Python; comma-joined strings or lists with structural equality work in other languages.</li>
+    <li>Preserve the removed subarray order exactly.</li>
+    <li>Generate insertion positions from <code>0</code> through <code>len(remaining)</code>, inclusive.</li>
+    <li>Mark states as visited before enqueueing to avoid repeated queue entries.</li>
+    <li>Handle <code>nums1 == nums2</code> before BFS.</li>
+    <li>Do not rely on values being unique.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Greedily keeping the longest common subsequence or longest matching block is tempting, but a locally good preserved block can block the globally shortest block moves.</li>
+    <li>Counting misplaced elements is not enough because one operation can move several elements together.</li>
+    <li>Sorting or comparing only multisets loses all order information, which is the actual objective.</li>
+    <li>Skipping duplicate states is required; otherwise the same move can be undone and revisited many times.</li>
+    <li>Using string concatenation without separators can collide: <code>[1, 23]</code> and <code>[12, 3]</code> both become <code>"123"</code>.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <p>All eight accepted files implement the same main family: BFS over full array states with generated split-and-merge neighbors. Differences are only in state representation and distance bookkeeping.</p>
+  <ul>
+    <li><strong>Tuple/list BFS:</strong> The Python solution uses tuple states directly in a set and queue.</li>
+    <li><strong>String-key BFS:</strong> JavaScript and Go encode arrays as comma-separated strings for hash maps, decoding when expanding a state.</li>
+    <li><strong>Java structural-list BFS:</strong> Java submissions use <code>List&lt;Integer&gt;</code> states in <code>HashSet</code> / <code>Queue</code>, or similar string/list encodings.</li>
+    <li><strong>Minor pruning:</strong> Some implementations skip reinserting the block at its original effective position, which avoids generating a no-op state but is not required for correctness if <code>visited</code> is used.</li>
+  </ul>
+
+  <h2>Language and Performance Notes</h2>
+  <p>Concrete performance from <code>stats.json.performance_by_language</code>:</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted Count</th><th>Runtime Range</th><th>Memory Range</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Go</td>
+        <td>1</td>
+        <td>89 ms</td>
+        <td>10.4 MB</td>
+        <td>Lowest memory among recorded submissions; string encoding is fine at this scale.</td>
+      </tr>
+      <tr>
+        <td>Java</td>
+        <td>5</td>
+        <td>60 ms to 119 ms</td>
+        <td>46.9 MB to 47.4 MB</td>
+        <td>Fastest recorded runtime is Java at 60 ms. Memory is stable around 47 MB across Java submissions.</td>
+      </tr>
+      <tr>
+        <td>JavaScript</td>
+        <td>1</td>
+        <td>184 ms</td>
+        <td>63 MB</td>
+        <td>Slowest and highest-memory recorded language here, but still accepted because <code>n &lt;= 6</code>.</td>
+      </tr>
+      <tr>
+        <td>Python 3</td>
+        <td>1</td>
+        <td>91 ms</td>
+        <td>19.4 MB</td>
+        <td>Tuple-based BFS is concise and competitive for this constraint size.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>Time is bounded by the number of distinct value sequences times the neighbor generation cost. For each state, there are <code>O(n^2)</code> removable blocks and up to <code>O(n)</code> insertion positions, with <code>O(n)</code> copying or encoding per generated neighbor. With <code>n &lt;= 6</code>, this is comfortably small.</p>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports no failed submission status counts: <code>{}</code>. There are no observed wrong-answer, TLE, runtime-error, or compile-error clusters in the provided data.</p>
+  <p>The likely risk areas still come from implementation details: unsafe state encoding, missing visited checks, mishandling duplicates, off-by-one insertion positions, or accidentally reversing the moved block.</p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Submission ID</th>
+        <th>Lines</th>
+        <th>Bytes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>set2-codex-agent-gpt-5.5-codex-java</td>
+        <td>java</td>
+        <td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td>
+        <td>82 ms</td>
+        <td>47.1 MB</td>
+        <td>2005572428</td>
+        <td>80</td>
+        <td>2586</td>
+      </tr>
+      <tr>
+        <td>set2-deepseek-v4-pro-cloud-t0.0-javascript</td>
+        <td>javascript</td>
+        <td><code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td>
+        <td>184 ms</td>
+        <td>63 MB</td>
+        <td>2005463849</td>
+        <td>44</td>
+        <td>1385</td>
+      </tr>
+      <tr>
+        <td>set2-kimi-k2.5-cloud-t0.0-golang</td>
+        <td>golang</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code></td>
+        <td>89 ms</td>
+        <td>10.4 MB</td>
+        <td>2005503888</td>
+        <td>76</td>
+        <td>1451</td>
+      </tr>
+      <tr>
+        <td>set2-kimi-k2.5-cloud-t0.0-java</td>
+        <td>java</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td>
+        <td>119 ms</td>
+        <td>46.9 MB</td>
+        <td>2005429929</td>
+        <td>61</td>
+        <td>2262</td>
+      </tr>
+      <tr>
+        <td>set2-kimi-k2.5-cloud-t0.8-java</td>
+        <td>java</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td>
+        <td>118 ms</td>
+        <td>47.4 MB</td>
+        <td>2005877766</td>
+        <td>72</td>
+        <td>2465</td>
+      </tr>
+      <tr>
+        <td>set2-kimi-k2.5-cloud-t0.9-java</td>
+        <td>java</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td>
+        <td>83 ms</td>
+        <td>47.3 MB</td>
+        <td>2005883877</td>
+        <td>81</td>
+        <td>2795</td>
+      </tr>
+      <tr>
+        <td>set2-qwen3.5-cloud-t0.0</td>
+        <td>python3</td>
+        <td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td>
+        <td>91 ms</td>
+        <td>19.4 MB</td>
+        <td>2005495137</td>
+        <td>34</td>
+        <td>1085</td>
+      </tr>
+      <tr>
+        <td>set2-qwen3.5-cloud-t0.0-java</td>
+        <td>java</td>
+        <td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td>
+        <td>60 ms</td>
+        <td>47.3 MB</td>
+        <td>2005889634</td>
+        <td>52</td>
+        <td>1853</td>
+      </tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

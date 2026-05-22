@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Minimum Swaps to Avoid Forbidden Values Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #5d6d7e;
+      --line: #d7dde5;
+      --panel: #f7f9fb;
+      --accent: #0f766e;
+      --code: #f1f5f9;
+    }
+    body {
+      margin: 0;
+      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+    }
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      line-height: 1.15;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid var(--line);
+      font-size: 1.35rem;
+    }
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 1.05rem;
+    }
+    p, ul, ol {
+      margin: 10px 0;
+    }
+    .meta, .note {
+      color: var(--muted);
+    }
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    code {
+      background: var(--code);
+      border-radius: 4px;
+      padding: 0.1em 0.3em;
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      font-size: 0.94em;
+    }
+    pre {
+      overflow-x: auto;
+      background: #0f172a;
+      color: #e2e8f0;
+      border-radius: 8px;
+      padding: 14px 16px;
+      line-height: 1.45;
+    }
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 0.94rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #eef4f8;
+    }
+    .pill {
+      display: inline-block;
+      margin-right: 6px;
+      padding: 2px 8px;
+      border: 1px solid #99c7bf;
+      border-radius: 999px;
+      color: #115e59;
+      background: #ecfdf5;
+      font-size: 0.88rem;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Minimum Swaps to Avoid Forbidden Values</h1>
+  <p class="meta">Problem id: <code>wc0481-Q3-minimum-swaps-to-avoid-forbidden-values</code></p>
+
+  <h2>Provenance</h2>
+  <div class="box">
+    <p><strong>Source files used:</strong> <code>problem.md</code>, <code>stats.json</code>, and six <code>accepted__*</code> solution files in this directory.</p>
+    <p><strong>Generator metadata:</strong> tool <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-18T16:54:30.353246+00:00</code>.</p>
+    <p><strong>Problem metadata:</strong> difficulty Hard, function <code>minSwaps</code>, arity 2, tags <span class="pill">array</span><span class="pill">hash-table</span><span class="pill">greedy</span><span class="pill">counting</span></p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given two integer arrays, <code>nums</code> and <code>forbidden</code>, each of length <code>n</code>. In one operation, choose two distinct indices <code>i</code> and <code>j</code>, and swap <code>nums[i]</code> with <code>nums[j]</code>.</p>
+  <p>Return the minimum number of swaps required so that every index satisfies <code>nums[i] != forbidden[i]</code>. If no sequence of swaps can make all indices valid, return <code>-1</code>.</p>
+  <p><strong>Constraints:</strong> <code>1 &lt;= n == nums.length == forbidden.length &lt;= 10^5</code>, and <code>1 &lt;= nums[i], forbidden[i] &lt;= 10^9</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>Only positions where <code>nums[i] == forbidden[i]</code> are immediately bad. Swapping two bad positions with different bad values can fix both at once. If one bad value dominates, each occurrence of that value needs its own swap partner, so the dominant count becomes the answer floor.</p>
+  <p>There is also a global feasibility condition: for every value <code>v</code>, the number of copies of <code>v</code> in <code>nums</code> plus the number of positions forbidding <code>v</code> must be at most <code>n</code>. Otherwise there are not enough positions where all copies of <code>v</code> can legally land.</p>
+
+  <h2>Worked Example</h2>
+  <div class="box">
+    <p><strong>Input:</strong> <code>nums = [4,6,6,5]</code>, <code>forbidden = [4,6,5,5]</code></p>
+    <p><strong>Bad positions:</strong> index 0 has value 4, index 1 has value 6, index 3 has value 5. Thus <code>badPairsSum = 3</code> and each bad value appears once, so <code>maxBadPairs = 1</code>.</p>
+    <p><strong>Decision:</strong> <code>max(ceil(3/2), 1) = 2</code>. One optimal sequence swaps index 0 with 2, then index 1 with 3, producing <code>[6,5,4,6]</code>.</p>
+  </div>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>nums</th><th>forbidden</th><th>Expected</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>[1,2,3]</code></td><td><code>[3,2,1]</code></td><td><code>1</code></td><td>Only index 1 is bad; one swap with a safe partner fixes it.</td></tr>
+      <tr><td><code>[7,7]</code></td><td><code>[8,7]</code></td><td><code>-1</code></td><td>Value 7 appears twice in <code>nums</code> and is forbidden once, exceeding two total slots.</td></tr>
+      <tr><td><code>[1,2]</code></td><td><code>[2,1]</code></td><td><code>0</code></td><td>No index starts with its forbidden value.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Let <code>n = nums.length</code>.</li>
+    <li>Count each value in <code>nums</code> and in <code>forbidden</code>.</li>
+    <li>If any value has <code>countNums[v] + countForbidden[v] &gt; n</code>, return <code>-1</code>.</li>
+    <li>Scan all indices where <code>nums[i] == forbidden[i]</code>. Let <code>badPairsSum</code> be their count, and count those bad positions by value.</li>
+    <li>Let <code>maxBadPairs</code> be the largest bad-position count for one value.</li>
+    <li>Return <code>max((badPairsSum + 1) / 2, maxBadPairs)</code> using integer division.</li>
+  </ol>
+  <p>The first term is the number of swaps needed if each swap fixes two bad positions. The second term handles an overrepresented bad value that cannot be paired with itself.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>int minSwaps(nums, forbidden):
+    n = len(nums)
+    countNums = frequency map of nums
+    countForbidden = frequency map of forbidden
+
+    for each value v seen in nums or forbidden:
+        if countNums[v] + countForbidden[v] &gt; n:
+            return -1
+
+    badPairsSum = 0
+    badByValue = empty frequency map
+    for i in 0..n-1:
+        if nums[i] == forbidden[i]:
+            badPairsSum += 1
+            badByValue[nums[i]] += 1
+
+    maxBadPairs = maximum value in badByValue, or 0
+    return max((badPairsSum + 1) // 2, maxBadPairs)</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use hash maps because values can be as large as <code>10^9</code>.</li>
+    <li>Check feasibility before returning a swap count.</li>
+    <li>Count only initially bad positions for the answer formula, not every occurrence of every value.</li>
+    <li>Use ceiling division <code>(badPairsSum + 1) / 2</code> with integer arithmetic.</li>
+    <li>Handle the already-valid case naturally: if <code>badPairsSum == 0</code>, the formula returns <code>0</code>.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li><strong>Returning only <code>ceil(badPairsSum / 2)</code>:</strong> fails when one value dominates the bad positions, because two identical bad values cannot fix each other.</li>
+    <li><strong>Ignoring global feasibility:</strong> misses cases where too many copies of one value exist relative to the number of positions that permit it.</li>
+    <li><strong>Trying to simulate swaps greedily:</strong> unnecessary and easier to get wrong; the count formula is enough.</li>
+    <li><strong>Using arrays indexed by value:</strong> invalid for values up to <code>10^9</code>.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <ul>
+    <li><strong>Global frequency feasibility plus bad-position formula:</strong> used by the Go, Python, and most Java accepted files. These count <code>nums</code>, count <code>forbidden</code>, reject <code>countNums[v] + countForbidden[v] &gt; n</code>, then return <code>max(ceil(k/2), M)</code>.</li>
+    <li><strong>Dominant-conflict feasibility:</strong> one Java solution first finds the most common bad value, then checks whether there are enough indices where both <code>nums[i]</code> and <code>forbidden[i]</code> are not that value. It returns the same answer formula for accepted cases.</li>
+    <li><strong>Equivalent answer branch:</strong> one Java implementation writes <code>if (2 * M &lt;= k) return ceil(k/2); else return M;</code>, which is the same as <code>max(ceil(k/2), M)</code>.</li>
+  </ul>
+
+  <h2>Language and Performance Notes</h2>
+  <p>Concrete performance from <code>stats.json.performance_by_language</code>:</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted count</th><th>Runtime notes</th><th>Memory notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Java</td>
+        <td>4</td>
+        <td>Fastest accepted Java submission: <code>19 ms</code>; slowest Java submission: <code>103 ms</code>.</td>
+        <td>Lowest Java memory: <code>135 MB</code>; highest Java memory: <code>176.2 MB</code>.</td>
+      </tr>
+      <tr>
+        <td>Go</td>
+        <td>1</td>
+        <td>The accepted Go solution ran in <code>143 ms</code>.</td>
+        <td>The accepted Go solution used <code>22.2 MB</code>, the lowest memory among listed languages.</td>
+      </tr>
+      <tr>
+        <td>Python 3</td>
+        <td>1</td>
+        <td>The accepted Python 3 solution ran in <code>164 ms</code>.</td>
+        <td>The accepted Python 3 solution used <code>54.8 MB</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>All accepted implementations are linear time, <code>O(n)</code>, with <code>O(u)</code> extra space for distinct values. The practical difference is mostly hash-map overhead and language runtime overhead.</p>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports no failed submission status counts: <code>failed_submission_status_counts</code> is empty. The main risk patterns therefore come from the accepted-code structure and official hints rather than recorded failed attempts.</p>
+  <ul>
+    <li>Missing the feasibility check can produce a positive swap count for impossible inputs.</li>
+    <li>Miscounting <code>maxBadPairs</code> over all values instead of only bad positions overestimates the answer.</li>
+    <li>Using floating-point ceiling division is unnecessary and can introduce avoidable mistakes.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Submission ID</th>
+        <th>Lines</th>
+        <th>Bytes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>set2-codex-agent-gpt-5.5-codex-java</code></td>
+        <td>java</td>
+        <td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td>
+        <td><code>19 ms</code></td>
+        <td><code>135 MB</code></td>
+        <td><code>2005740736</code></td>
+        <td>41</td>
+        <td>1045</td>
+      </tr>
+      <tr>
+        <td><code>set2-kimi-k2.5-cloud-t0.0-golang</code></td>
+        <td>golang</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code></td>
+        <td><code>143 ms</code></td>
+        <td><code>22.2 MB</code></td>
+        <td><code>2005507817</code></td>
+        <td>50</td>
+        <td>947</td>
+      </tr>
+      <tr>
+        <td><code>set2-kimi-k2.5-cloud-t0.0-java</code></td>
+        <td>java</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td>
+        <td><code>103 ms</code></td>
+        <td><code>169.4 MB</code></td>
+        <td><code>2005433841</code></td>
+        <td>47</td>
+        <td>1328</td>
+      </tr>
+      <tr>
+        <td><code>set2-kimi-k2.5-cloud-t0.9-java</code></td>
+        <td>java</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td>
+        <td><code>101 ms</code></td>
+        <td><code>176.2 MB</code></td>
+        <td><code>2005885852</code></td>
+        <td>45</td>
+        <td>1327</td>
+      </tr>
+      <tr>
+        <td><code>set2-qwen3.5-cloud-t0.0</code></td>
+        <td>python3</td>
+        <td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td>
+        <td><code>164 ms</code></td>
+        <td><code>54.8 MB</code></td>
+        <td><code>2005499056</code></td>
+        <td>37</td>
+        <td>1715</td>
+      </tr>
+      <tr>
+        <td><code>set2-qwen3.5-cloud-t0.0-java</code></td>
+        <td>java</td>
+        <td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td>
+        <td><code>100 ms</code></td>
+        <td><code>169.8 MB</code></td>
+        <td><code>2005891455</code></td>
+        <td>53</td>
+        <td>1549</td>
+      </tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0479-Q3-total-score-of-dungeon-runs Manual</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      color: #202124;
+      background: #f7f7f5;
+    }
+    main {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+      background: #fff;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+    }
+    h2 {
+      margin-top: 32px;
+      padding-top: 14px;
+      border-top: 1px solid #ddd;
+      font-size: 1.35rem;
+    }
+    code, pre {
+      font-family: Consolas, Monaco, "Courier New", monospace;
+    }
+    code {
+      background: #f0f1f2;
+      padding: 0.1rem 0.25rem;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 14px;
+      background: #1f2328;
+      color: #f6f8fa;
+      border-radius: 6px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid #d5d7da;
+      padding: 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #eef1f4;
+    }
+    .meta {
+      color: #5f6368;
+      margin-top: 0;
+    }
+    .example {
+      border-left: 4px solid #4b7bec;
+      padding-left: 14px;
+      background: #f6f9ff;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Total Score of Dungeon Runs</h1>
+  <p class="meta">Problem id: <code>wc0479-Q3-total-score-of-dungeon-runs</code>. Difficulty: Medium. Function: <code>totalScore(hp, damage, requirement)</code>.</p>
+
+  <h2>Provenance</h2>
+  <p>This manual was assembled from the local artifacts <code>problem.md</code>, <code>stats.json</code>, and the eight <code>accepted__*</code> submissions in this directory. The source problem URL recorded in <code>problem.md</code> and <code>stats.json</code> is <code>https://leetcode.com/problems/total-score-of-dungeon-runs/</code>. The generated stats file records generator <code>codex</code>, model <code>gpt-5.5</code>, and timestamp <code>2026-05-18T16:26:56.012050+00:00</code>.</p>
+
+  <h2>Problem Statement</h2>
+  <p>You are given a positive integer <code>hp</code> and two positive 1-indexed integer arrays <code>damage</code> and <code>requirement</code>. There are <code>n</code> trap rooms. Entering room <code>i</code> reduces health by <code>damage[i]</code>. After that reduction, if the remaining health is at least <code>requirement[i]</code>, you earn 1 point for that room.</p>
+  <p>For a starting room <code>j</code>, <code>score(j)</code> is the number of points earned by starting with <code>hp</code> and entering rooms <code>j, j + 1, ..., n</code> in order. Return <code>score(1) + score(2) + ... + score(n)</code>. Rooms cannot be skipped, and the run may continue even when health becomes non-positive.</p>
+  <p>Constraints: <code>1 &lt;= hp &lt;= 10^9</code>, <code>1 &lt;= n == damage.length == requirement.length &lt;= 10^5</code>, and <code>1 &lt;= damage[i], requirement[i] &lt;= 10^4</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>Each possible point is attached to a pair <code>(start, room)</code> with <code>start &lt;= room</code>. For room <code>k</code>, count how many starting positions <code>s</code> make the health after taking damage from <code>s</code> through <code>k</code> still satisfy the requirement at <code>k</code>.</p>
+  <p>Let <code>P[0] = 0</code> and <code>P[t] = damage[0] + ... + damage[t - 1]</code>. Starting at <code>s</code> and scoring at room <code>k</code> requires:</p>
+  <pre><code>hp - (P[k + 1] - P[s]) &gt;= requirement[k]
+P[s] &gt;= P[k + 1] + requirement[k] - hp</code></pre>
+  <p>Because every damage value is positive, <code>P</code> is strictly increasing. For each room <code>k</code>, binary search the first prefix index <code>s</code> in <code>[0, k]</code> whose value reaches the threshold, then add <code>k - s + 1</code>.</p>
+
+  <h2>Worked Example</h2>
+  <div class="example">
+    <p><strong>Input:</strong> <code>hp = 11</code>, <code>damage = [3,6,7]</code>, <code>requirement = [4,2,5]</code>. <strong>Output:</strong> <code>3</code>.</p>
+    <p>Prefix sums are <code>P = [0, 3, 9, 16]</code>.</p>
+    <table>
+      <thead><tr><th>Room k</th><th>Threshold <code>P[k+1] + requirement[k] - hp</code></th><th>Valid starts</th><th>Contribution</th></tr></thead>
+      <tbody>
+        <tr><td>0</td><td><code>3 + 4 - 11 = -4</code></td><td><code>P[0] = 0</code></td><td>1</td></tr>
+        <tr><td>1</td><td><code>9 + 2 - 11 = 0</code></td><td><code>P[0] = 0</code>, <code>P[1] = 3</code></td><td>2</td></tr>
+        <tr><td>2</td><td><code>16 + 5 - 11 = 10</code></td><td>none in <code>P[0..2] = [0,3,9]</code></td><td>0</td></tr>
+      </tbody>
+    </table>
+    <p>Total contribution is <code>1 + 2 + 0 = 3</code>. This matches <code>score(1)=2</code>, <code>score(2)=1</code>, and <code>score(3)=0</code>.</p>
+  </div>
+
+  <h2>Other Official Examples</h2>
+  <div class="example">
+    <p><strong>Example 2:</strong> <code>hp = 2</code>, <code>damage = [10000,1]</code>, <code>requirement = [1,1]</code>. Output is <code>1</code>.</p>
+    <p>Starting from room 1 earns no points because health immediately becomes <code>-9998</code>. Starting from room 2 earns one point because <code>2 - 1 = 1</code>, which meets requirement <code>1</code>.</p>
+  </div>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Build long integer prefix sums <code>P</code> of length <code>n + 1</code>.</li>
+    <li>Initialize <code>answer = 0</code>.</li>
+    <li>For each room index <code>k</code> from <code>0</code> to <code>n - 1</code>, compute <code>target = P[k + 1] + requirement[k] - hp</code>.</li>
+    <li>Binary search <code>P[0..k]</code> for the first index <code>idx</code> where <code>P[idx] &gt;= target</code>.</li>
+    <li>Every start in <code>[idx, k]</code> scores at room <code>k</code>, so add <code>k - idx + 1</code>. If <code>idx == k + 1</code>, add zero.</li>
+  </ol>
+  <p>Time complexity is <code>O(n log n)</code>. Space complexity is <code>O(n)</code>. The answer can be as large as <code>n * (n + 1) / 2</code>, so return a 64-bit integer in languages with fixed-width integers.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>long totalScore(int hp, int[] damage, int[] requirement) {
+    int n = damage.length;
+    long[] prefix = new long[n + 1];
+    for (int i = 0; i &lt; n; i++) {
+        prefix[i + 1] = prefix[i] + damage[i];
+    }
+
+    long ans = 0;
+    for (int k = 0; k &lt; n; k++) {
+        long target = prefix[k + 1] + requirement[k] - (long) hp;
+        int idx = lowerBound(prefix, 0, k + 1, target); // search indices [0, k]
+        ans += k - idx + 1L;
+    }
+    return ans;
+}
+
+int lowerBound(long[] a, int lo, int hi, long target) {
+    while (lo &lt; hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (a[mid] &gt;= target) hi = mid;
+        else lo = mid + 1;
+    }
+    return lo;
+}</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use zero-based arrays internally: room <code>k</code> uses <code>damage[k]</code>, <code>requirement[k]</code>, and prefix endpoint <code>P[k + 1]</code>.</li>
+    <li>Search only among candidate starting prefixes <code>P[0]</code> through <code>P[k]</code>, not through the whole prefix array.</li>
+    <li>Use lower bound for <code>&gt;= target</code>, because equality is enough to satisfy the requirement.</li>
+    <li>Store prefix sums, thresholds, and the answer in 64-bit numeric types where needed.</li>
+    <li>Do not stop a simulated run when health becomes non-positive; the formula already handles later rooms.</li>
+    <li>Return zero contribution when the lower bound lands at <code>k + 1</code>.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Simulating every starting room directly is <code>O(n^2)</code> and will time out for <code>n = 100000</code>.</li>
+    <li>Checking whether the initial <code>hp</code> is at least each room requirement ignores damage from previous rooms in that run.</li>
+    <li>Binary searching the wrong side of the inequality counts failed starts instead of successful starts.</li>
+    <li>Using <code>&gt;</code> instead of <code>&gt;=</code> loses cases where remaining health exactly equals the requirement.</li>
+    <li>Using 32-bit <code>int</code> for the answer can overflow because the maximum total score is about <code>5,000,050,000</code>.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead><tr><th>Family</th><th>Accepted files</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Monotone prefix + lower bound</td>
+        <td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code>, <code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code>, <code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code>, <code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code>, <code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td>
+        <td>Uses positive damage to keep prefix sums sorted. This is the simplest approach and needs only one binary search per room.</td>
+      </tr>
+      <tr>
+        <td>Fenwick tree with coordinate compression</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code>, <code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code>, <code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td>
+        <td>Counts prior prefixes meeting the same inequality through an ordered frequency structure. It is more general but unnecessary when prefix sums are already sorted.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The concrete figures below come from <code>stats.json.performance_by_language</code>.</p>
+  <table>
+    <thead><tr><th>Language</th><th>Accepted count</th><th>Runtime range</th><th>Memory range</th><th>Practical note</th></tr></thead>
+    <tbody>
+      <tr><td>Java</td><td>5</td><td>fastest <code>30 ms</code>, slowest <code>175 ms</code></td><td>lowest <code>179.2 MB</code>, highest <code>184.7 MB</code></td><td>The fastest Java submissions use the direct prefix lower-bound approach. Return <code>long</code> and store prefix values in <code>long[]</code>.</td></tr>
+      <tr><td>JavaScript</td><td>1</td><td><code>100 ms</code></td><td><code>80.4 MB</code></td><td>Number precision is sufficient for these constraints because sums and answers are well below <code>2^53</code>.</td></tr>
+      <tr><td>Python 3</td><td>1</td><td><code>263 ms</code></td><td><code>39.9 MB</code></td><td><code>bisect_left</code> over the prefix array is accepted; avoid nested loops.</td></tr>
+      <tr><td>Go</td><td>1</td><td><code>303 ms</code></td><td><code>17.8 MB</code></td><td>The accepted Go file uses Fenwick compression. A direct <code>sort.Search</code> lower-bound implementation should also fit the intended complexity.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports <code>failed_submission_status_counts: {}</code>, so this artifact set contains no recorded wrong-answer, time-limit, runtime-error, or memory-limit buckets. The main risks must therefore be inferred from the problem constraints and accepted code: quadratic simulation, off-by-one prefix ranges, strict inequality, and integer overflow.</p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead><tr><th>File</th><th>Model</th><th>Language</th><th>Runtime</th><th>Memory</th><th>Submission ID</th><th>Lines</th><th>Bytes</th></tr></thead>
+    <tbody>
+      <tr><td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td><td>set2-codex-agent-gpt-5.5-codex-java</td><td>java</td><td>47 ms</td><td>180.1 MB</td><td>2005740384</td><td>29</td><td>846</td></tr>
+      <tr><td><code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>set2-deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td>100 ms</td><td>80.4 MB</td><td>2005467113</td><td>32</td><td>795</td></tr>
+      <tr><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>set2-kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td>303 ms</td><td>17.8 MB</td><td>2005507211</td><td>70</td><td>1386</td></tr>
+      <tr><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>set2-kimi-k2.5-cloud-t0.0-java</td><td>java</td><td>166 ms</td><td>184.7 MB</td><td>2005433379</td><td>69</td><td>1798</td></tr>
+      <tr><td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td><td>set2-kimi-k2.5-cloud-t0.8-java</td><td>java</td><td>30 ms</td><td>180.4 MB</td><td>2005879582</td><td>22</td><td>622</td></tr>
+      <tr><td><code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td><td>set2-kimi-k2.5-cloud-t0.9-java</td><td>java</td><td>175 ms</td><td>179.2 MB</td><td>2005885533</td><td>85</td><td>2240</td></tr>
+      <tr><td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td><td>set2-qwen3.5-cloud-t0.0</td><td>python3</td><td>263 ms</td><td>39.9 MB</td><td>2005498431</td><td>35</td><td>1418</td></tr>
+      <tr><td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td><td>set2-qwen3.5-cloud-t0.0-java</td><td>java</td><td>30 ms</td><td>180.2 MB</td><td>2005891173</td><td>24</td><td>673</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

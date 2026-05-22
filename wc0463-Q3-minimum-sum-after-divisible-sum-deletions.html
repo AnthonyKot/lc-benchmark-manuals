@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0463-Q3 Minimum Sum After Divisible Sum Deletions Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #172033;
+      --muted: #5d677a;
+      --line: #d9deea;
+      --panel: #f6f8fb;
+      --accent: #0b6b63;
+      --code: #101827;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: #ffffff;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 30px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 1.25rem;
+    }
+    h3 {
+      margin: 18px 0 6px;
+      font-size: 1rem;
+    }
+    p {
+      margin: 8px 0;
+    }
+    ul, ol {
+      margin-top: 8px;
+      padding-left: 24px;
+    }
+    li {
+      margin: 5px 0;
+    }
+    code {
+      padding: 1px 4px;
+      border-radius: 4px;
+      background: #edf1f7;
+      color: var(--code);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      overflow: auto;
+      padding: 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+      color: var(--code);
+    }
+    pre code {
+      padding: 0;
+      background: transparent;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 20px;
+      font-size: 0.95rem;
+    }
+    th, td {
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #eef3f7;
+      color: #223047;
+    }
+    .meta, .note {
+      color: var(--muted);
+    }
+    .callout {
+      margin: 12px 0;
+      padding: 12px 14px;
+      border-left: 4px solid var(--accent);
+      background: var(--panel);
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Minimum Sum After Divisible Sum Deletions</h1>
+  <p class="meta">Problem id: <code>wc0463-Q3-minimum-sum-after-divisible-sum-deletions</code></p>
+
+  <h2>Provenance</h2>
+  <p>This manual was built from local workspace artifacts: <code>problem.md</code>, <code>stats.json</code>, and eight <code>accepted__*</code> solution files.</p>
+  <table>
+    <tr><th>Field</th><th>Value</th></tr>
+    <tr><td>Title</td><td>Minimum Sum After Divisible Sum Deletions</td></tr>
+    <tr><td>Difficulty</td><td>Medium</td></tr>
+    <tr><td>Function</td><td><code>minArraySum(nums, k)</code></td></tr>
+    <tr><td>Tags</td><td>array, hash-table, dynamic-programming, prefix-sum</td></tr>
+    <tr><td>Generated stats timestamp</td><td><code>2026-05-17T21:40:47.615590+00:00</code></td></tr>
+    <tr><td>Accepted submissions represented</td><td>8</td></tr>
+  </table>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer array <code>nums</code> and an integer <code>k</code>. You may repeatedly choose any contiguous subarray whose sum is divisible by <code>k</code> and delete it. After each deletion, the remaining elements close the gap.</p>
+  <p>Return the minimum possible sum of the remaining array after any number of valid deletions.</p>
+  <p>Constraints: <code>1 &lt;= nums.length &lt;= 10^5</code>, <code>1 &lt;= nums[i] &lt;= 10^6</code>, and <code>1 &lt;= k &lt;= 10^5</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>Deleting a block whose sum is divisible by <code>k</code> is equivalent to jumping between two positions with equal prefix-sum remainder. Because deleted gaps close, a dynamic program over the original left-to-right scan can decide whether the current element remains or whether a suffix of the processed prefix can disappear.</p>
+  <p>The useful state is the best remaining sum seen for each prefix remainder. When the current prefix remainder is <code>r</code>, any previous boundary with remainder <code>r</code> allows the intervening subarray to be deleted, leaving that previous best cost.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [3,1,4,1,5]</code> and <code>k = 3</code>, the minimum remaining sum is <code>5</code>.</p>
+  <ol>
+    <li>Prefix remainder starts at <code>0</code>, with best remaining sum <code>0</code>.</li>
+    <li>After reading <code>3</code>, prefix remainder is still <code>0</code>. Since the whole segment <code>[3]</code> is divisible by <code>3</code>, the remaining sum can stay <code>0</code>.</li>
+    <li>Reading <code>1,4,1</code> creates a segment sum <code>6</code>, also divisible by <code>3</code>, so that middle segment can be deleted.</li>
+    <li>After deleting <code>[1,4,1]</code> and then <code>[3]</code>, only <code>[5]</code> remains.</li>
+  </ol>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+    <tr><td><code>nums = [1,1,1], k = 2</code></td><td><code>1</code></td><td>Delete one adjacent pair summing to <code>2</code>, leaving a single <code>1</code>.</td></tr>
+    <tr><td><code>nums = [3,1,4,1,5], k = 3</code></td><td><code>5</code></td><td>Delete <code>[1,4,1]</code>, then delete <code>[3]</code>.</td></tr>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <p>Maintain <code>dp</code>, the minimum possible remaining sum after processing the current prefix, and <code>best[r]</code>, the minimum <code>dp</code> value seen at a boundary whose prefix sum has remainder <code>r</code>.</p>
+  <ol>
+    <li>Initialize <code>best[0] = 0</code> and all other entries to infinity.</li>
+    <li>Scan each value <code>x</code>, updating <code>prefix += x</code> and <code>r = prefix % k</code>.</li>
+    <li>If keeping <code>x</code>, the new cost is <code>dp + x</code>.</li>
+    <li>If deleting a just-formed divisible segment, the new cost can be <code>best[r]</code>.</li>
+    <li>Set <code>dp = min(dp + x, best[r])</code>, then update <code>best[r] = min(best[r], dp)</code>.</li>
+  </ol>
+  <p>This is <code>O(n + k)</code> time with an array of size <code>k</code>. A hash map version is also valid, though the accepted set shows arrays are simpler and faster when <code>k &lt;= 100000</code>.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>long minArraySum(int[] nums, int k) {
+    long INF = very_large_value;
+    long[] best = new long[k];
+    fill(best, INF);
+    best[0] = 0;
+
+    long dp = 0;
+    long prefix = 0;
+
+    for (int x : nums) {
+        prefix += x;
+        int r = (int)(prefix % k);
+
+        long keep = dp + x;
+        long delete = best[r];
+        dp = min(keep, delete);
+
+        best[r] = min(best[r], dp);
+    }
+
+    return dp;
+}</code></pre>
+  <div class="callout">Equivalent accepted implementations maximize deleted sum instead: keep <code>gain</code> as the maximum removable total and return <code>totalSum - gain</code>. That version stores best values like <code>gain - prefix</code> or its algebraic equivalent.</div>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use 64-bit integers for prefix sums and answers. The total can reach <code>10^11</code>.</li>
+    <li>Initialize remainder <code>0</code> before the loop so a prefix with sum divisible by <code>k</code> can be fully deleted.</li>
+    <li>Update the prefix before computing the current remainder.</li>
+    <li>Compute the new <code>dp</code> before writing back into <code>best[r]</code>.</li>
+    <li>Use <code>best[r]</code> as a value from an earlier boundary or the current boundary after the current transition, not an arbitrary prefix sum.</li>
+    <li>Return the minimum remaining sum, not the maximum deleted sum unless you subtract it from the total.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Greedily delete the first divisible subarray found. Local deletions can change which future elements become adjacent, so greedy order is not reliable.</li>
+    <li>Only consider subarrays in the original array after one pass. The closing-gap rule means separate surviving pieces can become adjacent after deletions.</li>
+    <li>Use a quadratic search over all equal-remainder prefix pairs. It is too slow for <code>n = 100000</code>.</li>
+    <li>Store only whether a remainder has been seen. The cost attached to that remainder is what determines the optimal remaining sum.</li>
+    <li>Use 32-bit <code>int</code> for totals in Java, Go, C++, or C. Prefix sums can overflow.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <tr><th>Family</th><th>Accepted files</th><th>Core state</th><th>Notes</th></tr>
+    <tr>
+      <td>Minimum remaining sum DP with remainder array</td>
+      <td>Java and Go array-based submissions, including <code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code>, <code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code>, <code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code>, and <code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td>
+      <td><code>dp</code> plus <code>best[remainder]</code> as minimum remaining sum</td>
+      <td>Most direct translation of the official hints.</td>
+    </tr>
+    <tr>
+      <td>Maximum deleted sum DP</td>
+      <td><code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code> and <code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td>
+      <td><code>gain</code> plus per-remainder best expression</td>
+      <td>Returns <code>total - gain</code> or <code>prefix - gain</code>.</td>
+    </tr>
+    <tr>
+      <td>Map-based remainder DP</td>
+      <td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td>
+      <td><code>Map&lt;Integer, Long&gt;</code> from remainder to best remaining sum</td>
+      <td>Works, but has higher overhead than the fixed array when <code>k</code> is bounded.</td>
+    </tr>
+    <tr>
+      <td>Remainder-transition variant</td>
+      <td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td>
+      <td>Tracks previous and next remainders while storing minimal costs</td>
+      <td>Accepted but less idiomatic than the standard <code>best[updatedPrefixRemainder]</code> form.</td>
+    </tr>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The following concrete figures come from <code>stats.json.performance_by_language</code>.</p>
+  <table>
+    <tr><th>Language</th><th>Count</th><th>Runtime range</th><th>Memory range</th><th>Practical note</th></tr>
+    <tr><td>Go</td><td>1</td><td>19 ms</td><td>13.4 MB</td><td>Fast and memory-light with a plain <code>[]int64</code> table.</td></tr>
+    <tr><td>Java</td><td>5</td><td>17 ms to 117 ms</td><td>112.7 MB to 146.6 MB</td><td>Array-based Java reached 17 ms; the slower 117 ms submission used <code>HashMap</code>, consistent with extra map overhead.</td></tr>
+    <tr><td>JavaScript</td><td>1</td><td>44 ms</td><td>78.7 MB</td><td>The max-deleted-sum array formulation is competitive and avoids nested scans.</td></tr>
+    <tr><td>Python 3</td><td>1</td><td>449 ms</td><td>32.7 MB</td><td>Accepted with the same linear idea; use lists, local variables, and avoid dictionaries if implementing the canonical <code>best</code> array version.</td></tr>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports <code>failed_submission_status_counts</code> as an empty object, so there are no recorded failed statuses in this workspace snapshot.</p>
+  <p>Likely failure modes still follow from the problem shape: overflow, late or missing <code>best[0]</code> initialization, updating the remainder table in the wrong order, and confusing minimum remaining sum with maximum deleted sum.</p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <tr><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Submission ID</th><th>Lines</th><th>Bytes</th></tr>
+    <tr><td>set2-codex-agent-gpt-5.5-codex-java</td><td>java</td><td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td><td>117 ms</td><td>146.6 MB</td><td>2005571264</td><td>32</td><td>799</td></tr>
+    <tr><td>set2-deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>44 ms</td><td>78.7 MB</td><td>2005462231</td><td>27</td><td>698</td></tr>
+    <tr><td>set2-kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>19 ms</td><td>13.4 MB</td><td>2005502392</td><td>28</td><td>575</td></tr>
+    <tr><td>set2-kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>17 ms</td><td>112.9 MB</td><td>2005428272</td><td>23</td><td>538</td></tr>
+    <tr><td>set2-kimi-k2.5-cloud-t0.8-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td><td>17 ms</td><td>112.7 MB</td><td>2005877033</td><td>33</td><td>750</td></tr>
+    <tr><td>set2-kimi-k2.5-cloud-t0.9-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td><td>17 ms</td><td>112.9 MB</td><td>2005883006</td><td>28</td><td>703</td></tr>
+    <tr><td>set2-qwen3.5-cloud-t0.0</td><td>python3</td><td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td><td>449 ms</td><td>32.7 MB</td><td>2005493295</td><td>30</td><td>849</td></tr>
+    <tr><td>set2-qwen3.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td><td>17 ms</td><td>112.7 MB</td><td>2005888906</td><td>30</td><td>868</td></tr>
+  </table>
+</main>
+</body>
+</html>

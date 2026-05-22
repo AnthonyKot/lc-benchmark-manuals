@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0477-Q4-number-of-effective-subsequences Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1f2933;
+      --muted: #52606d;
+      --line: #d9e2ec;
+      --panel: #f5f7fa;
+      --accent: #0f766e;
+      --code: #102a43;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.55;
+    }
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 30px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 21px;
+      letter-spacing: 0;
+    }
+    p { margin: 8px 0 12px; }
+    ul, ol { margin: 8px 0 14px 22px; padding: 0; }
+    li { margin: 5px 0; }
+    code {
+      color: var(--code);
+      background: #edf2f7;
+      border: 1px solid #d9e2ec;
+      border-radius: 4px;
+      padding: 1px 4px;
+      font-family: Consolas, Menlo, Monaco, monospace;
+      font-size: 0.95em;
+    }
+    pre {
+      overflow-x: auto;
+      background: #102a43;
+      color: #f0f4f8;
+      border-radius: 6px;
+      padding: 14px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    pre code {
+      color: inherit;
+      background: transparent;
+      border: 0;
+      padding: 0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 9px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th { background: var(--panel); }
+    .meta {
+      color: var(--muted);
+      font-size: 14px;
+      margin-bottom: 22px;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: #f0fdfa;
+      padding: 10px 12px;
+      margin: 12px 0;
+    }
+    .compact td, .compact th { padding: 7px; }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Number of Effective Subsequences</h1>
+  <p class="meta">Problem id: <code>wc0477-Q4-number-of-effective-subsequences</code> | Difficulty: Hard | Function: <code>countEffective(nums)</code></p>
+
+  <h2>Provenance</h2>
+  <p>This manual was generated from the local files <code>problem.md</code>, <code>stats.json</code>, and the five <code>accepted__*</code> submissions in this directory. The source metadata reports generator <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-18T16:20:14.472394+00:00</code>.</p>
+  <p>Accepted submissions inspected: one JavaScript solution, three Java solutions, and one Python 3 solution. All accepted solutions use inclusion-exclusion over relevant OR bits with subset-count DP.</p>
+
+  <h2>Problem Statement</h2>
+  <p>Given an integer array <code>nums</code>, define the strength of an array as the bitwise OR of all its elements. A nonempty subsequence is effective if removing that subsequence strictly decreases the strength of the remaining elements. The OR of an empty array is <code>0</code>. Return the number of effective subsequences modulo <code>1_000_000_007</code>.</p>
+  <p>Constraints: <code>1 &lt;= nums.length &lt;= 100000</code>, <code>1 &lt;= nums[i] &lt;= 1000000</code>. Since <code>1000000 &lt; 2^20</code>, only 20 bit positions can matter.</p>
+
+  <h2>Problem Essence</h2>
+  <p>Removing a subsequence is the same as choosing the complementary subset that remains. Removal is effective exactly when the remaining subset has OR strictly smaller than the total OR of all numbers.</p>
+  <div class="callout">
+    <p>Answer = all choices of remaining elements minus choices whose OR is exactly the original total OR.</p>
+  </div>
+  <p>The empty removed subsequence is not counted as effective because leaving all elements keeps the same OR. The formula above naturally excludes it: the full remaining set is one of the subsets whose OR equals the total OR.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [1,2,3]</code>, the total OR is <code>3</code>, using bits <code>01</code> and <code>10</code>.</p>
+  <table class="compact">
+    <thead>
+      <tr><th>Remaining subset</th><th>Remaining OR</th><th>Removed subsequence</th><th>Effective?</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>[]</code></td><td><code>0</code></td><td><code>[1,2,3]</code></td><td>Yes</td></tr>
+      <tr><td><code>[1]</code></td><td><code>1</code></td><td><code>[2,3]</code></td><td>Yes</td></tr>
+      <tr><td><code>[2]</code></td><td><code>2</code></td><td><code>[1,3]</code></td><td>Yes</td></tr>
+      <tr><td><code>[3]</code></td><td><code>3</code></td><td><code>[1,2]</code></td><td>No</td></tr>
+      <tr><td><code>[1,2]</code></td><td><code>3</code></td><td><code>[3]</code></td><td>No</td></tr>
+      <tr><td><code>[1,3]</code></td><td><code>3</code></td><td><code>[2]</code></td><td>No</td></tr>
+      <tr><td><code>[2,3]</code></td><td><code>3</code></td><td><code>[1]</code></td><td>No</td></tr>
+      <tr><td><code>[1,2,3]</code></td><td><code>3</code></td><td><code>[]</code></td><td>No</td></tr>
+    </tbody>
+  </table>
+  <p>There are <code>8</code> remaining-subset choices, <code>5</code> of them keep OR <code>3</code>, so the answer is <code>8 - 5 = 3</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>[7,4,6]</code></td><td><code>4</code></td><td>Only removals containing enough coverage to drop at least one total-OR bit count; official effective removals are <code>[7]</code>, <code>[7,4]</code>, <code>[7,6]</code>, and all three.</td></tr>
+      <tr><td><code>[8,8]</code></td><td><code>1</code></td><td>Each single remaining <code>8</code> still preserves the OR, so only removing both elements works.</td></tr>
+      <tr><td><code>[2,2,1]</code></td><td><code>5</code></td><td>Index-distinct subsequences matter. Removing the lone <code>1</code> drops bit 0; removing both <code>2</code> values drops bit 1; supersets of those removals also count.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Compute <code>total_or</code> across <code>nums</code>.</li>
+    <li>Collect only the bit positions present in <code>total_or</code>. Let their count be <code>k</code>, where <code>k &lt;= 20</code>.</li>
+    <li>Compress every number into a <code>k</code>-bit mask and count frequencies <code>freq[mask]</code>.</li>
+    <li>Run SOS DP so <code>cnt[mask]</code> becomes the number of elements whose compressed mask is a submask of <code>mask</code>.</li>
+    <li>For any allowed bit mask <code>mask</code>, the number of remaining subsets whose OR is contained inside <code>mask</code> is <code>2^cnt[mask]</code>.</li>
+    <li>Use inclusion-exclusion to count remaining subsets whose OR is exactly the full mask <code>(1 &lt;&lt; k) - 1</code>.</li>
+    <li>Return <code>2^n - exact_full_or</code> modulo <code>1_000_000_007</code>.</li>
+  </ol>
+  <p>Equivalent accepted formulations sum over missing-bit sets instead. If <code>T</code> is a nonempty set of total-OR bits that must disappear from the remaining subset, count remaining elements using only the complement bits and alternate signs by <code>|T|</code>.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>MOD = 1_000_000_007
+n = len(nums)
+total_or = OR of every x in nums
+bits = [b for b in 0..19 if total_or has bit b]
+k = len(bits)
+limit = 1 &lt;&lt; k
+
+freq = [0] * limit
+for x in nums:
+    mask = compressed mask of x using bits[]
+    freq[mask] += 1
+
+cnt = freq copy
+for i in 0..k-1:
+    for mask in 0..limit-1:
+        if mask has bit i:
+            cnt[mask] += cnt[mask ^ (1 &lt;&lt; i)]
+
+pow2[0] = 1
+for i in 1..n:
+    pow2[i] = 2 * pow2[i - 1] mod MOD
+
+exact_full_or = 0
+full = limit - 1
+for mask in 0..full:
+    term = pow2[cnt[mask]]
+    missing = k - popcount(mask)
+    if missing is even:
+        exact_full_or += term
+    else:
+        exact_full_or -= term
+
+return (pow2[n] - exact_full_or) mod MOD</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use <code>long</code>, <code>int64</code>, or language-safe modular arithmetic for products and signed inclusion-exclusion terms.</li>
+    <li>Compress to the bits present in <code>total_or</code>; this keeps arrays at size at most <code>2^20</code>.</li>
+    <li>Precompute <code>pow2</code> up to <code>n</code>; each remaining subset choice is independent by index.</li>
+    <li>After subtraction, normalize with <code>(value % MOD + MOD) % MOD</code> or equivalent.</li>
+    <li>Remember that subsequences are index-distinct. Two equal values in different positions create different removal choices.</li>
+    <li>Do not separately remove the empty subsequence. It is already among the non-effective cases because the remaining OR is unchanged.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Counting value-distinct subsequences instead of index-distinct subsequences. Example <code>[2,2,1]</code> requires counting two different <code>[2,1]</code> removals.</li>
+    <li>Trying to greedily remove one number that owns a rare bit. A bit can occur in many elements, and all occurrences of a bit must be absent from the remaining subset before that bit disappears.</li>
+    <li>Checking every subsequence directly. <code>2^100000</code> is impossible.</li>
+    <li>Using only the count of total-OR bits per number. The identity of the bits matters for inclusion-exclusion.</li>
+    <li>Forgetting that the remaining array may be empty, whose OR is defined as <code>0</code>.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead>
+      <tr><th>Family</th><th>Accepted files</th><th>Core formula</th><th>Complexity</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Compressed-mask SOS DP plus exact full-OR inclusion-exclusion</td>
+        <td>JavaScript, Python 3, Java t0.0, Java t0.9</td>
+        <td><code>exact = sum_mask (-1)^(k-popcount(mask)) * 2^cnt[mask]</code>; answer is <code>2^n - exact</code>.</td>
+        <td><code>O(n*k + k*2^k)</code> time, <code>O(2^k + n)</code> memory for powers.</td>
+      </tr>
+      <tr>
+        <td>Full bit-width SOS DP plus missing-bit inclusion-exclusion</td>
+        <td>Java t0.8</td>
+        <td>Iterate nonempty submasks <code>T</code> of <code>S = total_or</code>; count subsets using only <code>S ^ T</code>; alternate by <code>popcount(T)</code>.</td>
+        <td><code>O(n + b*2^b + 2^k)</code>, where <code>b = floor(log2(total_or)) + 1</code>, at most 20.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>These concrete notes come from <code>stats.json.performance_by_language</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted count</th><th>Fastest</th><th>Slowest</th><th>Memory range</th><th>Practical note</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Java</td>
+        <td>3</td>
+        <td><code>117 ms</code>, <code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td>
+        <td><code>270 ms</code>, <code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td>
+        <td><code>85.8 MB</code> to <code>87.1 MB</code></td>
+        <td>Java was fastest in the available accepted set. Prefer primitive arrays and <code>Integer.bitCount</code>.</td>
+      </tr>
+      <tr>
+        <td>JavaScript</td>
+        <td>1</td>
+        <td><code>207 ms</code>, <code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td>
+        <td><code>207 ms</code></td>
+        <td><code>115.8 MB</code></td>
+        <td>JavaScript passed comfortably with normal arrays, though memory was higher than Java and Python in this sample.</td>
+      </tr>
+      <tr>
+        <td>Python 3</td>
+        <td>1</td>
+        <td><code>4205 ms</code>, <code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td>
+        <td><code>4205 ms</code></td>
+        <td><code>80.3 MB</code></td>
+        <td>Python passed but was much slower. Keep loops tight, compress masks, precompute popcounts, and avoid dictionaries in the hot SOS loops.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p>The failed-submission summary contains <code>Time Limit Exceeded: 2</code>. That points to solutions that likely enumerated subsequences, repeatedly recomputed ORs, or used a state space larger than the 20-bit mask universe.</p>
+  <ul>
+    <li>Any approach worse than roughly <code>O(n*20 + 20*2^20)</code> is risky under <code>n = 100000</code>.</li>
+    <li>Nested loops over all pairs or all subsets of indices will time out.</li>
+    <li>Memoizing by index and OR can still be too large if it degenerates toward <code>n*2^20</code>; accepted solutions aggregate counts first and run SOS once.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr><th>Model</th><th>Language</th><th>File</th><th>Runtime</th><th>Memory</th><th>Submission ID</th><th>Lines</th><th>Bytes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>set2-deepseek-v4-pro-cloud-t0.0-javascript</code></td><td>javascript</td><td><code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td><code>207 ms</code></td><td><code>115.8 MB</code></td><td><code>2005466647</code></td><td>71</td><td>2010</td></tr>
+      <tr><td><code>set2-kimi-k2.5-cloud-t0.0-java</code></td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td><td><code>117 ms</code></td><td><code>85.9 MB</code></td><td><code>2005432928</code></td><td>71</td><td>1827</td></tr>
+      <tr><td><code>set2-kimi-k2.5-cloud-t0.8-java</code></td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td><td><code>270 ms</code></td><td><code>87.1 MB</code></td><td><code>2005879345</code></td><td>52</td><td>1334</td></tr>
+      <tr><td><code>set2-kimi-k2.5-cloud-t0.9-java</code></td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td><td><code>119 ms</code></td><td><code>85.8 MB</code></td><td><code>2005885298</code></td><td>64</td><td>1683</td></tr>
+      <tr><td><code>set2-qwen3.5-cloud-t0.0</code></td><td>python3</td><td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td><td><code>4205 ms</code></td><td><code>80.3 MB</code></td><td><code>2005497938</code></td><td>79</td><td>3238</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

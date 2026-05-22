@@ -1,0 +1,257 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0478-Q3 Manual - Minimum Absolute Distance Between Mirror Pairs</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --text: #17202a;
+      --muted: #53616f;
+      --line: #d8e0e8;
+      --panel: #f7f9fb;
+      --code: #eef3f7;
+      --accent: #0b6b64;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.5;
+      color: var(--text);
+      background: #ffffff;
+    }
+    main {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 28px 22px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      line-height: 1.2;
+    }
+    h2 {
+      margin: 30px 0 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 21px;
+    }
+    p, li {
+      font-size: 15px;
+    }
+    .meta {
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    code {
+      background: var(--code);
+      padding: 1px 4px;
+      border-radius: 4px;
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.94em;
+    }
+    pre {
+      overflow-x: auto;
+      background: #111827;
+      color: #eef6ff;
+      border-radius: 8px;
+      padding: 14px 16px;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: #e9f1f4;
+    }
+    .ok {
+      color: var(--accent);
+      font-weight: 700;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Minimum Absolute Distance Between Mirror Pairs</h1>
+  <p class="meta">Problem id: <code>wc0478-Q3-minimum-absolute-distance-between-mirror-pairs</code>. Difficulty: Medium. Function: <code>minMirrorPairDistance(nums)</code>.</p>
+
+  <h2>Provenance</h2>
+  <div class="panel">
+    <p>This manual was prepared from the local files <code>problem.md</code>, <code>stats.json</code>, and seven <code>accepted__*</code> submissions in this directory.</p>
+    <p>Stats source metadata: generator <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-18T16:22:27.112025+00:00</code>. The accepted submissions cover Java, Go, JavaScript, and Python 3.</p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer array <code>nums</code>. A mirror pair is a pair of indices <code>(i, j)</code> such that <code>0 &lt;= i &lt; j &lt; nums.length</code> and <code>reverse(nums[i]) == nums[j]</code>. Reversing removes leading zeros, so <code>reverse(120) = 21</code>.</p>
+  <p>Return the minimum absolute distance <code>abs(i - j)</code> among all mirror pairs. If no mirror pair exists, return <code>-1</code>.</p>
+  <p>Constraints: <code>1 &lt;= nums.length &lt;= 100000</code>, <code>1 &lt;= nums[i] &lt;= 1000000000</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The left index must appear before the right index. When scanning from left to right at position <code>j</code>, a valid previous index <code>i</code> must satisfy <code>reverse(nums[i]) == nums[j]</code>. Instead of searching all previous values, remember for each possible future value the latest index that would match it.</p>
+  <p>The key observation is: after seeing <code>nums[i]</code>, store index <code>i</code> under key <code>reverse(nums[i])</code>. Later, when the current value is <code>nums[j]</code>, look up <code>nums[j]</code> directly.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [12, 21, 45, 33, 54]</code>:</p>
+  <table>
+    <thead>
+      <tr><th>Index</th><th>Value</th><th>Lookup</th><th>Then Store</th><th>Best</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>0</td><td>12</td><td>No key 12 yet</td><td><code>reverse(12)=21</code>, store <code>21 -> 0</code></td><td>none</td></tr>
+      <tr><td>1</td><td>21</td><td>Key 21 gives previous index 0</td><td><code>reverse(21)=12</code>, store <code>12 -> 1</code></td><td><code>1 - 0 = 1</code></td></tr>
+      <tr><td>2</td><td>45</td><td>No key 45 yet</td><td><code>reverse(45)=54</code>, store <code>54 -> 2</code></td><td>1</td></tr>
+      <tr><td>3</td><td>33</td><td>No key 33 yet</td><td><code>reverse(33)=33</code>, store <code>33 -> 3</code></td><td>1</td></tr>
+      <tr><td>4</td><td>54</td><td>Key 54 gives previous index 2</td><td><code>reverse(54)=45</code>, store <code>45 -> 4</code></td><td>min(1, 2) = 1</td></tr>
+    </tbody>
+  </table>
+  <p>The answer is <code>1</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <ul>
+    <li><code>nums = [120, 21]</code> returns <code>1</code>, because <code>reverse(120) = 21</code>.</li>
+    <li><code>nums = [21, 120]</code> returns <code>-1</code>. Even though <code>reverse(120) = 21</code>, the required order is <code>i &lt; j</code>, and <code>reverse(21) != 120</code>.</li>
+  </ul>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Create a hash map <code>last</code> where <code>last[x]</code> means: the most recent earlier index whose value reverses to <code>x</code>.</li>
+    <li>Initialize <code>ans</code> to infinity or <code>-1</code> as a sentinel.</li>
+    <li>For each index <code>j</code> and value <code>nums[j]</code>, first check whether <code>last</code> contains <code>nums[j]</code>.</li>
+    <li>If it does, update <code>ans</code> with <code>j - last[nums[j]]</code>. This distance is positive because the stored index is earlier.</li>
+    <li>Compute <code>reverse(nums[j])</code> and set <code>last[reverse(nums[j])] = j</code>.</li>
+    <li>Return <code>ans</code>, or <code>-1</code> if no pair was found.</li>
+  </ol>
+  <p>Using the most recent index per key is enough for the minimum distance: for a fixed current <code>j</code>, the closest valid previous index with the same needed key is the largest such index.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>class Solution:
+    def minMirrorPairDistance(self, nums: List[int]) -> int:
+        def rev(x: int) -> int:
+            y = 0
+            while x &gt; 0:
+                y = y * 10 + x % 10
+                x //= 10
+            return y
+
+        last = {}
+        ans = 10**9
+
+        for j, value in enumerate(nums):
+            if value in last:
+                ans = min(ans, j - last[value])
+                if ans == 1:
+                    return 1
+            last[rev(value)] = j
+
+        return -1 if ans == 10**9 else ans</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Check for a match before storing the current index. Storing first can illegally pair an element with itself when the value is a palindrome such as <code>33</code>.</li>
+    <li>Store under <code>reverse(current)</code>, not under <code>current</code>, for the standard one-pass method.</li>
+    <li>Overwrite the stored index for a key with the latest index, because latest gives the smallest distance for future matches.</li>
+    <li>Make <code>reverse(120)</code> equal <code>21</code>, not <code>021</code> or <code>120</code>.</li>
+    <li>Return <code>-1</code> only if no candidate was ever found.</li>
+    <li>Early return on distance <code>1</code> is safe because no smaller positive index distance exists.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Sorting values or indices loses the required original order and distance.</li>
+    <li>Testing <code>reverse(nums[j])</code> against earlier raw values is possible, but easy to mishandle with trailing zeros. The standard future-key map avoids that trap.</li>
+    <li>Keeping the first index for each key can miss a shorter pair. Example: if key <code>21</code> was produced at indices 0 and 5, and current index is 6, index 5 is the best previous match.</li>
+    <li>Comparing strings without normalizing leading zeros can turn <code>120</code> and <code>21</code> into a false negative.</li>
+    <li>Using nested loops is too slow for <code>100000</code> elements.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead>
+      <tr><th>Family</th><th>Accepted Files</th><th>Description</th><th>Complexity</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>One-pass future-key hash map</td>
+        <td>6 submissions: JavaScript, Go, three Java files, Python 3</td>
+        <td>For each current value, look up whether it was predicted by a previous reverse. Then store the current index under its reversed value.</td>
+        <td><code>O(n * d)</code> time, <code>O(n)</code> space, where <code>d &lt;= 10</code> digits.</td>
+      </tr>
+      <tr>
+        <td>Previous raw-value map with zero-padding candidates</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td>
+        <td>Stores previous raw values, then for a current value checks <code>reverse(current)</code> multiplied by powers of ten to account for previous numbers with trailing zeros.</td>
+        <td>Still effectively <code>O(n * d)</code>, but more branches and more room for off-by-one or zero-handling mistakes.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>Concrete accepted performance from <code>stats.json.performance_by_language</code>:</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted Count</th><th>Runtime Range</th><th>Memory Range</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Java</td><td>4</td><td>44 ms to 59 ms</td><td>94.9 MB to 106.6 MB</td><td>Fastest recorded runtime overall was Java at 44 ms. Use <code>HashMap&lt;Integer, Integer&gt;</code> and an integer digit loop.</td></tr>
+      <tr><td>Go</td><td>1</td><td>53 ms</td><td>20.4 MB</td><td>Lowest recorded memory by a wide margin. A <code>map[int]int</code> plus <code>-1</code> sentinel is concise.</td></tr>
+      <tr><td>JavaScript</td><td>1</td><td>55 ms</td><td>84.3 MB</td><td>Use <code>Map</code> instead of a plain object to avoid key coercion issues.</td></tr>
+      <tr><td>Python 3</td><td>1</td><td>166 ms</td><td>42 MB</td><td>Accepted comfortably. The accepted Python file used string reversal; an arithmetic reverse also works and avoids temporary strings.</td></tr>
+    </tbody>
+  </table>
+  <p>For all languages, the practical workload is linear in the array length because each number has at most 10 decimal digits under the constraints.</p>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports <code>failed_submission_status_counts</code> as an empty object, so there are no observed failed submissions in this local data set.</p>
+  <p>Likely failure modes still worth testing are reversed ordering, leading-zero behavior, self-pairing on palindromic numbers, and keeping the oldest rather than latest matching index.</p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Submission ID</th>
+        <th>Lines</th>
+        <th>Bytes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>set2-deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>55 ms</td><td>84.3 MB</td><td>2005466784</td><td>28</td><td>640</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>53 ms</td><td>20.4 MB</td><td>2005506873</td><td>23</td><td>490</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>48 ms</td><td>95.1 MB</td><td>2005433065</td><td>31</td><td>844</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.8-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td><td>59 ms</td><td>106.6 MB</td><td>2005879434</td><td>40</td><td>1163</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.9-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td><td>48 ms</td><td>94.9 MB</td><td>2005885376</td><td>31</td><td>784</td></tr>
+      <tr><td>set2-qwen3.5-cloud-t0.0</td><td>python3</td><td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td><td>166 ms</td><td>42 MB</td><td>2005498111</td><td>19</td><td>585</td></tr>
+      <tr><td>set2-qwen3.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td><td>44 ms</td><td>98.8 MB</td><td>2005891041</td><td>38</td><td>973</td></tr>
+    </tbody>
+  </table>
+  <p class="ok">Manual complete.</p>
+</main>
+</body>
+</html>

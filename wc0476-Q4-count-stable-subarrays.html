@@ -1,0 +1,381 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0476-Q4-count-stable-subarrays Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #566573;
+      --line: #d5dbdb;
+      --soft: #f4f6f7;
+      --accent: #0e6251;
+      --warn: #7d3c0c;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: #ffffff;
+    }
+    main {
+      max-width: 1080px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 2rem;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 1.35rem;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 1rem;
+    }
+    code, pre {
+      font-family: Consolas, "Courier New", monospace;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 14px;
+      border: 1px solid var(--line);
+      background: var(--soft);
+      border-radius: 6px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0;
+      font-size: 0.95rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: var(--soft);
+    }
+    .meta {
+      color: var(--muted);
+      margin: 0 0 24px;
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: #f3fbf8;
+      padding: 12px 14px;
+      margin: 14px 0;
+    }
+    .warning {
+      border-left-color: var(--warn);
+      background: #fff7ed;
+    }
+    .small {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Count Stable Subarrays</h1>
+  <p class="meta">Problem id: <code>wc0476-Q4-count-stable-subarrays</code>. Function: <code>countStableSubarrays(nums, queries)</code>. Difficulty: Hard.</p>
+
+  <h2>Provenance</h2>
+  <p>This manual was built from the local artifacts <code>problem.md</code>, <code>stats.json</code>, and the seven <code>accepted__*</code> solution files in this directory. The source metadata reports generation by <code>codex</code> using <code>gpt-5.5</code> at <code>2026-05-18T15:31:22.905281+00:00</code>.</p>
+  <p>The accepted set covers Java, Go, Python 3, and JavaScript implementations. Most accepted files use maximal non-decreasing segments directly; one Go file uses a segment tree over adjacent comparisons, and one Java file uses an offline Fenwick formulation.</p>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer array <code>nums</code> and queries <code>[l, r]</code>. A non-empty subarray is stable when it has no inversion, meaning there are no indices <code>i &lt; j</code> inside it with <code>nums[i] &gt; nums[j]</code>. For each query, return the number of stable subarrays fully contained in <code>nums[l..r]</code>.</p>
+  <ul>
+    <li><code>1 &lt;= nums.length &lt;= 100000</code></li>
+    <li><code>1 &lt;= nums[i] &lt;= 100000</code></li>
+    <li><code>1 &lt;= queries.length &lt;= 100000</code></li>
+    <li><code>0 &lt;= l &lt;= r &lt; nums.length</code></li>
+    <li>A single element subarray is stable.</li>
+  </ul>
+
+  <h2>Problem Essence</h2>
+  <p>A subarray has no inversion exactly when it is non-decreasing. Therefore every stable subarray must lie completely inside one maximal non-decreasing run of <code>nums</code>. A run of length <code>L</code> contributes <code>L * (L + 1) / 2</code> stable subarrays.</p>
+  <div class="callout">
+    The task is not to test every candidate subarray. It is to split <code>nums</code> at every descent <code>nums[i] &gt; nums[i + 1]</code>, then answer each query by summing triangular counts from the touched run fragments.
+  </div>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [3, 1, 2]</code>, the descents split the array into runs <code>[3]</code> and <code>[1, 2]</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Query</th><th>Segment</th><th>Stable subarrays</th><th>Answer</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>[0, 1]</code></td><td><code>[3, 1]</code></td><td><code>[3]</code>, <code>[1]</code></td><td><code>2</code></td></tr>
+      <tr><td><code>[1, 2]</code></td><td><code>[1, 2]</code></td><td><code>[1]</code>, <code>[2]</code>, <code>[1, 2]</code></td><td><code>3</code></td></tr>
+      <tr><td><code>[0, 2]</code></td><td><code>[3, 1, 2]</code></td><td><code>[3]</code>, <code>[1]</code>, <code>[2]</code>, <code>[1, 2]</code></td><td><code>4</code></td></tr>
+    </tbody>
+  </table>
+  <p>Output: <code>[2, 3, 4]</code>.</p>
+
+  <h2>Other Official Examples</h2>
+  <p>For <code>nums = [2, 2]</code> and <code>queries = [[0, 1], [0, 0]]</code>, the whole array is one non-decreasing run.</p>
+  <ul>
+    <li><code>[0, 1]</code> has length 2, so it has <code>2 * 3 / 2 = 3</code> stable subarrays: both singletons and <code>[2, 2]</code>.</li>
+    <li><code>[0, 0]</code> has length 1, so it has <code>1</code> stable subarray.</li>
+  </ul>
+  <p>Output: <code>[3, 1]</code>.</p>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <h3>Recommended run-prefix method</h3>
+  <ol>
+    <li>Scan <code>nums</code> and start a new run whenever <code>nums[i] &gt; nums[i + 1]</code>.</li>
+    <li>Store arrays <code>start[k]</code>, <code>end[k]</code>, and optionally <code>belong[pos]</code>, the run index containing a position.</li>
+    <li>Build <code>pref[k + 1] = pref[k] + tri(length(run k))</code>, where <code>tri(x) = x * (x + 1) / 2</code>.</li>
+    <li>For a query <code>[l, r]</code>, find <code>a = belong[l]</code> and <code>b = belong[r]</code>. If <code>belong</code> was not built, binary search the largest run start at or before each endpoint.</li>
+    <li>If <code>a == b</code>, answer <code>tri(r - l + 1)</code>.</li>
+    <li>Otherwise answer <code>tri(end[a] - l + 1) + (pref[b] - pref[a + 1]) + tri(r - start[b] + 1)</code>.</li>
+  </ol>
+  <p>This gives <code>O(n + q)</code> with <code>belong</code>, or <code>O(n + q log n)</code> with binary searches over run starts. Both fit the constraints.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>function countStableSubarrays(nums, queries):
+    n = len(nums)
+    starts = []
+    ends = []
+    belong = array length n
+
+    start = 0
+    run = 0
+    for i in 0..n-1:
+        if i == n-1 or nums[i] &gt; nums[i+1]:
+            starts.append(start)
+            ends.append(i)
+            for p in start..i:
+                belong[p] = run
+            run += 1
+            start = i + 1
+
+    pref = array length run+1, filled with 0
+    for k in 0..run-1:
+        length = ends[k] - starts[k] + 1
+        pref[k+1] = pref[k] + length * (length + 1) / 2
+
+    ans = []
+    for [l, r] in queries:
+        a = belong[l]
+        b = belong[r]
+        if a == b:
+            length = r - l + 1
+            ans.push(length * (length + 1) / 2)
+        else:
+            left = ends[a] - l + 1
+            right = r - starts[b] + 1
+            total = left * (left + 1) / 2
+            total += pref[b] - pref[a + 1]
+            total += right * (right + 1) / 2
+            ans.push(total)
+    return ans</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use the split condition <code>nums[i] &gt; nums[i + 1]</code>. Equal adjacent values stay in the same stable run.</li>
+    <li>Use 64-bit integer arithmetic for answers and prefix counts. The maximum count is about <code>100000 * 100001 / 2</code>.</li>
+    <li>Handle queries entirely inside one run with one triangular number.</li>
+    <li>For cross-run queries, count only the suffix of the left run, full middle runs, and prefix of the right run.</li>
+    <li>Make prefix indices consistent: <code>pref[k]</code> should represent the sum of complete runs before run <code>k</code>.</li>
+    <li>If using binary search instead of <code>belong</code>, find the largest <code>start[k] &lt;= pos</code>.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Counting all non-inversion pairs is not enough. A stable subarray requires every adjacent transition in the chosen interval to be non-decreasing.</li>
+    <li>Using <code>nums[i] &gt;= nums[i + 1]</code> as the split condition is wrong because equal values do not create inversions.</li>
+    <li>Summing full run counts for every run touched by a query overcounts the left and right boundary runs when the query cuts through them.</li>
+    <li>Using 32-bit <code>int</code> for the returned counts can overflow in languages where <code>int</code> is fixed-width.</li>
+    <li>Building every stable subarray explicitly is too slow and can reach quadratic output size.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead>
+      <tr><th>Family</th><th>Files</th><th>Idea</th><th>Complexity</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Maximal run decomposition with direct run lookup</td>
+        <td>Java t0.8, Java t0.9</td>
+        <td>Precompute run starts, run ends, position-to-run, and prefix triangular counts. Each query is constant time.</td>
+        <td><code>O(n + q)</code> time, <code>O(n)</code> space</td>
+      </tr>
+      <tr>
+        <td>Maximal run decomposition with binary search</td>
+        <td>Python 3, Qwen Java</td>
+        <td>Store run starts and limits. Locate the containing runs for <code>l</code> and <code>r</code> by binary search.</td>
+        <td><code>O(n + q log n)</code> time, <code>O(n)</code> space</td>
+      </tr>
+      <tr>
+        <td>Right-bound array plus binary search</td>
+        <td>JavaScript</td>
+        <td>For each index, store the furthest non-decreasing run end. Query sums <code>min(right[i], r) - i + 1</code> across starts in <code>[l, r]</code>.</td>
+        <td><code>O(n + q log n)</code> time, <code>O(n)</code> space</td>
+      </tr>
+      <tr>
+        <td>Segment tree over adjacent good edges</td>
+        <td>Go</td>
+        <td>Convert each adjacent pair to 1 if non-decreasing. A query over edges returns total all-ones subarrays, then adds singletons.</td>
+        <td><code>O((n + q) log n)</code> time, <code>O(n)</code> space</td>
+      </tr>
+      <tr>
+        <td>Offline Fenwick adjustment</td>
+        <td>Java t0.0</td>
+        <td>Precompute each start index's run end, then answer sums capped by query right endpoint using sorted queries and Fenwick trees.</td>
+        <td><code>O((n + q) log n)</code> time, <code>O(n)</code> space</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The following numbers come from <code>stats.json.performance_by_language</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted count</th><th>Fastest runtime</th><th>Slowest runtime</th><th>Memory range</th><th>Practical note</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Java</td>
+        <td>4</td>
+        <td>11 ms (<code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code>)</td>
+        <td>136 ms (<code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code>)</td>
+        <td>179 MB to 201.3 MB</td>
+        <td>The direct run-prefix Java implementations were the fastest in this set. Prefer primitive arrays and <code>long[]</code> answers.</td>
+      </tr>
+      <tr>
+        <td>Go</td>
+        <td>1</td>
+        <td>145 ms</td>
+        <td>145 ms</td>
+        <td>52.1 MB</td>
+        <td>The accepted Go file uses a segment tree. A direct run-prefix approach should be simpler and may avoid the <code>log n</code> query factor.</td>
+      </tr>
+      <tr>
+        <td>JavaScript</td>
+        <td>1</td>
+        <td>146 ms</td>
+        <td>146 ms</td>
+        <td>100.2 MB</td>
+        <td>JavaScript numbers are safe here because counts are far below <code>2^53</code>. Keep arrays numeric and avoid per-query slicing.</td>
+      </tr>
+      <tr>
+        <td>Python 3</td>
+        <td>1</td>
+        <td>238 ms</td>
+        <td>238 ms</td>
+        <td>50 MB</td>
+        <td>Python passed with run starts plus <code>bisect</code>. It has the lowest memory in the accepted language summary, but runtime is slower than Java in this sample.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports <code>failed_submission_status_counts</code> as an empty object, so there are no recorded wrong-answer, time-limit, runtime-error, or memory-limit patterns from failed submissions in this artifact set.</p>
+  <p class="small">Likely failure modes still follow from the algorithm: mishandling equal adjacent values, overcounting partial boundary runs, and using too-small integer types.</p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Submission ID</th>
+        <th>Lines</th>
+        <th>Bytes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>set2-deepseek-v4-pro-cloud-t0.0-javascript</td>
+        <td>javascript</td>
+        <td><code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td>
+        <td>146 ms</td>
+        <td>100.2 MB</td>
+        <td>2005466330</td>
+        <td>43</td>
+        <td>1139</td>
+      </tr>
+      <tr>
+        <td>set2-kimi-k2.5-cloud-t0.0-golang</td>
+        <td>golang</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code></td>
+        <td>145 ms</td>
+        <td>52.1 MB</td>
+        <td>2005506401</td>
+        <td>92</td>
+        <td>2187</td>
+      </tr>
+      <tr>
+        <td>set2-kimi-k2.5-cloud-t0.0-java</td>
+        <td>java</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td>
+        <td>136 ms</td>
+        <td>201.3 MB</td>
+        <td>2005432627</td>
+        <td>79</td>
+        <td>2397</td>
+      </tr>
+      <tr>
+        <td>set2-kimi-k2.5-cloud-t0.8-java</td>
+        <td>java</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td>
+        <td>11 ms</td>
+        <td>180 MB</td>
+        <td>2005879162</td>
+        <td>57</td>
+        <td>1691</td>
+      </tr>
+      <tr>
+        <td>set2-kimi-k2.5-cloud-t0.9-java</td>
+        <td>java</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td>
+        <td>13 ms</td>
+        <td>179 MB</td>
+        <td>2005885224</td>
+        <td>70</td>
+        <td>2154</td>
+      </tr>
+      <tr>
+        <td>set2-qwen3.5-cloud-t0.0</td>
+        <td>python3</td>
+        <td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td>
+        <td>238 ms</td>
+        <td>50 MB</td>
+        <td>2005497678</td>
+        <td>63</td>
+        <td>2786</td>
+      </tr>
+      <tr>
+        <td>set2-qwen3.5-cloud-t0.0-java</td>
+        <td>java</td>
+        <td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td>
+        <td>29 ms</td>
+        <td>185 MB</td>
+        <td>2005890798</td>
+        <td>88</td>
+        <td>3226</td>
+      </tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

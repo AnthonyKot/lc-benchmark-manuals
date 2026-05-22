@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0462-Q4-next-special-palindrome-number Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f7f7f4;
+      --panel: #ffffff;
+      --ink: #202124;
+      --muted: #5f6368;
+      --line: #d8d9d2;
+      --accent: #0f766e;
+      --accent-soft: #e0f2ef;
+      --warn: #9a3412;
+      --code: #f1f3f4;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font: 16px/1.55 system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    main {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 32px 20px 56px;
+    }
+    header {
+      border-bottom: 2px solid var(--line);
+      margin-bottom: 28px;
+      padding-bottom: 20px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-top: 18px;
+      border-top: 1px solid var(--line);
+      font-size: 1.35rem;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 1.05rem;
+    }
+    p { margin: 8px 0 12px; }
+    ul, ol { padding-left: 1.35rem; }
+    li { margin: 6px 0; }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+    }
+    code {
+      background: var(--code);
+      padding: 0.12rem 0.32rem;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      background: #202124;
+      color: #f8f9fa;
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+    }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 10px 12px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--accent-soft);
+      color: #134e4a;
+      font-weight: 700;
+    }
+    tr:last-child td { border-bottom: 0; }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+    }
+    .pill {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 5px 10px;
+    }
+    .box {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin: 12px 0;
+    }
+    .warning { border-left-color: var(--warn); }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 14px;
+    }
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 14px 16px;
+    }
+    .small { color: var(--muted); font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Next Special Palindrome Number</h1>
+    <div class="meta">
+      <span class="pill">Problem id: wc0462-Q4-next-special-palindrome-number</span>
+      <span class="pill">Difficulty: Hard</span>
+      <span class="pill">Function: specialPalindrome(n)</span>
+      <span class="pill">Tags: backtracking, bit manipulation</span>
+    </div>
+  </header>
+
+  <h2>Provenance</h2>
+  <div class="box">
+    <p>This manual was created from the local files <code>problem.md</code>, <code>stats.json</code>, and the four <code>accepted__*</code> submissions in this directory.</p>
+    <p>Source metadata: generator <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-17T21:38:51.793166+00:00</code>. LeetCode URL: <code>https://leetcode.com/problems/next-special-palindrome-number/</code>.</p>
+  </div>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer <code>n</code>. A number is called special if it is a palindrome and every digit <code>k</code> appearing in the number appears exactly <code>k</code> times. Return the smallest special number strictly greater than <code>n</code>.</p>
+  <p>Constraint: <code>0 &lt;= n &lt;= 10^15</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The key observation is that a valid number is determined by a subset of digits from <code>1..9</code>. If digit <code>k</code> is selected, it contributes exactly <code>k</code> total positions. Digit <code>0</code> cannot appear because it would have to appear exactly zero times.</p>
+  <ul>
+    <li>The total length is the sum of the selected digits.</li>
+    <li>A palindrome can contain at most one digit with an odd total count, so the selected subset may contain at most one odd digit.</li>
+    <li>For a selected subset, the left half contains <code>floor(k / 2)</code> copies of each selected digit <code>k</code>, plus the single odd digit as the center if one exists.</li>
+    <li>There are only <code>2^9 - 1 = 511</code> non-empty digit subsets, so it is practical to generate all candidate palindromes and search them.</li>
+  </ul>
+
+  <h2>Worked Example</h2>
+  <p>For <code>n = 33</code>, one valid digit subset is <code>{1, 2}</code>. Its total length is <code>1 + 2 = 3</code>, and it has one odd-count digit, <code>1</code>, which can sit in the center.</p>
+  <ol>
+    <li>The half multiset gets <code>floor(1 / 2) = 0</code> copies of <code>1</code> and <code>floor(2 / 2) = 1</code> copy of <code>2</code>.</li>
+    <li>The center digit is <code>1</code>.</li>
+    <li>Mirroring half <code>2</code> around center <code>1</code> gives <code>212</code>.</li>
+    <li><code>212 &gt; 33</code>, and no smaller special number is greater than <code>33</code>, so the answer is <code>212</code>.</li>
+  </ol>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>n = 2</code></td>
+        <td><code>22</code></td>
+        <td><code>22</code> is a palindrome and digit <code>2</code> appears exactly two times.</td>
+      </tr>
+      <tr>
+        <td><code>n = 33</code></td>
+        <td><code>212</code></td>
+        <td>Digits <code>1</code> and <code>2</code> appear exactly one and two times respectively.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <p>The simplest accepted decision rule is: precompute every special palindrome within the needed numeric range, sort the list, then binary search for the first value greater than <code>n</code>.</p>
+  <ol>
+    <li>Enumerate every non-empty mask over digits <code>1..9</code>.</li>
+    <li>Reject masks whose selected digit sum is too large for the target type, or whose odd selected digit count is greater than one.</li>
+    <li>Build half counts: for every selected digit <code>d</code>, put <code>d / 2</code> copies into the left-half multiset.</li>
+    <li>Generate all unique permutations of that half multiset.</li>
+    <li>Mirror each half, inserting the odd digit as the center when present.</li>
+    <li>Convert to integer, discard overflow, sort, deduplicate, and binary search for the first candidate strictly greater than <code>n</code>.</li>
+  </ol>
+  <p>A target-aware variant avoids storing every candidate: for each possible length, enumerate valid digit subsets and construct the smallest palindrome of that subset that is greater than the target. The precompute-and-binary-search version is easier to reimplement reliably.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>buildCandidates():
+    values = []
+    for mask in 1 .. (1 &lt;&lt; 9) - 1:
+        length = 0
+        oddCount = 0
+        middle = none
+        for digit in 1..9:
+            if mask selects digit:
+                length += digit
+                if digit is odd:
+                    oddCount += 1
+                    middle = digit
+
+        if oddCount &gt; 1 or length is outside supported bound:
+            continue
+
+        counts[1..9] = 0
+        halfLength = 0
+        for selected digit:
+            counts[digit] = digit // 2
+            halfLength += counts[digit]
+
+        backtrack all unique half permutations:
+            value = append half digits
+            if middle exists: append middle
+            append reversed half digits
+            add value if no overflow
+
+    sort values
+    remove duplicates
+    return values
+
+specialPalindrome(n):
+    candidates = buildCandidates once
+    return first candidate with candidate &gt; n</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Use digits <code>1..9</code> only. Never include <code>0</code>.</li>
+    <li>Filter digit subsets with more than one odd selected digit.</li>
+    <li>Use the sum of selected digits as the candidate length.</li>
+    <li>Generate the half multiset with <code>floor(d / 2)</code> copies of selected digit <code>d</code>.</li>
+    <li>Handle duplicate half digits with either count-based backtracking or sorted next-permutation.</li>
+    <li>Compare using strict greater-than: answer must be <code>&gt; n</code>, not <code>&gt;= n</code>.</li>
+    <li>Use 64-bit integer arithmetic in Java/C++/Go/Rust, and guard overflow if generating beyond the exact problem bound.</li>
+    <li>Sort and deduplicate candidates before binary search.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <div class="box warning">
+    <ul>
+      <li>Incrementing from <code>n + 1</code> and checking every number is far too slow near <code>10^15</code>.</li>
+      <li>Generating arbitrary palindromes and then counting digits wastes most of the search space.</li>
+      <li>Forgetting the "at most one odd digit" palindrome condition creates impossible subsets.</li>
+      <li>Letting selected digit <code>0</code> appear misreads the rule: zero appears exactly zero times, so it is absent.</li>
+      <li>Returning <code>n</code> when <code>n</code> is already special violates the strict greater-than requirement.</li>
+      <li>Using ordinary permutation generation without duplicate control can cause unnecessary work on halves with repeated digits.</li>
+    </ul>
+  </div>
+
+  <h2>Accepted Algorithm Families</h2>
+  <div class="grid">
+    <section class="card">
+      <h3>Precompute All + Binary Search</h3>
+      <p>Used by both Java submissions. Enumerates masks, backtracks or next-permutes the half, forms numbers, sorts candidates, then answers each call with lower-bound search for <code>&gt; n</code>.</p>
+      <p class="small">Best for clarity and robustness on LeetCode because the candidate space is tiny.</p>
+    </section>
+    <section class="card">
+      <h3>Length-by-Length Candidate Search</h3>
+      <p>Used by the Python submission. Tries candidate lengths from <code>len(n)</code> upward, generates valid subsets for that length, and returns the minimum candidate greater than <code>n</code>.</p>
+      <p class="small">Works because there are only 511 digit masks and the half length is small.</p>
+    </section>
+    <section class="card">
+      <h3>Target-Aware Half DFS</h3>
+      <p>Used by the JavaScript submission. Groups subsets by length and recursively builds the smallest feasible half that can beat the target string.</p>
+      <p class="small">Avoids enumerating every half permutation for some equal-length cases, but the logic is more delicate.</p>
+    </section>
+  </div>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The concrete performance below is taken from <code>stats.json.performance_by_language</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted Count</th><th>Runtime</th><th>Memory</th><th>Note</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Java</td>
+        <td>2</td>
+        <td>Fastest <code>12 ms</code>; slowest <code>25 ms</code></td>
+        <td>Lowest <code>44.6 MB</code>; highest <code>46.8 MB</code></td>
+        <td>Both Java solutions precompute candidates once and binary search. This is the fastest observed family in the local accepted set.</td>
+      </tr>
+      <tr>
+        <td>JavaScript</td>
+        <td>1</td>
+        <td><code>81 ms</code></td>
+        <td><code>68.9 MB</code></td>
+        <td>The accepted JavaScript version uses grouped subsets and target-aware DFS. Use string comparisons carefully because values are near large integer limits.</td>
+      </tr>
+      <tr>
+        <td>Python 3</td>
+        <td>1</td>
+        <td><code>335 ms</code></td>
+        <td><code>19.3 MB</code></td>
+        <td>The Python version is slower but still accepted with subset enumeration and unique half permutations. A count-based DFS can reduce set-allocation overhead.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p>The local failed submission summary contains one <code>Time Limit Exceeded</code>. That failure pattern points to over-searching: checking consecutive integers, generating too many irrelevant palindromes, or repeating expensive candidate generation per comparison instead of using the small mask-based candidate space.</p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Submission ID</th>
+        <th>Size</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>set2-codex-agent-gpt-5.5-codex-java</code></td>
+        <td>java</td>
+        <td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td>
+        <td>12 ms</td>
+        <td>44.6 MB</td>
+        <td>2005571093</td>
+        <td>118 lines, 3533 bytes</td>
+      </tr>
+      <tr>
+        <td><code>set2-deepseek-v4-pro-cloud-t0.0-javascript</code></td>
+        <td>javascript</td>
+        <td><code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td>
+        <td>81 ms</td>
+        <td>68.9 MB</td>
+        <td>2005462090</td>
+        <td>112 lines, 3768 bytes</td>
+      </tr>
+      <tr>
+        <td><code>set2-kimi-k2.5-cloud-t0.8-java</code></td>
+        <td>java</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td>
+        <td>25 ms</td>
+        <td>46.8 MB</td>
+        <td>2005876940</td>
+        <td>127 lines, 3914 bytes</td>
+      </tr>
+      <tr>
+        <td><code>set2-qwen3.5-cloud-t0.0</code></td>
+        <td>python3</td>
+        <td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td>
+        <td>335 ms</td>
+        <td>19.3 MB</td>
+        <td>2005493137</td>
+        <td>75 lines, 3367 bytes</td>
+      </tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0472-Q4 Longest Balanced Subarray II Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #52606d;
+      --line: #d8dee6;
+      --panel: #f6f8fa;
+      --accent: #0b6bcb;
+      --code: #1f2937;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background: #ffffff;
+      line-height: 1.55;
+    }
+    main {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      line-height: 1.15;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+      font-size: 1.25rem;
+    }
+    h3 { margin: 18px 0 8px; font-size: 1.05rem; }
+    p { margin: 8px 0; }
+    ul, ol { margin: 8px 0 8px 24px; padding: 0; }
+    li { margin: 5px 0; }
+    code, pre {
+      font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      color: var(--code);
+    }
+    code {
+      padding: 0.08rem 0.25rem;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 4px;
+      font-size: 0.95em;
+    }
+    pre {
+      overflow-x: auto;
+      padding: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 18px;
+      font-size: 0.95rem;
+    }
+    th, td {
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--panel); }
+    .meta, .note {
+      color: var(--muted);
+    }
+    .callout {
+      padding: 12px 14px;
+      background: #eef6ff;
+      border: 1px solid #b8d8f5;
+      border-radius: 8px;
+      margin: 12px 0;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 12px;
+    }
+    .box {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Longest Balanced Subarray II</h1>
+  <p class="meta">Problem id: <code>wc0472-Q4-longest-balanced-subarray-ii</code>. Difficulty: Hard. Function: <code>longestBalanced(nums)</code>.</p>
+
+  <h2>Provenance</h2>
+  <p>This manual was built from the local workspace artifacts: <code>problem.md</code>, <code>stats.json</code>, and four accepted submissions named <code>accepted__*</code>.</p>
+  <table>
+    <thead><tr><th>Source</th><th>Relevant data used</th></tr></thead>
+    <tbody>
+      <tr><td><code>problem.md</code></td><td>Statement, constraints, examples, official hints, starter signatures.</td></tr>
+      <tr><td><code>stats.json</code></td><td>Problem id, topic tags, accepted submission metadata, performance by language, failed status counts.</td></tr>
+      <tr><td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td><td>Left-end sweep with next occurrences and a rightmost-zero segment-tree query.</td></tr>
+      <tr><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>Right-end sweep with last occurrence updates and a first-zero query.</td></tr>
+      <tr><td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td><td>Right-end sweep using fixed-size value arrays and min/max lazy segment tree.</td></tr>
+      <tr><td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td><td>Python segment-tree implementation and recursion/performance implications.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Problem Statement</h2>
+  <p>You are given an integer array <code>nums</code>. A non-empty subarray is balanced when the number of distinct even values in it equals the number of distinct odd values in it. Return the length of the longest balanced subarray.</p>
+  <p>Constraints: <code>1 &lt;= nums.length &lt;= 100000</code> and <code>1 &lt;= nums[i] &lt;= 100000</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The hard part is that duplicates should count only once inside a subarray. A normal prefix sum over parity fails because adding a repeated value must not change the distinct-even or distinct-odd count for every possible start.</p>
+  <p>The key representation is: for a fixed sweep boundary, each distinct value contributes exactly one signed event at the occurrence that matters for that boundary. Use <code>+1</code> for one parity and <code>-1</code> for the other. Then a subarray is balanced exactly when the signed distinct count difference is zero.</p>
+  <p>A lazy segment tree stores the possible prefix or start values under range additions. Its <code>min</code> and <code>max</code> fields can prove whether a target value, usually zero or the current prefix value, exists in a queried range.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>nums = [2, 5, 4, 3]</code>, the full array has distinct evens <code>{2, 4}</code> and distinct odds <code>{5, 3}</code>. The counts are both two, so the longest balanced subarray is the full array and the answer is <code>4</code>.</p>
+  <div class="callout">
+    <p>In the segment-tree view, each first occurrence contributes a signed parity value. The prefix difference returns to zero at the last index, so the queried zero position gives the full span.</p>
+  </div>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead><tr><th>Input</th><th>Output</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td><code>[3, 2, 2, 5, 4]</code></td><td><code>5</code></td><td>The whole array has distinct odds <code>{3, 5}</code> and distinct evens <code>{2, 4}</code>.</td></tr>
+      <tr><td><code>[1, 2, 3, 2]</code></td><td><code>3</code></td><td>The subarray <code>[2, 3, 2]</code> has one distinct even value and one distinct odd value.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <p>Use one of the two equivalent accepted segment-tree sweeps.</p>
+  <h3>Left-boundary sweep</h3>
+  <ol>
+    <li>Compute <code>next[i]</code>, the next occurrence of <code>nums[i]</code>, or <code>n</code> if absent.</li>
+    <li>Build an initial signed event array from first occurrences only. Either sign convention works if updates are consistent.</li>
+    <li>Build prefix values over those events in a segment tree storing <code>min</code>, <code>max</code>, and lazy range-add tags.</li>
+    <li>For each left boundary <code>l</code>, query the rightmost index <code>r &gt;= l</code> whose segment-tree value is zero. If found, update <code>ans = max(ans, r - l + 1)</code>.</li>
+    <li>Move <code>l</code> forward: remove this occurrence's contribution over its active prefix range, then activate the next occurrence of the same value if it exists.</li>
+  </ol>
+  <h3>Right-boundary sweep</h3>
+  <ol>
+    <li>Sweep <code>r</code> from left to right and keep <code>lastPos[value]</code>.</li>
+    <li>When a value appears for the first time, add its signed contribution to all starts that include it.</li>
+    <li>When a value repeats, move its contribution from the previous occurrence to the new occurrence using one or two range additions.</li>
+    <li>Query the earliest valid start whose stored value matches the current target difference. Earlier start means longer subarray.</li>
+  </ol>
+  <p>Both forms are <code>O(n log n)</code> time and <code>O(n + V)</code> memory, with <code>V &lt;= 100000</code> from the constraints.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>function longestBalanced(nums):
+    n = len(nums)
+    build occurrence metadata: next[] for left sweep or lastPos[] for right sweep
+    initialize lazy segment tree with arrays min[], max[], lazy[]
+    ans = 0
+
+    for each sweep boundary:
+        update segment tree ranges so each distinct value has one active signed contribution
+        query for a zero/current-difference match in the valid index range
+        if found:
+            ans = max(ans, computed length)
+
+    return ans
+
+segment tree node stores:
+    min value in interval
+    max value in interval
+    lazy add tag
+
+range_add(node, ql, qr, delta):
+    add delta to node min/max/lazy when covered
+    otherwise push, recurse, then pull min/max
+
+query_match(node, range, target):
+    skip node if target &lt; min or target &gt; max
+    descend toward the side that optimizes length:
+        leftmost start for right sweep
+        rightmost end for left sweep</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Choose and document one sign convention; do not mix <code>+1</code> for even in one update and <code>+1</code> for odd in another.</li>
+    <li>Represent duplicate handling by moving a value's single active contribution, not by counting every occurrence.</li>
+    <li>Segment tree must support range add and must keep both <code>min</code> and <code>max</code>.</li>
+    <li>Query direction matters: find the earliest start in a right sweep, or the latest end in a left sweep.</li>
+    <li>Guard empty update ranges such as <code>ql &gt; qr</code>.</li>
+    <li>Use arrays for <code>lastPos</code> when relying on <code>nums[i] &lt;= 100000</code>; otherwise use a hash map.</li>
+    <li>For Python, raise recursion depth or write iterative helpers for deep segment-tree recursion.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Using a plain parity prefix sum over all elements. This solves equal number of even and odd positions, not equal number of distinct even and odd values.</li>
+    <li>Sliding window with two frequency maps and shrinking greedily. Balance is not monotonic, so local shrinking decisions can discard the optimal interval.</li>
+    <li>Checking all starts for every end with sets. It is conceptually simple but becomes <code>O(n^2)</code> and will time out at <code>100000</code> elements.</li>
+    <li>Only storing a segment-tree minimum. A target can exist between min and max; accepted solutions use both to prune correctly.</li>
+    <li>Returning as soon as any balanced interval is found. The task asks for the longest interval.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <div class="grid">
+    <div class="box">
+      <h3>Lazy segment tree, left sweep</h3>
+      <p>Seen in <code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code>. It precomputes next occurrences, maintains first-occurrence contributions for the current left boundary, and queries the rightmost zero.</p>
+    </div>
+    <div class="box">
+      <h3>Lazy segment tree, right sweep</h3>
+      <p>Seen in the Go, Java, and Python accepted files. It tracks last occurrences while extending the right boundary and queries the earliest compatible start.</p>
+    </div>
+  </div>
+  <p>No accepted local file uses a pure hash-map prefix-sum solution; duplicates force range updates, which is why the accepted family centers on segment trees.</p>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The following concrete performance data comes from <code>stats.json.performance_by_language</code>.</p>
+  <table>
+    <thead><tr><th>Language</th><th>Accepted count</th><th>Runtime notes</th><th>Memory notes</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>Go</td>
+        <td>1</td>
+        <td>Fastest and slowest are both <code>261 ms</code> from <code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code>.</td>
+        <td>Lowest and highest memory are both <code>21.7 MB</code>, the best memory figure in the local accepted set.</td>
+      </tr>
+      <tr>
+        <td>Java</td>
+        <td>2</td>
+        <td>Fastest Java is <code>283 ms</code>; slowest Java is <code>299 ms</code>. Both Java submissions are close to Go and much faster than Python.</td>
+        <td>Memory ranges from <code>74.7 MB</code> to <code>88.5 MB</code>. Fixed arrays for value positions and segment-tree arrays are predictable and efficient.</td>
+      </tr>
+      <tr>
+        <td>Python 3</td>
+        <td>1</td>
+        <td>The Python accepted runtime is <code>7232 ms</code>, so it needs careful pruning and efficient list-based arrays.</td>
+        <td>The Python accepted memory is <code>107.9 MB</code>, the highest local memory figure.</td>
+      </tr>
+    </tbody>
+  </table>
+  <p>For compiled languages, an array-backed lazy segment tree is comfortably within limits. For Python, avoid dictionaries inside hot segment-tree calls, avoid object-heavy node classes, and keep helpers tight.</p>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports failed submission statuses: <code>Wrong Answer: 2</code> and <code>Time Limit Exceeded: 1</code>.</p>
+  <ul>
+    <li>The wrong answers likely correspond to duplicate-count mistakes, off-by-one query ranges, or inconsistent sign updates. These are the most fragile parts of this problem.</li>
+    <li>The time-limit failure matches the natural brute-force trap: rebuilding distinct sets or scanning many starts for every end is too slow for <code>n = 100000</code>.</li>
+    <li>Segment-tree queries must prune by <code>min/max</code>; descending without pruning can degenerate badly.</li>
+  </ul>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Submission id</th>
+        <th>Lines</th>
+        <th>Bytes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>set2-codex-agent-gpt-5.5-codex-java</code></td>
+        <td>java</td>
+        <td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td>
+        <td>299 ms</td>
+        <td>88.5 MB</td>
+        <td>2005738568</td>
+        <td>138</td>
+        <td>3829</td>
+      </tr>
+      <tr>
+        <td><code>set2-kimi-k2.5-cloud-t0.0-golang</code></td>
+        <td>golang</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code></td>
+        <td>261 ms</td>
+        <td>21.7 MB</td>
+        <td>2005505252</td>
+        <td>122</td>
+        <td>2149</td>
+      </tr>
+      <tr>
+        <td><code>set2-qwen3.5-cloud-t0.0</code></td>
+        <td>python3</td>
+        <td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td>
+        <td>7232 ms</td>
+        <td>107.9 MB</td>
+        <td>2005496575</td>
+        <td>151</td>
+        <td>5303</td>
+      </tr>
+      <tr>
+        <td><code>set2-qwen3.5-cloud-t0.0-java</code></td>
+        <td>java</td>
+        <td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td>
+        <td>283 ms</td>
+        <td>74.7 MB</td>
+        <td>2005890305</td>
+        <td>96</td>
+        <td>2666</td>
+      </tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

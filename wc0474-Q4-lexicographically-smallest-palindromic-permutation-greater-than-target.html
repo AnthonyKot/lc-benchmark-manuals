@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Manual: Lexicographically Smallest Palindromic Permutation Greater Than Target</title>
+  <style>
+    body {
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      color: #1f2933;
+      margin: 0;
+      background: #f7f9fb;
+    }
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px 20px 48px;
+      background: #ffffff;
+    }
+    h1 {
+      font-size: 2rem;
+      line-height: 1.2;
+      margin: 0 0 8px;
+      color: #102a43;
+    }
+    h2 {
+      margin-top: 34px;
+      padding-bottom: 6px;
+      border-bottom: 2px solid #d9e2ec;
+      color: #243b53;
+      font-size: 1.25rem;
+    }
+    code, pre {
+      font-family: Consolas, "Liberation Mono", monospace;
+    }
+    code {
+      background: #eef2f7;
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      background: #102a43;
+      color: #f0f4f8;
+      padding: 14px;
+      overflow-x: auto;
+      border-radius: 6px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 12px;
+      font-size: 0.94rem;
+    }
+    th, td {
+      border: 1px solid #bcccdc;
+      padding: 8px 10px;
+      vertical-align: top;
+      text-align: left;
+    }
+    th {
+      background: #e6eef6;
+      color: #102a43;
+    }
+    .meta {
+      color: #52606d;
+      margin: 0 0 20px;
+    }
+    .callout {
+      background: #f0f7ff;
+      border-left: 4px solid #2680c2;
+      padding: 10px 14px;
+      margin: 12px 0;
+    }
+    ul {
+      padding-left: 22px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Lexicographically Smallest Palindromic Permutation Greater Than Target</h1>
+  <p class="meta">Problem id: <code>wc0474-Q4-lexicographically-smallest-palindromic-permutation-greater-than-target</code></p>
+
+  <h2>Provenance</h2>
+  <p>This manual was assembled from the local workspace files <code>problem.md</code>, <code>stats.json</code>, and the eight <code>accepted__*</code> submissions. The source metadata lists the generator as <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-18T16:15:46.842035+00:00</code>.</p>
+  <ul>
+    <li>Difficulty: Hard</li>
+    <li>Function: <code>lexPalindromicPermutation(s, target)</code></li>
+    <li>Tags: two-pointers, string, enumeration</li>
+    <li>Accepted submissions analyzed: 8</li>
+  </ul>
+
+  <h2>Problem Statement</h2>
+  <p>Given lowercase strings <code>s</code> and <code>target</code> of equal length <code>n</code>, return the lexicographically smallest string that is both a palindromic permutation of <code>s</code> and strictly greater than <code>target</code>. If no such permutation exists, return the empty string.</p>
+  <p>Constraints: <code>1 &lt;= n == s.length == target.length &lt;= 300</code>; both strings contain only lowercase English letters.</p>
+
+  <h2>Problem Essence</h2>
+  <p>A palindrome is completely determined by its left half and, for odd lengths, one middle character. So the search space is not all permutations of <code>s</code>; it is all permutations of the multiset <code>count[c] / 2</code> for the left half, with the middle fixed by the one odd-count character if any.</p>
+  <p>The lexicographic comparison against <code>target</code> can usually be decided by the left half. If we can reuse <code>target</code>'s left half, the mirrored full palindrome might already be greater because of the middle or right side. Otherwise, we need the next multiset permutation of the left half that is strictly greater than <code>target</code>'s left half.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>s = "baba"</code> and <code>target = "abba"</code>:</p>
+  <ol>
+    <li>Counts are <code>a:2</code>, <code>b:2</code>, so a palindrome is possible.</li>
+    <li>The left-half multiset is <code>{a:1, b:1}</code>.</li>
+    <li>The target left half is <code>"ab"</code>, which can be formed.</li>
+    <li>Mirroring <code>"ab"</code> gives <code>"abba"</code>, which is not strictly greater than the target.</li>
+    <li>The next left-half multiset permutation after <code>"ab"</code> is <code>"ba"</code>.</li>
+    <li>Mirroring <code>"ba"</code> gives <code>"baab"</code>, the smallest valid answer.</li>
+  </ol>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>s = "baba", target = "bbaa"</code></td><td><code>""</code></td><td>The only palindromic permutations are <code>"abba"</code> and <code>"baab"</code>, both not greater than <code>"bbaa"</code>.</td></tr>
+      <tr><td><code>s = "abc", target = "abb"</code></td><td><code>""</code></td><td>There are three odd character counts, so no palindromic permutation exists.</td></tr>
+      <tr><td><code>s = "aac", target = "abb"</code></td><td><code>"aca"</code></td><td>The only palindromic permutation is <code>"aca"</code>, and it is greater than <code>"abb"</code>.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <ol>
+    <li>Count all letters in <code>s</code>. If more than one count is odd, return <code>""</code>. This single test works for both even and odd <code>n</code>: even lengths cannot have odd counts; odd lengths can have exactly one.</li>
+    <li>Build <code>halfCounts[c] = count[c] / 2</code>. Record the odd-count character as <code>middle</code> when <code>n</code> is odd.</li>
+    <li>Let <code>m = n / 2</code> and <code>bound = target[0:m]</code>.</li>
+    <li>If <code>bound</code> can be formed from <code>halfCounts</code>, build <code>bound + middle + reverse(bound)</code>. If that full palindrome is strictly greater than <code>target</code>, return it.</li>
+    <li>Otherwise compute the smallest half-string that is greater than <code>bound</code> using the same multiset. The accepted greedy form keeps the longest feasible prefix equal to <code>bound</code>, bumps one position to the smallest larger available character, then fills the suffix in ascending order.</li>
+    <li>If no such bumped half exists, return <code>""</code>. Otherwise mirror the bumped half around the middle and return the full palindrome.</li>
+  </ol>
+  <div class="callout">Because <code>n &lt;= 300</code> and the alphabet size is 26, repeatedly scanning all letters is cheap. The important part is avoiding factorial enumeration of half permutations.</div>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>function lexPalindromicPermutation(s, target):
+    n = len(s)
+    count = frequency(s)
+
+    oddCount = number of letters with odd count
+    if oddCount &gt; 1:
+        return ""
+
+    middle = odd-count letter, if any
+    halfCounts[c] = count[c] // 2
+    m = n // 2
+    bound = target[0:m]
+
+    if canForm(halfCounts, bound):
+        p = buildPalindrome(bound, middle, n is odd)
+        if p &gt; target:
+            return p
+
+    half = nextHalfGreaterThan(halfCounts, bound)
+    if half does not exist:
+        return ""
+    return buildPalindrome(half, middle, n is odd)
+
+function nextHalfGreaterThan(counts, bound):
+    for pivot from len(bound) - 1 down to 0:
+        temp = counts after consuming bound[0:pivot]
+        if prefix cannot be consumed:
+            continue
+        choose smallest c &gt; bound[pivot] with temp[c] &gt; 0
+        if found:
+            return bound[0:pivot] + c + all remaining chars sorted ascending
+    return none</code></pre>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Reject impossible palindromes before comparing against <code>target</code>.</li>
+    <li>Use half-counts, not full counts, when constructing the left half.</li>
+    <li>Always verify the full palindrome when the left half equals <code>target</code>'s left half; the right half can decide strictness.</li>
+    <li>When bumping the left half, fill the rest with the smallest available letters to preserve minimality.</li>
+    <li>For odd <code>n</code>, place the odd-count character in the middle; do not treat it as another free half character.</li>
+    <li>Return an empty string, not <code>null</code> or a smallest non-greater palindrome, when no valid candidate exists.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li>Generating all palindromic permutations and sorting them. This is unnecessary and can explode combinatorially.</li>
+    <li>Only checking whether the left half is greater than <code>target</code>'s left half. Equal left halves can still succeed or fail based on the middle and mirrored suffix.</li>
+    <li>Using the ordinary next permutation of <code>target[0:m]</code> without checking whether that prefix is available from <code>s</code>'s half multiset.</li>
+    <li>Forgetting that a string equal to <code>target</code> is invalid; the answer must be strictly greater.</li>
+    <li>For odd lengths, picking the middle greedily from remaining characters after half construction. The middle is fixed by parity.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <ul>
+    <li><strong>Half-multiset next-permutation greedy:</strong> The Java and Go submissions center on checking <code>target</code>'s half, then finding the next feasible half by pivoting and filling the suffix in sorted order. This is the cleanest family for reimplementation.</li>
+    <li><strong>DFS over palindrome positions with lexicographic pruning:</strong> The JavaScript submission recursively chooses paired characters from left to right, never choosing below the target unless already greater. With only 26 letters and <code>n &lt;= 300</code>, pruning keeps it accepted.</li>
+    <li><strong>Full-index pivot construction:</strong> The Python submission scans possible pivot positions in the full palindrome, handles symmetry constraints, and constructs the minimal suffix after the pivot. It is more intricate but captures the same lexicographic rule.</li>
+  </ul>
+
+  <h2>Language and Performance Notes</h2>
+  <p>Concrete performance from <code>stats.json.performance_by_language</code>:</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted Count</th><th>Fastest</th><th>Slowest</th><th>Memory Range</th><th>Notes</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>golang</td><td>1</td><td>0 ms</td><td>0 ms</td><td>5.1 MB to 5.1 MB</td><td>The Go accepted solution is the lowest-memory result and uses fixed-size arrays for counts.</td></tr>
+      <tr><td>java</td><td>5</td><td>3 ms</td><td>143 ms</td><td>45.7 MB to 47.8 MB</td><td>Most accepted submissions are Java. The fastest Java result uses half-count pivoting; the 143 ms outlier suggests implementation details matter even with small constraints.</td></tr>
+      <tr><td>javascript</td><td>1</td><td>9 ms</td><td>9 ms</td><td>60.1 MB to 60.1 MB</td><td>The accepted JavaScript DFS is fast enough, though it has the highest memory among listed languages.</td></tr>
+      <tr><td>python3</td><td>1</td><td>144 ms</td><td>144 ms</td><td>19.6 MB to 19.6 MB</td><td>The Python accepted solution is slower but still acceptable for <code>n &lt;= 300</code>; avoid factorial generation.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports <code>failed_submission_status_counts</code> as an empty object, so there are no recorded wrong-answer, timeout, or runtime-error buckets in this local data. The likely risk areas therefore come from implementation review rather than failed-stat evidence: strict comparison against <code>target</code>, odd-count handling, and constructing the minimal greater half.</p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Submission ID</th>
+        <th>Lines</th>
+        <th>Bytes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>set2-codex-agent-gpt-5.5-codex-java</td><td>java</td><td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td><td>3 ms</td><td>45.7 MB</td><td>2005739363</td><td>135</td><td>4391</td></tr>
+      <tr><td>set2-deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>9 ms</td><td>60.1 MB</td><td>2005465833</td><td>80</td><td>2666</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.0-golang</td><td>golang</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-golang__golang.go</code></td><td>0 ms</td><td>5.1 MB</td><td>2005505920</td><td>107</td><td>2463</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td><td>5 ms</td><td>46.6 MB</td><td>2005432109</td><td>149</td><td>4889</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.8-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td><td>143 ms</td><td>47.2 MB</td><td>2005878896</td><td>77</td><td>2603</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.9-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td><td>20 ms</td><td>47.8 MB</td><td>2005884966</td><td>133</td><td>4823</td></tr>
+      <tr><td>set2-qwen3.5-cloud-t0.0</td><td>python3</td><td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td><td>144 ms</td><td>19.6 MB</td><td>2005497214</td><td>146</td><td>5190</td></tr>
+      <tr><td>set2-qwen3.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td><td>6 ms</td><td>47.3 MB</td><td>2005890602</td><td>123</td><td>4486</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

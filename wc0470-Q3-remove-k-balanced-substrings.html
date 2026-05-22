@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>wc0470-Q3-remove-k-balanced-substrings Manual</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #1d2430;
+      --muted: #5b6472;
+      --line: #d8dde6;
+      --panel: #f7f9fc;
+      --accent: #176b87;
+      --code: #eef3f7;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: #ffffff;
+    }
+    main {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 32px 22px 56px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 30px;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin-top: 34px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--line);
+      font-size: 22px;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin-top: 20px;
+      font-size: 17px;
+    }
+    p, li {
+      font-size: 15px;
+    }
+    code, pre {
+      font-family: Consolas, "Courier New", monospace;
+    }
+    code {
+      background: var(--code);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+    pre {
+      overflow-x: auto;
+      background: #101820;
+      color: #edf6ff;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      font-size: 14px;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--panel);
+    }
+    .meta {
+      color: var(--muted);
+      margin-bottom: 18px;
+    }
+    .note {
+      border-left: 4px solid var(--accent);
+      background: var(--panel);
+      padding: 10px 12px;
+      margin: 14px 0;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Remove K-Balanced Substrings</h1>
+  <p class="meta">Problem id: <code>wc0470-Q3-remove-k-balanced-substrings</code>. Difficulty: Medium. Function: <code>removeSubstring(s, k)</code>.</p>
+
+  <h2>Provenance</h2>
+  <p>This manual was generated from the local files <code>problem.md</code>, <code>stats.json</code>, and the six <code>accepted__*</code> submissions in this directory. The source metadata names the problem as <strong>Remove K-Balanced Substrings</strong>, with topic tags <code>string</code>, <code>stack</code>, and <code>simulation</code>. The generator metadata in <code>stats.json</code> records <code>codex</code>, model <code>gpt-5.5</code>, generated at <code>2026-05-17T22:10:59.406241+00:00</code>.</p>
+
+  <h2>Problem Statement</h2>
+  <p>You are given a string <code>s</code> containing only <code>(</code> and <code>)</code>, and an integer <code>k</code>. A string is <strong>k-balanced</strong> when it is exactly <code>k</code> consecutive opening parentheses followed immediately by <code>k</code> consecutive closing parentheses: <code>"(" * k + ")" * k</code>.</p>
+  <p>Repeatedly remove all non-overlapping k-balanced substrings from <code>s</code>, join the remaining parts, and continue until no k-balanced substring remains. Return the final string.</p>
+  <p>Constraints: <code>2 &lt;= s.length &lt;= 100000</code>, <code>s</code> consists only of parentheses, and <code>1 &lt;= k &lt;= s.length / 2</code>.</p>
+
+  <h2>Problem Essence</h2>
+  <p>The repeated-removal wording is the trap: after one deletion, the left and right neighbors may become adjacent and form a new removable block. A correct solution must simulate this cascading behavior without rescanning the whole string after every deletion.</p>
+  <p>The key invariant is local. A removal can only occur at a boundary where a run of <code>(</code> is immediately followed by a run of <code>)</code>, and both runs have at least <code>k</code> characters. Removing <code>k</code> from each side may expose another boundary, so the algorithm keeps a stack representation of the current reduced prefix.</p>
+
+  <h2>Worked Example</h2>
+  <p>For <code>s = "(())"</code> and <code>k = 1</code>, the removable pattern is <code>()</code>.</p>
+  <table>
+    <thead>
+      <tr><th>Step</th><th>Current string</th><th>Removal</th><th>Result</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td><code>(())</code></td><td>remove the middle <code>()</code></td><td><code>()</code></td></tr>
+      <tr><td>2</td><td><code>()</code></td><td>remove <code>()</code></td><td><code>""</code></td></tr>
+    </tbody>
+  </table>
+  <p>The final result is the empty string. This shows why one pass with a stack works but a single left-to-right deletion pass without revisiting boundaries can miss cascades.</p>
+
+  <h2>Other Official Examples</h2>
+  <table>
+    <thead>
+      <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>s = "(()("</code>, <code>k = 1</code></td><td><code>"(("</code></td><td>The inner <code>()</code> is removed, leaving two opening parentheses and no further match.</td></tr>
+      <tr><td><code>s = "((()))()()()"</code>, <code>k = 3</code></td><td><code>"()()()"</code></td><td>Only <code>((()))</code> matches <code>k = 3</code>; the remaining <code>()</code> pairs are too short to remove.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Decision Rule / Algorithm</h2>
+  <p>Use a stack of runs, where each entry stores a character and its current count. For every character in <code>s</code>, append it to the top run if the character matches, otherwise push a new run. After every push or count increment, repeatedly check the top two runs:</p>
+  <ol>
+    <li>If the second-to-top run is <code>(</code>, the top run is <code>)</code>, and both counts are at least <code>k</code>, subtract <code>k</code> from both counts.</li>
+    <li>Remove any run whose count becomes zero.</li>
+    <li>If deletion makes two adjacent runs with the same character, merge them.</li>
+    <li>Repeat the check because the merge or shrink may create another removable boundary.</li>
+  </ol>
+  <p>This is linear in practice and in the accepted implementations: each input character is pushed once into a compact stack state, and deletions reduce stored counts rather than rebuilding strings.</p>
+
+  <h2>Implementation Skeleton</h2>
+  <pre><code>function removeSubstring(s, k):
+    stack = empty list of (char, count)
+
+    for c in s:
+        if stack is not empty and stack.last.char == c:
+            stack.last.count += 1
+        else:
+            push (c, 1)
+
+        while stack has at least two runs:
+            left = stack[-2]
+            right = stack[-1]
+            if left.char != '(' or right.char != ')' or left.count &lt; k or right.count &lt; k:
+                break
+
+            left.count -= k
+            right.count -= k
+            remove zero-count runs
+            if top two runs now have the same char:
+                merge them
+
+    return concatenation of char repeated count for every run</code></pre>
+  <p>An equivalent character-stack skeleton stores, for each stack position, the current consecutive open or close run length. When the last <code>k</code> characters are <code>)</code> and the preceding stack position has at least <code>k</code> consecutive <code>(</code>, pop <code>2 * k</code> characters. Two accepted Java submissions use this form.</p>
+
+  <h2>Reimplementation Checklist</h2>
+  <ul>
+    <li>Represent the evolving string with a stack, not by repeatedly calling string replace or slicing in a loop.</li>
+    <li>Only remove <code>k</code> opens followed by <code>k</code> closes; balanced parentheses in the usual nesting sense are not enough.</li>
+    <li>After each deletion, continue checking the new top boundary before reading more input.</li>
+    <li>Delete zero-length runs and merge adjacent equal-character runs.</li>
+    <li>Build the answer at the end with a buffer or joined list, not repeated string concatenation inside a large loop.</li>
+    <li>Test <code>k = 1</code>, large single runs, no-removal cases, and cases where deletion exposes a new boundary.</li>
+  </ul>
+
+  <h2>Wrong But Tempting</h2>
+  <ul>
+    <li><strong>Remove only the first visible batch.</strong> Example 1 needs a second removal after the first deletion creates <code>()</code>.</li>
+    <li><strong>Search for ordinary balanced substrings.</strong> For <code>k = 3</code>, <code>()</code> is balanced but not k-balanced.</li>
+    <li><strong>Use global replacement of the pattern once.</strong> New matches can cross the join created by a previous deletion.</li>
+    <li><strong>Forget run merging.</strong> If a middle run disappears, two runs of the same character may become adjacent; treating them as separate can miss a future <code>k</code>-sized deletion.</li>
+    <li><strong>Use repeated string splicing.</strong> With <code>n = 100000</code>, repeated rebuilds can become quadratic.</li>
+  </ul>
+
+  <h2>Accepted Algorithm Families</h2>
+  <table>
+    <thead>
+      <tr><th>Family</th><th>Accepted files</th><th>How it works</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Run-length stack cancellation</td>
+        <td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code>, <code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code>, <code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td>
+        <td>Stores compact runs and repeatedly subtracts <code>k</code> from a top <code>(</code>/<code>)</code> boundary.</td>
+      </tr>
+      <tr>
+        <td>Character stack with run counters</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code>, <code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td>
+        <td>Stores each retained character plus consecutive run lengths; pops <code>2 * k</code> when the stack suffix is removable.</td>
+      </tr>
+      <tr>
+        <td>KMP-style pattern stack</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td>
+        <td>Builds the literal pattern <code>"(" * k + ")" * k</code>, tracks match state per stack position, and pops a full pattern match.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Language and Performance Notes</h2>
+  <p>The concrete performance data from <code>stats.json.performance_by_language</code> shows all accepted approaches are comfortably linear for the input limit, with runtime differences mainly reflecting language/runtime and implementation style.</p>
+  <table>
+    <thead>
+      <tr><th>Language</th><th>Accepted count</th><th>Runtime notes</th><th>Memory notes</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Java</td>
+        <td>4</td>
+        <td>Fastest: <code>16 ms</code> in <code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code> and also <code>16 ms</code> for <code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code>. Slowest recorded Java submission: <code>29 ms</code>.</td>
+        <td>Memory range is tight: <code>48 MB</code> lowest to <code>48.6 MB</code> highest. Fixed arrays for stack state are a good Java fit.</td>
+      </tr>
+      <tr>
+        <td>JavaScript</td>
+        <td>1</td>
+        <td>The accepted JavaScript run-length stack submission recorded <code>70 ms</code>.</td>
+        <td>Recorded memory was <code>74.5 MB</code>. Avoid per-character string rebuilds; use arrays and join at the end.</td>
+      </tr>
+      <tr>
+        <td>Python 3</td>
+        <td>1</td>
+        <td>The accepted Python run-length stack submission recorded <code>367 ms</code>.</td>
+        <td>Recorded memory was <code>25.8 MB</code>. Python is slower here but still accepted with compact run storage and final <code>join</code>.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>Failure Patterns From Stats</h2>
+  <p><code>stats.json</code> reports two failed submissions, both with status <strong>Wrong Answer</strong>. No time-limit or memory-limit failures are listed, which suggests the common risk in this batch was logic, not raw asymptotic performance.</p>
+  <p>The most likely wrong-answer sources are exactly the boundary cases above: failing to continue cancellation after a deletion, treating all balanced parentheses as removable, mishandling leftover counts after subtracting <code>k</code>, or not merging adjacent runs after an intervening run disappears.</p>
+
+  <h2>Full Accepted Table</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Submission ID</th>
+        <th>Lines</th>
+        <th>Bytes</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>set2-codex-agent-gpt-5.5-codex-java</td><td>java</td><td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td><td>29 ms</td><td>48 MB</td><td>2005573087</td><td>44</td><td>1355</td></tr>
+      <tr><td>set2-deepseek-v4-pro-cloud-t0.0-javascript</td><td>javascript</td><td><code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td><td>70 ms</td><td>74.5 MB</td><td>2005464567</td><td>51</td><td>1791</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.8-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.8-java__java.java</code></td><td>16 ms</td><td>48.3 MB</td><td>2005878113</td><td>29</td><td>931</td></tr>
+      <tr><td>set2-kimi-k2.5-cloud-t0.9-java</td><td>java</td><td><code>accepted__set2-kimi-k2.5-cloud-t0.9-java__java.java</code></td><td>21 ms</td><td>48.3 MB</td><td>2005884213</td><td>46</td><td>1226</td></tr>
+      <tr><td>set2-qwen3.5-cloud-t0.0</td><td>python3</td><td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td><td>367 ms</td><td>25.8 MB</td><td>2005495807</td><td>28</td><td>992</td></tr>
+      <tr><td>set2-qwen3.5-cloud-t0.0-java</td><td>java</td><td><code>accepted__set2-qwen3.5-cloud-t0.0-java__java.java</code></td><td>16 ms</td><td>48.6 MB</td><td>2005889928</td><td>35</td><td>945</td></tr>
+    </tbody>
+  </table>
+</main>
+</body>
+</html>

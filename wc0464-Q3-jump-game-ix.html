@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Jump Game IX Manual - wc0464-Q3-jump-game-ix</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17212b;
+      --muted: #5a6978;
+      --line: #d8e0e8;
+      --panel: #f6f8fb;
+      --accent: #1f6f68;
+      --code: #101820;
+      --code-bg: #eef3f6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: #ffffff;
+    }
+    main {
+      width: min(1080px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 56px;
+    }
+    header {
+      padding: 20px 0 18px;
+      border-bottom: 2px solid var(--line);
+      margin-bottom: 24px;
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.9rem, 4vw, 3rem);
+      line-height: 1.08;
+      letter-spacing: 0;
+    }
+    h2 {
+      margin: 34px 0 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      font-size: 1.35rem;
+      letter-spacing: 0;
+    }
+    h3 {
+      margin: 20px 0 8px;
+      font-size: 1.05rem;
+    }
+    p { margin: 0 0 12px; }
+    ul, ol { margin-top: 8px; padding-left: 24px; }
+    li { margin: 4px 0; }
+    code {
+      font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+      background: var(--code-bg);
+      padding: 0.08rem 0.28rem;
+      border-radius: 4px;
+      font-size: 0.95em;
+    }
+    pre {
+      overflow: auto;
+      padding: 14px 16px;
+      background: var(--code);
+      color: #f4f7fb;
+      border-radius: 8px;
+      font-size: 0.92rem;
+      line-height: 1.45;
+    }
+    pre code {
+      background: transparent;
+      padding: 0;
+      color: inherit;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 12px 0 18px;
+      font-size: 0.94rem;
+    }
+    th, td {
+      border: 1px solid var(--line);
+      padding: 8px 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th {
+      background: var(--panel);
+      font-weight: 700;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.96rem;
+    }
+    .badge {
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 10px;
+      background: var(--panel);
+    }
+    .callout {
+      border-left: 4px solid var(--accent);
+      background: var(--panel);
+      padding: 12px 14px;
+      margin: 12px 0;
+    }
+    .small { color: var(--muted); font-size: 0.93rem; }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <h1>Jump Game IX</h1>
+    <div class="meta">
+      <span class="badge">Problem id: wc0464-Q3-jump-game-ix</span>
+      <span class="badge">Difficulty: Medium</span>
+      <span class="badge">Function: maxValue(nums)</span>
+      <span class="badge">Tags: array, dynamic-programming</span>
+    </div>
+  </header>
+
+  <section>
+    <h2>Provenance</h2>
+    <p>This manual was assembled from the local workspace files <code>problem.md</code>, <code>stats.json</code>, and the four <code>accepted__*</code> submissions.</p>
+    <table>
+      <tr><th>Field</th><th>Value</th></tr>
+      <tr><td>Source URL</td><td><a href="https://leetcode.com/problems/jump-game-ix/">https://leetcode.com/problems/jump-game-ix/</a></td></tr>
+      <tr><td>Generated at UTC</td><td>2026-05-17T21:43:07.169768+00:00</td></tr>
+      <tr><td>Accepted submissions available</td><td>4</td></tr>
+      <tr><td>Observed failed status count</td><td>Wrong Answer: 2</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Problem Statement</h2>
+    <p>You are given an integer array <code>nums</code>. From index <code>i</code>, a jump to index <code>j</code> is valid under exactly one of these rules:</p>
+    <ul>
+      <li>Jump right to <code>j &gt; i</code> only when <code>nums[j] &lt; nums[i]</code>.</li>
+      <li>Jump left to <code>j &lt; i</code> only when <code>nums[j] &gt; nums[i]</code>.</li>
+    </ul>
+    <p>For every starting index <code>i</code>, return the maximum value in <code>nums</code> reachable by any sequence of valid jumps from <code>i</code>.</p>
+    <p>Constraints: <code>1 &lt;= nums.length &lt;= 100000</code>, <code>1 &lt;= nums[i] &lt;= 1000000000</code>.</p>
+  </section>
+
+  <section>
+    <h2>Problem Essence</h2>
+    <p>The jump rules connect indices into contiguous components. If a left segment contains a value greater than a right segment value, movement can cross the boundary through that inversion pattern. A boundary is a true separator only when every value on the left is less than or equal to every value on the right.</p>
+    <div class="callout">
+      <p>The answer for every index in one component is simply the maximum value inside that component.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Worked Example</h2>
+    <p>For <code>nums = [2,3,1]</code>, compute prefix maximums and suffix minimums:</p>
+    <table>
+      <tr><th>i</th><th>nums[i]</th><th>prefixMax[i]</th><th>suffixMin[i]</th></tr>
+      <tr><td>0</td><td>2</td><td>2</td><td>1</td></tr>
+      <tr><td>1</td><td>3</td><td>3</td><td>1</td></tr>
+      <tr><td>2</td><td>1</td><td>3</td><td>1</td></tr>
+    </table>
+    <p>Check cuts:</p>
+    <ul>
+      <li>After index 0: <code>prefixMax[0] = 2</code> and <code>suffixMin[1] = 1</code>, so <code>2 &lt;= 1</code> is false.</li>
+      <li>After index 1: <code>prefixMax[1] = 3</code> and <code>suffixMin[2] = 1</code>, so <code>3 &lt;= 1</code> is false.</li>
+    </ul>
+    <p>No separator exists, so the whole array is one component. The component maximum is <code>3</code>, giving <code>[3,3,3]</code>.</p>
+  </section>
+
+  <section>
+    <h2>Other Official Examples</h2>
+    <table>
+      <tr><th>Input</th><th>Output</th><th>Reason</th></tr>
+      <tr>
+        <td><code>[2,1,3]</code></td>
+        <td><code>[2,2,3]</code></td>
+        <td>A cut exists after index 1 because max left is <code>2</code> and min right is <code>3</code>. Components are <code>[2,1]</code> and <code>[3]</code>.</td>
+      </tr>
+      <tr>
+        <td><code>[2,3,1]</code></td>
+        <td><code>[3,3,3]</code></td>
+        <td>No cut exists, so all indices share maximum reachable value <code>3</code>.</td>
+      </tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Decision Rule / Algorithm</h2>
+    <ol>
+      <li>Build <code>suffixMin</code>, where <code>suffixMin[i]</code> is the minimum of <code>nums[i..n-1]</code>.</li>
+      <li>Scan left to right while maintaining <code>currentMax</code>, the maximum in the active block.</li>
+      <li>At index <code>i</code>, close the current block when <code>currentMax &lt;= suffixMin[i + 1]</code>. This means no right-side value is smaller than any left-side maximum, so the jump graph cannot merge across that boundary.</li>
+      <li>Fill all positions in the closed block with <code>currentMax</code>.</li>
+    </ol>
+    <p>Equivalent accepted implementations precompute both <code>prefixMax</code> and <code>suffixMin</code>, collect split positions, then fill each segment.</p>
+  </section>
+
+  <section>
+    <h2>Implementation Skeleton</h2>
+    <pre><code>function maxValue(nums):
+    n = length(nums)
+    suffixMin[n] = +infinity
+    for i from n - 1 downto 0:
+        suffixMin[i] = min(nums[i], suffixMin[i + 1])
+
+    ans = array of length n
+    start = 0
+    currentMax = -infinity
+
+    for i from 0 to n - 1:
+        currentMax = max(currentMax, nums[i])
+        if currentMax &lt;= suffixMin[i + 1]:
+            for j from start to i:
+                ans[j] = currentMax
+            start = i + 1
+            currentMax = -infinity
+
+    return ans</code></pre>
+    <p>Time complexity is <code>O(n)</code>. Extra space is <code>O(n)</code> for <code>suffixMin</code> plus the output. The nested fill loop is still linear overall because each index is assigned once.</p>
+  </section>
+
+  <section>
+    <h2>Reimplementation Checklist</h2>
+    <ul>
+      <li>Use the strict jump inequalities from the statement, but use a non-strict cut test: <code>max(left) &lt;= min(right)</code>.</li>
+      <li>Include the sentinel <code>suffixMin[n] = +infinity</code> if using the one-pass block-closing version.</li>
+      <li>Reset the block start and current maximum after closing a block.</li>
+      <li>Fill every index exactly once with its component maximum.</li>
+      <li>Use integer types that can hold values up to <code>1000000000</code>; standard 32-bit signed integers are enough.</li>
+      <li>Do not build explicit graph edges, which can be quadratic.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Wrong But Tempting</h2>
+    <ul>
+      <li>Treating each direct jump independently and taking only immediate neighbors. Jumps may require multiple moves.</li>
+      <li>Using <code>prefixMax[i] &lt; suffixMin[i+1]</code> as the cut rule. Equal values on both sides cannot jump across by value, but equality still permits a separator; the accepted condition is <code>&lt;=</code>.</li>
+      <li>Assuming a decreasing suffix or increasing prefix by itself is enough. The separator depends on both sides together.</li>
+      <li>Running DFS/BFS over all possible jumps. With <code>n = 100000</code>, enumerating all valid jump pairs is too large.</li>
+      <li>Returning each component's rightmost or leftmost value instead of its maximum.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Accepted Algorithm Families</h2>
+    <table>
+      <tr><th>Family</th><th>Accepted files</th><th>Description</th></tr>
+      <tr>
+        <td>Streaming prefix maximum plus suffix minimum</td>
+        <td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td>
+        <td>Computes <code>suffixMin</code>, scans once, and closes blocks immediately when <code>currentMax &lt;= suffixMin[i+1]</code>.</td>
+      </tr>
+      <tr>
+        <td>Precomputed prefix maximums and suffix minimums</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code>, <code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code>, <code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td>
+        <td>Builds both arrays, identifies split boundaries, and fills each segment with its maximum.</td>
+      </tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Language and Performance Notes</h2>
+    <p>Concrete performance from <code>stats.json.performance_by_language</code>:</p>
+    <table>
+      <tr><th>Language</th><th>Accepted count</th><th>Runtime range</th><th>Memory range</th><th>Notes</th></tr>
+      <tr>
+        <td>Java</td>
+        <td>2</td>
+        <td>4 ms to 6 ms</td>
+        <td>197.8 MB to 198.6 MB</td>
+        <td>Fastest observed submission is the streaming suffix-min version at 4 ms. Java's memory is high in the judge report, but both Java submissions are nearly identical in memory.</td>
+      </tr>
+      <tr>
+        <td>JavaScript</td>
+        <td>1</td>
+        <td>79 ms</td>
+        <td>100.2 MB</td>
+        <td>The accepted JavaScript implementation uses separate prefix and suffix arrays plus a split list. Avoid repeated slicing or nested scans beyond assigning each index once.</td>
+      </tr>
+      <tr>
+        <td>Python3</td>
+        <td>1</td>
+        <td>204 ms</td>
+        <td>39.8 MB</td>
+        <td>The accepted Python submission is slower but memory-light. For Python, prefer a single pass with a suffix array and avoid per-segment <code>max(nums[start:end])</code> if many segments are possible, although the recorded accepted solution still passed.</td>
+      </tr>
+    </table>
+  </section>
+
+  <section>
+    <h2>Failure Patterns From Stats</h2>
+    <p>The local stats record two failed submissions, both with status <code>Wrong Answer</code>. No time-limit failures are recorded, which points to logic mistakes rather than asymptotic performance as the observed failure mode.</p>
+    <ul>
+      <li>The most likely wrong-answer source is an incorrect component separator, especially using strict comparison or missing equal-value boundaries.</li>
+      <li>Another likely source is assigning only the local running maximum at each index instead of filling the entire component after its true boundary is known.</li>
+      <li>Reachability should be reasoned as components induced by valid cross-boundary inversions, not as independent one-step improvements.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>Full Accepted Table</h2>
+    <table>
+      <tr>
+        <th>Model</th>
+        <th>Language</th>
+        <th>File</th>
+        <th>Runtime</th>
+        <th>Memory</th>
+        <th>Submission ID</th>
+        <th>Lines</th>
+        <th>Bytes</th>
+      </tr>
+      <tr>
+        <td>set2-codex-agent-gpt-5.5-codex-java</td>
+        <td>java</td>
+        <td><code>accepted__set2-codex-agent-gpt-5.5-codex-java__java.java</code></td>
+        <td>4 ms</td>
+        <td>197.8 MB</td>
+        <td>2005571423</td>
+        <td>27</td>
+        <td>773</td>
+      </tr>
+      <tr>
+        <td>set2-deepseek-v4-pro-cloud-t0.0-javascript</td>
+        <td>javascript</td>
+        <td><code>accepted__set2-deepseek-v4-pro-cloud-t0.0-javascript__javascript.js</code></td>
+        <td>79 ms</td>
+        <td>100.2 MB</td>
+        <td>2005462553</td>
+        <td>53</td>
+        <td>1286</td>
+      </tr>
+      <tr>
+        <td>set2-kimi-k2.5-cloud-t0.0-java</td>
+        <td>java</td>
+        <td><code>accepted__set2-kimi-k2.5-cloud-t0.0-java__java.java</code></td>
+        <td>6 ms</td>
+        <td>198.6 MB</td>
+        <td>2005428610</td>
+        <td>31</td>
+        <td>863</td>
+      </tr>
+      <tr>
+        <td>set2-qwen3.5-cloud-t0.0</td>
+        <td>python3</td>
+        <td><code>accepted__set2-qwen3.5-cloud-t0.0__python3.py</code></td>
+        <td>204 ms</td>
+        <td>39.8 MB</td>
+        <td>2005493734</td>
+        <td>47</td>
+        <td>1796</td>
+      </tr>
+    </table>
+    <p class="small">All accepted files implement the same partition-by-cut idea and run in linear time.</p>
+  </section>
+</main>
+</body>
+</html>
